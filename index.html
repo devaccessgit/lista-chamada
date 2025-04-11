@@ -35,6 +35,8 @@
     }
   </style>
 </head>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <body>
   <h1>📋 Lista de Chamada - Aulas de Inglês</h1>
 
@@ -111,6 +113,21 @@
         tabela.innerHTML = "";
         localStorage.removeItem("chamada");
       }
+      function exportarPDF() {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+      
+        html2canvas(document.querySelector("#tabelaChamada")).then(canvas => {
+          const imgData = canvas.toDataURL("image/png");
+          const imgProps = doc.getImageProperties(imgData);
+          const pdfWidth = doc.internal.pageSize.getWidth();
+          const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+      
+          doc.addImage(imgData, 'PNG', 0, 10, pdfWidth, pdfHeight);
+          doc.save("lista-de-chamada.pdf");
+        });
+      }
+      <button onclick="exportarPDF()">📤 Exportar como PDF</button>
     }
   </script>
 </body>
