@@ -31,7 +31,8 @@
       <button type="submit" class="btn btn-primary">➕ Adicionar à Lista</button>
     </form>
 
-    <div class="d-flex gap-2 mb-3">
+    <div class="d-flex gap-2 flex-wrap mb-3">
+      <button onclick="verLista()" class="btn btn-info">📄 Ver Lista de Chamada</button>
       <button onclick="limparLista()" class="btn btn-danger">🗑️ Limpar Lista</button>
       <button onclick="exportarPDF()" class="btn btn-success">📤 Exportar como PDF</button>
       <button onclick="exportarCSV()" class="btn btn-warning">📁 Exportar como Excel (CSV)</button>
@@ -50,7 +51,6 @@
             <th>Data da Aula</th>
             <th>Nome do Aluno</th>
             <th>Conteúdo Aplicado</th>
-            <th>Ações</th>
           </tr>
         </thead>
         <tbody></tbody>
@@ -79,13 +79,13 @@
 
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
-    const auth = firebase.auth();
 
     const form = document.getElementById("formChamada");
     const tabela = document.querySelector("#tabelaChamada tbody");
 
-    // Carregar dados do Firebase
-    window.addEventListener("load", () => {
+    // Ver Lista de Chamada
+    function verLista() {
+      tabela.innerHTML = "";
       db.collection("chamadas").orderBy("timestamp").get().then(snapshot => {
         snapshot.forEach(doc => {
           const chamada = doc.data();
@@ -94,12 +94,11 @@
             <td>${chamada.data}</td>
             <td>${chamada.nome}</td>
             <td>${chamada.conteudo}</td>
-            <td><button class="btn btn-sm btn-danger" onclick="deletarChamada('${doc.id}', this)">🗑️</button></td>
           `;
           tabela.appendChild(linha);
         });
       });
-    });
+    }
 
     // Adicionar nova chamada
     form.addEventListener("submit", function(event) {
@@ -109,28 +108,23 @@
       const nome = document.getElementById("nomeAluno").value;
       const conteudo = document.getElementById("conteudoAula").value;
 
+      const novaLinha = document.createElement("tr");
+      novaLinha.innerHTML = `
+        <td>${data}</td>
+        <td>${nome}</td>
+        <td>${conteudo}</td>
+      `;
+      tabela.appendChild(novaLinha);
+
       db.collection("chamadas").add({
-        data,
-        nome,
-        conteudo,
+        data: data,
+        nome: nome,
+        conteudo: conteudo,
         timestamp: firebase.firestore.FieldValue.serverTimestamp()
-      }).then(() => {
-        alert("✅ Chamada adicionada com sucesso!");
-        location.reload(); // Atualiza para recarregar a lista
       });
 
       form.reset();
     });
-
-    // Deletar chamada
-    function deletarChamada(id, btn) {
-      if (confirm("Deseja excluir esta chamada?")) {
-        db.collection("chamadas").doc(id).delete().then(() => {
-          const linha = btn.closest("tr");
-          linha.remove();
-        });
-      }
-    }
 
     // Limpar lista (somente visual)
     function limparLista() {
@@ -161,7 +155,7 @@
 
       linhas.forEach(linha => {
         const colunas = linha.querySelectorAll("td");
-        const dados = Array.from(colunas).slice(0, 3).map(td => `"${td.textContent}"`).join(",");
+        const dados = Array.from(colunas).map(td => `"${td.textContent}"`).join(",");
         if (dados) csv += dados + "\n";
       });
 
