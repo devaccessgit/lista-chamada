@@ -44,14 +44,19 @@
       <button type="submit" class="btn btn-primary">➕ Adicionar à Lista</button>
     </form>
 
-    <div class="d-flex gap-2 mb-3">
+    <div class="d-flex gap-2 mb-3 flex-wrap">
       <button onclick="limparLista()" class="btn btn-danger">🗑️ Limpar Lista</button>
       <button onclick="exportarPDF()" class="btn btn-success">📤 Exportar como PDF</button>
+      <button onclick="exportarCSV()" class="btn btn-warning">📁 Exportar como Excel (CSV)</button>
+      <button onclick="enviarWhatsapp()" class="btn btn-success">💬 Enviar via WhatsApp</button>
+      <button onclick="enviarEmail()" class="btn btn-secondary">✉️ Enviar por E-mail</button>
     </div>
+
     <div class="mb-3">
       <label for="filtroAluno" class="form-label">🔎 Buscar por Nome do Aluno:</label>
       <input type="text" id="filtroAluno" class="form-control" placeholder="Digite o nome do aluno">
     </div>
+
     <h2>📄 Chamada</h2>
     <div class="table-responsive">
       <table id="tabelaChamada" class="table table-bordered table-striped table-hover bg-white shadow-sm">
@@ -75,7 +80,6 @@
     const form = document.getElementById("formChamada");
     const tabela = document.querySelector("#tabelaChamada tbody");
 
-    // Carregar dados salvos ao iniciar
     window.addEventListener("load", () => {
       const dadosSalvos = localStorage.getItem("chamada");
       if (dadosSalvos) {
@@ -83,7 +87,6 @@
       }
     });
 
-    // Evento de envio do formulário
     form.addEventListener("submit", function(event) {
       event.preventDefault();
 
@@ -99,13 +102,10 @@
       `;
       tabela.appendChild(novaLinha);
 
-      // Salvar no localStorage
       localStorage.setItem('chamada', tabela.innerHTML);
-
       form.reset();
     });
 
-    // Função para limpar a lista
     function limparLista() {
       if (confirm("Tem certeza que deseja limpar a lista?")) {
         tabela.innerHTML = "";
@@ -113,7 +113,6 @@
       }
     }
 
-    // Função para exportar PDF
     function exportarPDF() {
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF();
@@ -128,20 +127,72 @@
         doc.save("lista-de-chamada.pdf");
       });
     }
-    // Filtro de busca
-       document.getElementById("filtroAluno").addEventListener("input", function () {
-       const filtro = this.value.toLowerCase();
-       const linhas = tabela.getElementsByTagName("tr");
 
-    for (let i = 0; i < linhas.length; i++) {
-       const nomeAluno = linhas[i].cells[1]?.textContent.toLowerCase();
-    if (nomeAluno && nomeAluno.includes(filtro)) {
-      linhas[i].style.display = "";
-    } else {
-      linhas[i].style.display = "none";
+    function exportarCSV() {
+      let csv = "Data da Aula,Nome do Aluno,Conteúdo Aplicado\n";
+      const linhas = tabela.querySelectorAll("tr");
+
+      linhas.forEach(linha => {
+        const colunas = linha.querySelectorAll("td");
+        const dados = Array.from(colunas).map(td => `"${td.textContent}"`).join(",");
+        csv += dados + "\n";
+      });
+
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "lista-de-chamada.csv";
+      a.click();
+      URL.revokeObjectURL(url);
     }
-  }
-});
+
+    // Buscar aluno
+    document.getElementById("filtroAluno").addEventListener("input", function () {
+      const filtro = this.value.toLowerCase();
+      const linhas = tabela.getElementsByTagName("tr");
+
+      for (let i = 0; i < linhas.length; i++) {
+        const nomeAluno = linhas[i].cells[1]?.textContent.toLowerCase();
+        if (nomeAluno && nomeAluno.includes(filtro)) {
+          linhas[i].style.display = "";
+        } else {
+          linhas[i].style.display = "none";
+        }
+      }
+    });
+
+    // Gerar texto da chamada
+    function gerarTextoChamada() {
+      let texto = "📋 Lista de Chamada - Aulas de Inglês\n\n";
+      const linhas = tabela.querySelectorAll("tr");
+
+      linhas.forEach(linha => {
+        const colunas = linha.querySelectorAll("td");
+        if (colunas.length > 0) {
+          const data = colunas[0].textContent;
+          const nome = colunas[1].textContent;
+          const conteudo = colunas[2].textContent;
+
+          texto += `📅 ${data} | 👤 ${nome} | 📚 ${conteudo}\n`;
+        }
+      });
+
+      return texto;
+    }
+
+    function enviarWhatsapp() {
+      const texto = encodeURIComponent(gerarTextoChamada());
+      const link = `https://wa.me/?text=${texto}`;
+      window.open(link, '_blank');
+    }
+
+    function enviarEmail() {
+      const assunto = encodeURIComponent("📋 Lista de Chamada - Aulas de Inglês");
+      const corpo = encodeURIComponent(gerarTextoChamada());
+      const link = `mailto:?subject=${assunto}&body=${corpo}`;
+      window.open(link, '_blank');
+    }
   </script>
 </body>
 </html>
