@@ -2,208 +2,162 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Sistema de Chamada - Inglês</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>📋 Lista de Chamada - Inglês</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    body { padding: 20px; }
+    .table td, .table th { vertical-align: middle; }
+  </style>
 </head>
-<body class="bg-light">
+<body>
+  <div class="container">
+    <h1 class="text-center mb-4">📚 Lista de Chamada - Aula de Inglês</h1>
 
-<div class="container my-4" id="loginContainer">
-  <h2>Login</h2>
-  <input type="text" id="loginUsuario" class="form-control mb-2" placeholder="Usuário" />
-  <input type="password" id="loginSenha" class="form-control mb-2" placeholder="Senha" />
-  <button class="btn btn-primary" onclick="fazerLogin()">Entrar</button>
-</div>
+    <div class="row mb-3">
+      <div class="col-md-4">
+        <input type="text" id="aluno" class="form-control" placeholder="👤 Nome do aluno" />
+      </div>
+      <div class="col-md-3">
+        <input type="date" id="data" class="form-control" />
+      </div>
+      <div class="col-md-3">
+        <select id="status" class="form-control">
+          <option value="Presente">✅ Presente</option>
+          <option value="Faltou">❌ Faltou</option>
+        </select>
+      </div>
+      <div class="col-md-2 d-grid">
+        <button onclick="adicionarAluno()" class="btn btn-success">Adicionar</button>
+      </div>
+    </div>
 
-<div class="container my-4 d-none" id="mainContainer">
-  <h2>Sistema de Chamada</h2>
-  <p>Usuário logado: <span id="usuarioAtual"></span> (<span id="tipoUsuarioAtual"></span>)</p>
-  <button class="btn btn-secondary btn-sm mb-3" onclick="logout()">Sair</button>
+    <div class="row mb-3">
+      <div class="col-md-6">
+        <input type="text" id="busca" class="form-control" placeholder="🔍 Buscar aluno..." onkeyup="buscarAluno()" />
+      </div>
+      <div class="col-md-6 text-end">
+        <button onclick="exportarPDF()" class="btn btn-outline-danger">📄 Exportar PDF</button>
+        <button onclick="exportarCSV()" class="btn btn-outline-secondary">📁 Exportar CSV</button>
+      </div>
+    </div>
 
-  <div id="adminPanel" class="mb-4 d-none">
-    <h4>Cadastro de Usuário</h4>
-    <input type="text" id="novoUsuario" class="form-control mb-2" placeholder="Nome de usuário" />
-    <input type="password" id="novaSenha" class="form-control mb-2" placeholder="Senha" />
-    <select id="tipoUsuario" class="form-select mb-2">
-      <option value="professor">Professor</option>
-      <option value="admin">Admin</option>
-    </select>
-    <button class="btn btn-success mb-2" onclick="cadastrarUsuario()">Cadastrar Usuário</button>
+    <table class="table table-bordered table-hover" id="tabelaChamada">
+      <thead class="table-light">
+        <tr>
+          <th>👤 Aluno</th>
+          <th>📅 Data</th>
+          <th>✅ Status</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
 
-    <h4>Lista de Usuários</h4>
-    <ul id="listaUsuarios" class="list-group mb-3"></ul>
+    <div class="mt-3 text-end">
+      <button class="btn btn-outline-success" id="botaoWhatsapp" onclick="enviarWhatsApp()">📱 WhatsApp</button>
+      <button class="btn btn-outline-primary" id="botaoEmail" onclick="enviarEmail()">📧 E-mail</button>
+    </div>
   </div>
 
-  <div id="professorPanel">
-    <h4>Cadastro de Aluno</h4>
-    <input type="text" id="nomeAluno" class="form-control mb-2" placeholder="Nome do Aluno" />
-    <button class="btn btn-primary mb-2" onclick="adicionarAluno()">Adicionar Aluno</button>
+  <script>
+    function adicionarAluno() {
+      const aluno = document.getElementById("aluno").value.trim();
+      const data = document.getElementById("data").value;
+      const status = document.getElementById("status").value;
 
-    <h4>Chamada</h4>
-    <textarea id="conteudoAula" class="form-control mb-2" placeholder="Conteúdo da aula de hoje"></textarea>
-    <ul id="listaAlunos" class="list-group mb-2"></ul>
-    <button class="btn btn-success" onclick="registrarChamada()">Registrar Chamada</button>
-  </div>
+      if (!aluno || !data || !status) {
+        alert("Por favor, preencha todos os campos.");
+        return;
+      }
 
-  <h4 class="mt-4">Histórico de Chamadas</h4>
-  <ul id="historicoChamadas" class="list-group"></ul>
-</div>
+      const tabela = document.querySelector("#tabelaChamada tbody");
+      const novaLinha = tabela.insertRow();
+      novaLinha.innerHTML = `
+        <td>${aluno}</td>
+        <td>${new Date(data).toLocaleDateString()}</td>
+        <td>${status}</td>
+      `;
 
-<script>
-  let usuarios = JSON.parse(localStorage.getItem("usuarios"));
-  if (!Array.isArray(usuarios)) {
-      usuarios = [{
-          nome: "Administrador",
-          usuario: "admin",
-          senha: "admin",
-          tipo: "admin"
-      }];
-      localStorage.setItem("usuarios", JSON.stringify(usuarios));
-  }
-let chamadas = JSON.parse(localStorage.getItem('chamadas')) || [];
-let usuarioLogado = JSON.parse(localStorage.getItem('usuarioLogado'));
+      document.getElementById("aluno").value = "";
+      document.getElementById("data").value = "";
+      document.getElementById("status").value = "Presente";
+    }
 
-function salvarUsuarios() {
-  localStorage.setItem('usuarios', JSON.stringify(usuarios));
-}
+    function buscarAluno() {
+      const termo = document.getElementById("busca").value.toLowerCase();
+      const linhas = document.querySelectorAll("#tabelaChamada tbody tr");
 
-function salvarChamadas() {
-  localStorage.setItem('chamadas', JSON.stringify(chamadas));
-}
+      linhas.forEach(linha => {
+        const nome = linha.cells[0].textContent.toLowerCase();
+        linha.style.display = nome.includes(termo) ? "" : "none";
+      });
+    }
 
-function fazerLogin() {
-  const usuario = document.getElementById('loginUsuario').value;
-  const senha = document.getElementById('loginSenha').value;
-  const encontrado = usuarios.find(u => u.usuario === usuario && u.senha === senha);
-  if (encontrado) {
-    usuarioLogado = encontrado;
-    localStorage.setItem('usuarioLogado', JSON.stringify(encontrado));
-    carregarTela();
-  } else {
-    alert('Usuário ou senha incorretos.');
-  }
-}
+    function exportarPDF() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      const linhas = document.querySelectorAll("#tabelaChamada tbody tr");
 
-function logout() {
-  usuarioLogado = null;
-  localStorage.removeItem('usuarioLogado');
-  location.reload();
-}
+      doc.setFontSize(14);
+      doc.text("📋 Lista de Chamada", 10, 10);
 
-function carregarTela() {
-  document.getElementById('loginContainer').classList.add('d-none');
-  document.getElementById('mainContainer').classList.remove('d-none');
-  document.getElementById('usuarioAtual').textContent = usuarioLogado.usuario;
-  document.getElementById('tipoUsuarioAtual').textContent = usuarioLogado.tipo;
+      let y = 20;
+      linhas.forEach(linha => {
+        const nome = linha.cells[0].innerText;
+        const data = linha.cells[1].innerText;
+        const status = linha.cells[2].innerText;
+        doc.text(`👤 ${nome} | 📅 ${data} | ✅ ${status}`, 10, y);
+        y += 10;
+      });
 
-  if (usuarioLogado.tipo === 'admin') {
-    document.getElementById('adminPanel').classList.remove('d-none');
-    document.getElementById('professorPanel').classList.add('d-none');
-    atualizarListaUsuarios();
-  } else {
-    document.getElementById('adminPanel').classList.add('d-none');
-    document.getElementById('professorPanel').classList.remove('d-none');
-    atualizarListaAlunos();
-  }
+      doc.save("lista_chamada.pdf");
+    }
 
-  atualizarHistoricoChamadas();
-}
+    function exportarCSV() {
+      const linhas = document.querySelectorAll("#tabelaChamada tbody tr");
+      let csv = "Aluno,Data,Status\n";
 
-function cadastrarUsuario() {
-  const usuario = document.getElementById('novoUsuario').value;
-  const senha = document.getElementById('novaSenha').value;
-  const tipo = document.getElementById('tipoUsuario').value;
-  if (usuario && senha) {
-    usuarios.push({ usuario, senha, tipo });
-    salvarUsuarios();
-    atualizarListaUsuarios();
-  }
-}
+      linhas.forEach(linha => {
+        const nome = linha.cells[0].innerText;
+        const data = linha.cells[1].innerText;
+        const status = linha.cells[2].innerText;
+        csv += `"${nome}","${data}","${status}"\n`;
+      });
 
-function atualizarListaUsuarios() {
-  const lista = document.getElementById('listaUsuarios');
-  lista.innerHTML = '';
-  usuarios.forEach((u, index) => {
-    const item = document.createElement('li');
-    item.className = 'list-group-item d-flex justify-content-between align-items-center';
-    item.innerHTML = `
-      ${u.usuario} (${u.tipo})
-      <button class="btn btn-danger btn-sm" onclick="removerUsuario(${index})">Excluir</button>
-    `;
-    lista.appendChild(item);
-  });
-}
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = "lista_chamada.csv";
+      link.click();
+    }
 
-function removerUsuario(index) {
-  usuarios.splice(index, 1);
-  salvarUsuarios();
-  atualizarListaUsuarios();
-}
+    function gerarMensagemChamada() {
+      const linhas = document.querySelectorAll('#tabelaChamada tbody tr');
+      if (linhas.length === 0) return 'Nenhum aluno foi registrado ainda.';
 
-function adicionarAluno() {
-  const nome = document.getElementById('nomeAluno').value;
-  if (!nome) return;
-  let alunos = JSON.parse(localStorage.getItem('alunos_' + usuarioLogado.usuario)) || [];
-  alunos.push({ nome });
-  localStorage.setItem('alunos_' + usuarioLogado.usuario, JSON.stringify(alunos));
-  atualizarListaAlunos();
-  document.getElementById('nomeAluno').value = '';
-}
+      let mensagem = '📋 Lista de Chamada:\n\n';
+      linhas.forEach(linha => {
+        const cols = linha.querySelectorAll('td');
+        mensagem += `👤 ${cols[0].innerText} | 📅 ${cols[1].innerText} | ✅ ${cols[2].innerText}\n`;
+      });
+      return mensagem;
+    }
 
-function atualizarListaAlunos() {
-  const lista = document.getElementById('listaAlunos');
-  lista.innerHTML = '';
-  const alunos = JSON.parse(localStorage.getItem('alunos_' + usuarioLogado.usuario)) || [];
-  alunos.forEach((aluno, i) => {
-    const item = document.createElement('li');
-    item.className = 'list-group-item';
-    item.innerHTML = `
-      <input type="checkbox" id="aluno_${i}" class="form-check-input me-2">
-      ${aluno.nome}
-    `;
-    lista.appendChild(item);
-  });
-}
+    function enviarWhatsApp() {
+      const mensagem = encodeURIComponent(gerarMensagemChamada());
+      const numero = ''; // Ex: 5599999999999
+      const url = `https://wa.me/${numero}?text=${mensagem}`;
+      window.open(url, '_blank');
+    }
 
-function registrarChamada() {
-  const alunos = JSON.parse(localStorage.getItem('alunos_' + usuarioLogado.usuario)) || [];
-  const presentes = [];
-  alunos.forEach((aluno, i) => {
-    const presente = document.getElementById(`aluno_${i}`).checked;
-    presentes.push({ nome: aluno.nome, presente });
-  });
-  const conteudo = document.getElementById('conteudoAula').value;
-  const chamada = {
-    professor: usuarioLogado.usuario,
-    data: new Date().toLocaleString(),
-    conteudo,
-    presencas: presentes
-  };
-  chamadas.push(chamada);
-  salvarChamadas();
-  atualizarHistoricoChamadas();
-  document.getElementById('conteudoAula').value = '';
-}
-
-function atualizarHistoricoChamadas() {
-  const lista = document.getElementById('historicoChamadas');
-  lista.innerHTML = '';
-  const minhasChamadas = chamadas.filter(c => c.professor === usuarioLogado?.usuario || usuarioLogado?.tipo === 'admin');
-  minhasChamadas.reverse().forEach(c => {
-    const item = document.createElement('li');
-    item.className = 'list-group-item';
-    item.innerHTML = `
-      <strong>${c.data}</strong> - Prof: ${c.professor}<br/>
-      <em>${c.conteudo}</em><br/>
-      ${c.presencas.map(p => `${p.nome}: ${p.presente ? 'Presente' : 'Faltou'}`).join('<br/>')}
-    `;
-    lista.appendChild(item);
-  });
-}
-
-if (usuarioLogado) {
-  carregarTela();
-}
-</script>
+    function enviarEmail() {
+      const assunto = encodeURIComponent('📋 Lista de Chamada - Aula de Inglês');
+      const corpo = encodeURIComponent(gerarMensagemChamada());
+      const emailDestino = ''; // Ex: professor@exemplo.com
+      const mailto = `mailto:${emailDestino}?subject=${assunto}&body=${corpo}`;
+      window.open(mailto, '_blank');
+    }
+  </script>
 </body>
 </html>
