@@ -1,296 +1,237 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Lista de Chamada - Aulas de Inglês</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
     body {
-      padding: 30px;
-      background-color: #f8f9fa;
+      padding: 20px;
     }
-    h1, h2 {
-      margin-bottom: 20px;
-    }
-    table th, table td {
-      vertical-align: middle;
-      text-align: center;
+    .table-responsive {
+      overflow-x: auto;
     }
   </style>
 </head>
 <body>
-  <div id="telaLogin" class="container d-flex flex-column align-items-center justify-content-center vh-100">
-    <div class="card p-4 shadow" style="max-width: 400px; width: 100%;">
-      <h2 class="text-center mb-3">🔐 Login</h2>
-      <div class="mb-3">
-        <label for="usuario" class="form-label">👤 Usuário</label>
-        <input type="text" id="usuario" class="form-control" required>
-      </div>
-      <div class="mb-3">
-        <label for="senha" class="form-label">🔑 Senha</label>
-        <input type="password" id="senha" class="form-control" required>
-      </div>
-      <button onclick="fazerLogin()" class="btn btn-primary w-100">Entrar</button>
-      <div id="erroLogin" class="text-danger text-center mt-2" style="display: none;">Usuário ou senha inválidos!</div>
-    </div>
-  </div>
-  
-  <!-- AQUI COMEÇA SUA <div class="container"> da lista de chamada -->
-  <div class="container" id="conteudoPrincipal" style="display: none;">
-    <!-- ... todo o seu código da lista de chamada vem aqui ... -->
-  </div>
-  
-  <div class="text-end mb-3">
-    <button onclick="sair()" class="btn btn-outline-secondary">🚪 Sair</button>
-  </div>
-
-  <div class="container">
-
-    <!-- Seletor de idioma -->
-    <div class="text-end mb-3">
-      <select id="seletorIdioma" class="form-select w-auto d-inline">
-        <option value="pt-BR">🇧🇷 Português</option>
-        <option value="en-US">🇺🇸 English</option>
-      </select>
-    </div>
-
-    <h1 class="text-center">📋 Lista de Chamada - Aulas de Inglês</h1>
-
-    <form id="formChamada" class="border p-4 bg-white rounded shadow-sm mb-4">
-      <div class="mb-3">
-        <label for="dataAula" class="form-label">📅 Data da Aula:</label>
-        <input type="date" id="dataAula" class="form-control" required>
-      </div>
-
-      <div class="mb-3">
-        <label for="nomeAluno" class="form-label">👤 Nome do Aluno:</label>
-        <input type="text" id="nomeAluno" class="form-control" required>
-      </div>
-
-      <div class="mb-3">
-        <label for="conteudoAula" class="form-label">📚 Conteúdo Aplicado:</label>
-        <input type="text" id="conteudoAula" class="form-control" required>
-      </div>
-
-      <button type="submit" class="btn btn-primary">➕ Adicionar à Lista</button>
-    </form>
-
-    <div class="d-flex gap-2 mb-3">
-      <button onclick="limparLista()" class="btn btn-danger">🗑️ Limpar Lista</button>
-      <button onclick="exportarPDF()" class="btn btn-success">📤 Exportar como PDF</button>
-      <button onclick="exportarCSV()" class="btn btn-warning">📁 Exportar como Excel (CSV)</button>
-      <button onclick="enviarWhatsapp()" class="btn btn-success">💬 Enviar via WhatsApp</button>
-      <button onclick="enviarEmail()" class="btn btn-secondary">✉️ Enviar por E-mail</button>
-    </div>
-
+  <!-- Tela de Login -->
+  <div id="telaLogin" class="container">
+    <h2 class="text-center mb-4">🔐 Login</h2>
     <div class="mb-3">
-      <label for="filtroAluno" class="form-label">🔎 Buscar por Nome do Aluno:</label>
-      <input type="text" id="filtroAluno" class="form-control" placeholder="Digite o nome do aluno">
+      <label for="loginUsuario" class="form-label">Usuário:</label>
+      <input type="text" class="form-control" id="loginUsuario">
     </div>
+    <div class="mb-3">
+      <label for="loginSenha" class="form-label">Senha:</label>
+      <input type="password" class="form-control" id="loginSenha">
+    </div>
+    <button class="btn btn-primary" onclick="fazerLogin()">Entrar</button>
+  </div>
 
-    <h2>📄 Chamada</h2>
+  <!-- Conteúdo Principal -->
+  <div id="conteudoPrincipal" style="display: none;">
+    <div class="container">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <button onclick="sair()" class="btn btn-outline-secondary">🚪 Sair</button>
+        <select id="seletorIdioma" class="form-select w-auto" onchange="trocarIdioma()">
+          <option value="pt-BR">🇧🇷 Português</option>
+          <option value="en-US">🇺🇸 English</option>
+        </select>
+      </div>
 
-    <div class="table-responsive">
-      <table id="tabelaChamada" class="table table-bordered table-striped table-hover bg-white shadow-sm">
-        <thead class="table-light">
-          <tr>
-            <th>Data da Aula</th>
-            <th>Nome do Aluno</th>
-            <th>Conteúdo Aplicado</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
+      <h1 class="text-center mb-4">📋 Lista de Chamada - Aulas de Inglês</h1>
+
+      <!-- Formulário -->
+      <div class="row g-3 mb-4">
+        <div class="col-md-4">
+          <input type="text" id="aluno" class="form-control" placeholder="Nome do Aluno">
+        </div>
+        <div class="col-md-2">
+          <input type="date" id="data" class="form-control">
+        </div>
+        <div class="col-md-2">
+          <select id="presenca" class="form-select">
+            <option value="Presente">Presente</option>
+            <option value="Faltou">Faltou</option>
+          </select>
+        </div>
+        <div class="col-md-4 d-grid gap-2 d-md-block">
+          <button class="btn btn-success" onclick="adicionarChamada()">Adicionar</button>
+          <button class="btn btn-outline-info" onclick="exportarPDF()">📄 PDF</button>
+          <button class="btn btn-outline-warning" onclick="exportarCSV()">📊 CSV</button>
+        </div>
+      </div>
+
+      <!-- Busca -->
+      <input type="text" id="busca" class="form-control mb-3" placeholder="🔍 Buscar aluno..." oninput="filtrarAlunos()">
+
+      <!-- Tabela -->
+      <div class="table-responsive">
+        <table class="table table-bordered table-striped" id="tabelaChamada">
+          <thead class="table-light">
+            <tr>
+              <th>Aluno</th>
+              <th>Data</th>
+              <th>Presença</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <!-- Controles -->
+      <div class="mt-3 text-end">
+        <button class="btn btn-outline-success">📱 WhatsApp</button>
+        <button class="btn btn-outline-primary">📧 E-mail</button>
+      </div>
     </div>
   </div>
 
-  <!-- jsPDF e html2canvas -->
+  <!-- Scripts -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-
   <script>
-    const form = document.getElementById("formChamada");
-    const tabela = document.querySelector("#tabelaChamada tbody");
+    // Autenticação simples
+    const usuarios = {
+      admin: '1234',
+      professor: 'abcd'
+    };
 
-    window.addEventListener("load", () => {
-      const dadosSalvos = localStorage.getItem("chamada");
-      if (dadosSalvos) {
-        tabela.innerHTML = dadosSalvos;
-      }
-      aplicarIdioma("pt-BR");
-    });
+    function fazerLogin() {
+      const usuario = document.getElementById('loginUsuario').value;
+      const senha = document.getElementById('loginSenha').value;
 
-    form.addEventListener("submit", function(event) {
-      event.preventDefault();
-      const data = document.getElementById("dataAula").value;
-      const nome = document.getElementById("nomeAluno").value;
-      const conteudo = document.getElementById("conteudoAula").value;
-
-      const novaLinha = document.createElement("tr");
-      novaLinha.innerHTML = `
-        <td>${data}</td>
-        <td>${nome}</td>
-        <td>${conteudo}</td>
-      `;
-      tabela.appendChild(novaLinha);
-      localStorage.setItem('chamada', tabela.innerHTML);
-      form.reset();
-    });
-
-    function limparLista() {
-      if (confirm("Tem certeza que deseja limpar a lista?")) {
-        tabela.innerHTML = "";
-        localStorage.removeItem("chamada");
+      if (usuarios[usuario] === senha) {
+        localStorage.setItem('usuarioLogado', usuario);
+        document.getElementById('telaLogin').style.display = 'none';
+        document.getElementById('conteudoPrincipal').style.display = 'block';
+        carregarChamada();
+      } else {
+        alert('Usuário ou senha inválidos!');
       }
     }
 
+    function sair() {
+      localStorage.removeItem('usuarioLogado');
+      location.reload();
+    }
+
+    // Adiciona chamada
+    function adicionarChamada() {
+      const aluno = document.getElementById('aluno').value.trim();
+      const data = document.getElementById('data').value;
+      const presenca = document.getElementById('presenca').value;
+
+      if (!aluno || !data) {
+        alert('Preencha todos os campos.');
+        return;
+      }
+
+      const novaLinha = `<tr><td>${aluno}</td><td>${data}</td><td>${presenca}</td></tr>`;
+      document.querySelector('#tabelaChamada tbody').innerHTML += novaLinha;
+
+      salvarChamada();
+      document.getElementById('aluno').value = '';
+      document.getElementById('data').value = '';
+      document.getElementById('presenca').value = 'Presente';
+    }
+
+    // Armazenamento local
+    function salvarChamada() {
+      const linhas = Array.from(document.querySelectorAll('#tabelaChamada tbody tr'));
+      const dados = linhas.map(linha => {
+        const colunas = linha.querySelectorAll('td');
+        return {
+          aluno: colunas[0].innerText,
+          data: colunas[1].innerText,
+          presenca: colunas[2].innerText
+        };
+      });
+      localStorage.setItem('listaChamada', JSON.stringify(dados));
+    }
+
+    function carregarChamada() {
+      const dados = JSON.parse(localStorage.getItem('listaChamada')) || [];
+      const tbody = document.querySelector('#tabelaChamada tbody');
+      tbody.innerHTML = '';
+      dados.forEach(item => {
+        const linha = `<tr><td>${item.aluno}</td><td>${item.data}</td><td>${item.presenca}</td></tr>`;
+        tbody.innerHTML += linha;
+      });
+    }
+
+    // Exportação
     function exportarPDF() {
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF();
-
-      html2canvas(document.querySelector("#tabelaChamada")).then(canvas => {
-        const imgData = canvas.toDataURL("image/png");
+      html2canvas(document.querySelector('#tabelaChamada')).then(canvas => {
+        const imgData = canvas.toDataURL('image/png');
         const imgProps = doc.getImageProperties(imgData);
         const pdfWidth = doc.internal.pageSize.getWidth();
         const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
         doc.addImage(imgData, 'PNG', 0, 10, pdfWidth, pdfHeight);
-        doc.save("lista-de-chamada.pdf");
+        doc.save('lista_chamada.pdf');
       });
     }
-
-    document.getElementById("filtroAluno").addEventListener("input", function () {
-      const filtro = this.value.toLowerCase();
-      const linhas = tabela.getElementsByTagName("tr");
-      for (let i = 0; i < linhas.length; i++) {
-        const nomeAluno = linhas[i].cells[1]?.textContent.toLowerCase();
-        linhas[i].style.display = nomeAluno && nomeAluno.includes(filtro) ? "" : "none";
-      }
-    });
 
     function exportarCSV() {
-      let csv = "Data da Aula,Nome do Aluno,Conteúdo Aplicado\n";
-      const linhas = tabela.querySelectorAll("tr");
+      const linhas = document.querySelectorAll('#tabelaChamada tbody tr');
+      let csv = 'Aluno,Data,Presença\n';
       linhas.forEach(linha => {
-        const colunas = linha.querySelectorAll("td");
-        const dados = Array.from(colunas).map(td => `"${td.textContent}"`).join(",");
-        csv += dados + "\n";
+        const cols = linha.querySelectorAll('td');
+        const linhaCSV = Array.from(cols).map(col => col.innerText).join(',');
+        csv += linhaCSV + '\n';
       });
-      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "lista-de-chamada.csv";
-      a.click();
-      URL.revokeObjectURL(url);
+
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = 'lista_chamada.csv';
+      link.click();
     }
 
-    function enviarWhatsapp() {
-      alert("📤 Simulação: Os dados foram preparados para envio via WhatsApp.");
+    // Filtro
+    function filtrarAlunos() {
+      const filtro = document.getElementById('busca').value.toLowerCase();
+      const linhas = document.querySelectorAll('#tabelaChamada tbody tr');
+      linhas.forEach(linha => {
+        const nome = linha.querySelector('td').innerText.toLowerCase();
+        linha.style.display = nome.includes(filtro) ? '' : 'none';
+      });
     }
 
-    function enviarEmail() {
-      alert("📧 Simulação: Os dados foram preparados para envio por e-mail.");
+    // Troca de idioma
+    function trocarIdioma() {
+      const idioma = document.getElementById('seletorIdioma').value;
+      if (idioma === 'en-US') {
+        document.querySelector('h1').innerText = '📋 Attendance List - English Classes';
+        document.getElementById('aluno').placeholder = 'Student Name';
+        document.getElementById('busca').placeholder = '🔍 Search student...';
+        document.getElementById('presenca').innerHTML = `
+          <option value="Presente">Present</option>
+          <option value="Faltou">Absent</option>
+        `;
+      } else {
+        document.querySelector('h1').innerText = '📋 Lista de Chamada - Aulas de Inglês';
+        document.getElementById('aluno').placeholder = 'Nome do Aluno';
+        document.getElementById('busca').placeholder = '🔍 Buscar aluno...';
+        document.getElementById('presenca').innerHTML = `
+          <option value="Presente">Presente</option>
+          <option value="Faltou">Faltou</option>
+        `;
+      }
     }
 
-    // Internacionalização
-    const traducoes = {
-      "pt-BR": {
-        titulo: "📋 Lista de Chamada - Aulas de Inglês",
-        data: "📅 Data da Aula:",
-        nome: "👤 Nome do Aluno:",
-        conteudo: "📚 Conteúdo Aplicado:",
-        adicionar: "➕ Adicionar à Lista",
-        limpar: "🗑️ Limpar Lista",
-        exportarPdf: "📤 Exportar como PDF",
-        exportarCsv: "📁 Exportar como Excel (CSV)",
-        enviarWhatsapp: "💬 Enviar via WhatsApp",
-        enviarEmail: "✉️ Enviar por E-mail",
-        buscar: "🔎 Buscar por Nome do Aluno:",
-        chamada: "📄 Chamada"
-      },
-      "en-US": {
-        titulo: "📋 Attendance List - English Classes",
-        data: "📅 Class Date:",
-        nome: "👤 Student Name:",
-        conteudo: "📚 Topic Covered:",
-        adicionar: "➕ Add to List",
-        limpar: "🗑️ Clear List",
-        exportarPdf: "📤 Export as PDF",
-        exportarCsv: "📁 Export as Excel (CSV)",
-        enviarWhatsapp: "💬 Send via WhatsApp",
-        enviarEmail: "✉️ Send by Email",
-        buscar: "🔎 Search Student Name:",
-        chamada: "📄 Attendance"
+    // Verifica se está logado ao carregar
+    window.onload = () => {
+      const logado = localStorage.getItem('usuarioLogado');
+      if (logado) {
+        document.getElementById('telaLogin').style.display = 'none';
+        document.getElementById('conteudoPrincipal').style.display = 'block';
+        carregarChamada();
       }
     };
-
-    function aplicarIdioma(idioma) {
-      const t = traducoes[idioma];
-      document.querySelector("h1").textContent = t.titulo;
-      document.querySelector("label[for='dataAula']").textContent = t.data;
-      document.querySelector("label[for='nomeAluno']").textContent = t.nome;
-      document.querySelector("label[for='conteudoAula']").textContent = t.conteudo;
-      document.querySelector("#formChamada button").textContent = t.adicionar;
-
-      const botoes = document.querySelectorAll(".d-flex button");
-      botoes[0].textContent = t.limpar;
-      botoes[1].textContent = t.exportarPdf;
-      botoes[2].textContent = t.exportarCsv;
-      botoes[3].textContent = t.enviarWhatsapp;
-      botoes[4].textContent = t.enviarEmail;
-
-      document.querySelector("label[for='filtroAluno']").textContent = t.buscar;
-      document.querySelector("h2").textContent = t.chamada;
-    }
-
-    document.getElementById("seletorIdioma").addEventListener("change", function () {
-      aplicarIdioma(this.value);
-    });
-    // Usuário e senha fixos (pode ser ajustado conforme necessário)
-const usuarioValido = "admin";
-const senhaValida = "1234";
-
-// Verifica se o usuário já está autenticado
-window.addEventListener("load", () => {
-  if (localStorage.getItem("autenticado") === "true") {
-    mostrarTelaPrincipal();
-  } else {
-    document.getElementById("telaLogin").style.display = "flex";
-  }
-
-  const dadosSalvos = localStorage.getItem("chamada");
-  if (dadosSalvos) {
-    tabela.innerHTML = dadosSalvos;
-  }
-  aplicarIdioma("pt-BR");
-});
-
-// Função de login
-function fazerLogin() {
-  const usuario = document.getElementById("usuario").value;
-  const senha = document.getElementById("senha").value;
-
-  if (usuario === usuarioValido && senha === senhaValida) {
-    localStorage.setItem("autenticado", "true");
-    mostrarTelaPrincipal();
-  } else {
-    document.getElementById("erroLogin").style.display = "block";
-  }
-}
-
-// Mostrar conteúdo principal e esconder tela de login
-function mostrarTelaPrincipal() {
-  document.getElementById("telaLogin").style.display = "none";
-  document.getElementById("conteudoPrincipal").style.display = "block";
-}
-
-// (Opcional) Função para deslogar
-function sair() {
-  localStorage.removeItem("autenticado");
-  location.reload();
-}
-
   </script>
 </body>
 </html>
