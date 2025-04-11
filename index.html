@@ -139,7 +139,7 @@
     function verificarAdmin() {
       const usuario = localStorage.getItem('usuarioLogado');
       const usuarios = JSON.parse(localStorage.getItem('usuarios')) || {};
-      if (usuarios[usuario] === 'admin') {
+      if (usuarios[usuario]?.tipo === 'admin') {
         document.getElementById('gestaoUsuarios').style.display = 'block';
         listarUsuarios();
       }
@@ -196,39 +196,27 @@
       const usuario = document.getElementById('loginUsuario').value;
       const senha = document.getElementById('loginSenha').value;
       const usuarios = JSON.parse(localStorage.getItem('usuarios')) || {};
-  
+    
       if (usuarios[usuario] && usuarios[usuario].senha === senha) {
-        localStorage.setItem('usuarioLogado', usuario);
-        document.getElementById('telaLogin').style.display = 'none';
-        document.getElementById('conteudoPrincipal').style.display = 'block';
-        carregarChamada();
-        verificarAdmin();
-      } else {
-        alert('Usuário ou senha inválidos!');
-      }
-    }
-    function fazerLogin() {
-      const usuario = loginUsuario.value;
-      const senha = loginSenha.value;
-      const dados = usuarios[usuario];
-      if (dados && dados.senha === senha) {
         localStorage.setItem('usuarioLogado', usuario);
         exibirPainel(usuario);
       } else {
         alert('Usuário ou senha inválidos!');
       }
     }
-
+    
     function exibirPainel(usuario) {
-      telaLogin.style.display = 'none';
-      painelPrincipal.style.display = 'block';
+      const usuarios = JSON.parse(localStorage.getItem('usuarios')) || {};
       const dados = usuarios[usuario];
-
+    
+      document.getElementById('telaLogin').style.display = 'none';
+      document.getElementById('painelPrincipal').style.display = 'block';
+    
       if (dados.tipo === 'admin') {
-        painelAdmin.style.display = 'block';
+        document.getElementById('painelAdmin').style.display = 'block';
         atualizarListaUsuarios();
       }
-
+    
       atualizarSelectAlunos(dados);
       carregarChamada();
     }
@@ -239,16 +227,23 @@
     }
 
     function cadastrarUsuario() {
-      const nome = novoUsuario.value.trim();
-      const tipo = tipoUsuario.value;
-      const senha = senhaUsuario.value;
-      const alunos = alunosUsuario.value.split(',').map(a => a.trim()).filter(a => a);
-
-      if (!nome || !senha) return alert('Preencha usuário e senha.');
-
+      const nome = document.getElementById('novoUsuario').value.trim();
+      const tipo = document.getElementById('tipoUsuario').value;
+      const senha = document.getElementById('novaSenha')?.value || document.getElementById('senhaUsuario')?.value;
+      const alunosInput = document.getElementById('alunosUsuario');
+      const alunos = alunosInput ? alunosInput.value.split(',').map(a => a.trim()).filter(a => a) : [];
+    
+      if (!nome || !senha) {
+        alert('Preencha usuário e senha.');
+        return;
+      }
+    
+      const usuarios = JSON.parse(localStorage.getItem('usuarios')) || {};
       usuarios[nome] = { senha, tipo, alunos };
       localStorage.setItem('usuarios', JSON.stringify(usuarios));
-      atualizarListaUsuarios();
+    
+      atualizarListaUsuarios?.();
+      listarUsuarios?.();
       alert('✅ Usuário cadastrado!');
     }
 
