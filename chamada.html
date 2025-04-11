@@ -17,6 +17,18 @@
   <title>Chamada</title>
   <link rel="stylesheet" href="css/style.css">
 </head>
+<div class="aula-info">
+  <label for="data-aula">📅 Data da Aula:</label>
+  <input type="date" id="data-aula" class="form-control" />
+
+  <label for="nome-aluno">👤 Nome do Aluno:</label>
+  <input type="text" id="nome-aluno" class="form-control" placeholder="Digite o nome completo do aluno" />
+
+  <label for="conteudo-aula">📘 Conteúdo Aplicado:</label>
+  <textarea id="conteudo-aula" class="form-control" rows="3" placeholder="Descreva o conteúdo trabalhado"></textarea>
+</div>
+<button id="registrar-aula" class="btn btn-primary">💾 Registrar Aula</button>
+<button id="exportar-pdf" class="btn btn-secondary">📄 Exportar PDF</button>
 <body>
   <div class="container">
     <h2>Lista de Presença</h2>
@@ -26,6 +38,7 @@
     </table>
     <button onclick="exportarCSV()">Exportar CSV</button>
   </div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="js/chamada.js"></script>
   <script src="js/exportar.js"></script>
 </body>
