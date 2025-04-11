@@ -4,13 +4,11 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Lista de Chamada - Aulas de Inglês</title>
-  <!-- Bootstrap CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-
   <style>
     body {
       padding: 30px;
-      background-color: #f8f9fa;
+      background-color: #f7ab07;
     }
     h1, h2 {
       margin-bottom: 20px;
@@ -23,28 +21,37 @@
 </head>
 <body>
   <div class="container">
+
+    <!-- Seletor de idioma -->
+    <div class="text-end mb-3">
+      <select id="seletorIdioma" class="form-select w-auto d-inline">
+        <option value="pt-BR">🇧🇷 Português</option>
+        <option value="en-US">🇺🇸 English</option>
+      </select>
+    </div>
+
     <h1 class="text-center">📋 Lista de Chamada - Aulas de Inglês</h1>
 
     <form id="formChamada" class="border p-4 bg-white rounded shadow-sm mb-4">
       <div class="mb-3">
-        <label class="form-label">📅 Data da Aula:</label>
+        <label for="dataAula" class="form-label">📅 Data da Aula:</label>
         <input type="date" id="dataAula" class="form-control" required>
       </div>
 
       <div class="mb-3">
-        <label class="form-label">👤 Nome do Aluno:</label>
+        <label for="nomeAluno" class="form-label">👤 Nome do Aluno:</label>
         <input type="text" id="nomeAluno" class="form-control" required>
       </div>
 
       <div class="mb-3">
-        <label class="form-label">📚 Conteúdo Aplicado:</label>
+        <label for="conteudoAula" class="form-label">📚 Conteúdo Aplicado:</label>
         <input type="text" id="conteudoAula" class="form-control" required>
       </div>
 
       <button type="submit" class="btn btn-primary">➕ Adicionar à Lista</button>
     </form>
 
-    <div class="d-flex gap-2 mb-3 flex-wrap">
+    <div class="d-flex gap-2 mb-3">
       <button onclick="limparLista()" class="btn btn-danger">🗑️ Limpar Lista</button>
       <button onclick="exportarPDF()" class="btn btn-success">📤 Exportar como PDF</button>
       <button onclick="exportarCSV()" class="btn btn-warning">📁 Exportar como Excel (CSV)</button>
@@ -58,6 +65,7 @@
     </div>
 
     <h2>📄 Chamada</h2>
+
     <div class="table-responsive">
       <table id="tabelaChamada" class="table table-bordered table-striped table-hover bg-white shadow-sm">
         <thead class="table-light">
@@ -85,11 +93,11 @@
       if (dadosSalvos) {
         tabela.innerHTML = dadosSalvos;
       }
+      aplicarIdioma("pt-BR");
     });
 
     form.addEventListener("submit", function(event) {
       event.preventDefault();
-
       const data = document.getElementById("dataAula").value;
       const nome = document.getElementById("nomeAluno").value;
       const conteudo = document.getElementById("conteudoAula").value;
@@ -101,7 +109,6 @@
         <td>${conteudo}</td>
       `;
       tabela.appendChild(novaLinha);
-
       localStorage.setItem('chamada', tabela.innerHTML);
       form.reset();
     });
@@ -122,22 +129,28 @@
         const imgProps = doc.getImageProperties(imgData);
         const pdfWidth = doc.internal.pageSize.getWidth();
         const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
-
         doc.addImage(imgData, 'PNG', 0, 10, pdfWidth, pdfHeight);
         doc.save("lista-de-chamada.pdf");
       });
     }
 
+    document.getElementById("filtroAluno").addEventListener("input", function () {
+      const filtro = this.value.toLowerCase();
+      const linhas = tabela.getElementsByTagName("tr");
+      for (let i = 0; i < linhas.length; i++) {
+        const nomeAluno = linhas[i].cells[1]?.textContent.toLowerCase();
+        linhas[i].style.display = nomeAluno && nomeAluno.includes(filtro) ? "" : "none";
+      }
+    });
+
     function exportarCSV() {
       let csv = "Data da Aula,Nome do Aluno,Conteúdo Aplicado\n";
       const linhas = tabela.querySelectorAll("tr");
-
       linhas.forEach(linha => {
         const colunas = linha.querySelectorAll("td");
         const dados = Array.from(colunas).map(td => `"${td.textContent}"`).join(",");
         csv += dados + "\n";
       });
-
       const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -147,52 +160,68 @@
       URL.revokeObjectURL(url);
     }
 
-    // Buscar aluno
-    document.getElementById("filtroAluno").addEventListener("input", function () {
-      const filtro = this.value.toLowerCase();
-      const linhas = tabela.getElementsByTagName("tr");
-
-      for (let i = 0; i < linhas.length; i++) {
-        const nomeAluno = linhas[i].cells[1]?.textContent.toLowerCase();
-        if (nomeAluno && nomeAluno.includes(filtro)) {
-          linhas[i].style.display = "";
-        } else {
-          linhas[i].style.display = "none";
-        }
-      }
-    });
-
-    // Gerar texto da chamada
-    function gerarTextoChamada() {
-      let texto = "📋 Lista de Chamada - Aulas de Inglês\n\n";
-      const linhas = tabela.querySelectorAll("tr");
-
-      linhas.forEach(linha => {
-        const colunas = linha.querySelectorAll("td");
-        if (colunas.length > 0) {
-          const data = colunas[0].textContent;
-          const nome = colunas[1].textContent;
-          const conteudo = colunas[2].textContent;
-
-          texto += `📅 ${data} | 👤 ${nome} | 📚 ${conteudo}\n`;
-        }
-      });
-
-      return texto;
-    }
-
     function enviarWhatsapp() {
-      const texto = encodeURIComponent(gerarTextoChamada());
-      const link = `https://wa.me/?text=${texto}`;
-      window.open(link, '_blank');
+      alert("📤 Simulação: Os dados foram preparados para envio via WhatsApp.");
     }
 
     function enviarEmail() {
-      const assunto = encodeURIComponent("📋 Lista de Chamada - Aulas de Inglês");
-      const corpo = encodeURIComponent(gerarTextoChamada());
-      const link = `mailto:?subject=${assunto}&body=${corpo}`;
-      window.open(link, '_blank');
+      alert("📧 Simulação: Os dados foram preparados para envio por e-mail.");
     }
+
+    // Internacionalização
+    const traducoes = {
+      "pt-BR": {
+        titulo: "📋 Lista de Chamada - Aulas de Inglês",
+        data: "📅 Data da Aula:",
+        nome: "👤 Nome do Aluno:",
+        conteudo: "📚 Conteúdo Aplicado:",
+        adicionar: "➕ Adicionar à Lista",
+        limpar: "🗑️ Limpar Lista",
+        exportarPdf: "📤 Exportar como PDF",
+        exportarCsv: "📁 Exportar como Excel (CSV)",
+        enviarWhatsapp: "💬 Enviar via WhatsApp",
+        enviarEmail: "✉️ Enviar por E-mail",
+        buscar: "🔎 Buscar por Nome do Aluno:",
+        chamada: "📄 Chamada"
+      },
+      "en-US": {
+        titulo: "📋 Attendance List - English Classes",
+        data: "📅 Class Date:",
+        nome: "👤 Student Name:",
+        conteudo: "📚 Topic Covered:",
+        adicionar: "➕ Add to List",
+        limpar: "🗑️ Clear List",
+        exportarPdf: "📤 Export as PDF",
+        exportarCsv: "📁 Export as Excel (CSV)",
+        enviarWhatsapp: "💬 Send via WhatsApp",
+        enviarEmail: "✉️ Send by Email",
+        buscar: "🔎 Search Student Name:",
+        chamada: "📄 Attendance"
+      }
+    };
+
+    function aplicarIdioma(idioma) {
+      const t = traducoes[idioma];
+      document.querySelector("h1").textContent = t.titulo;
+      document.querySelector("label[for='dataAula']").textContent = t.data;
+      document.querySelector("label[for='nomeAluno']").textContent = t.nome;
+      document.querySelector("label[for='conteudoAula']").textContent = t.conteudo;
+      document.querySelector("#formChamada button").textContent = t.adicionar;
+
+      const botoes = document.querySelectorAll(".d-flex button");
+      botoes[0].textContent = t.limpar;
+      botoes[1].textContent = t.exportarPdf;
+      botoes[2].textContent = t.exportarCsv;
+      botoes[3].textContent = t.enviarWhatsapp;
+      botoes[4].textContent = t.enviarEmail;
+
+      document.querySelector("label[for='filtroAluno']").textContent = t.buscar;
+      document.querySelector("h2").textContent = t.chamada;
+    }
+
+    document.getElementById("seletorIdioma").addEventListener("change", function () {
+      aplicarIdioma(this.value);
+    });
   </script>
 </body>
 </html>
