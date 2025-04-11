@@ -20,6 +20,31 @@
   </style>
 </head>
 <body>
+  <div id="telaLogin" class="container d-flex flex-column align-items-center justify-content-center vh-100">
+    <div class="card p-4 shadow" style="max-width: 400px; width: 100%;">
+      <h2 class="text-center mb-3">🔐 Login</h2>
+      <div class="mb-3">
+        <label for="usuario" class="form-label">👤 Usuário</label>
+        <input type="text" id="usuario" class="form-control" required>
+      </div>
+      <div class="mb-3">
+        <label for="senha" class="form-label">🔑 Senha</label>
+        <input type="password" id="senha" class="form-control" required>
+      </div>
+      <button onclick="fazerLogin()" class="btn btn-primary w-100">Entrar</button>
+      <div id="erroLogin" class="text-danger text-center mt-2" style="display: none;">Usuário ou senha inválidos!</div>
+    </div>
+  </div>
+  
+  <!-- AQUI COMEÇA SUA <div class="container"> da lista de chamada -->
+  <div class="container" id="conteudoPrincipal" style="display: none;">
+    <!-- ... todo o seu código da lista de chamada vem aqui ... -->
+  </div>
+  
+  <div class="text-end mb-3">
+    <button onclick="sair()" class="btn btn-outline-secondary">🚪 Sair</button>
+  </div>
+
   <div class="container">
 
     <!-- Seletor de idioma -->
@@ -222,6 +247,50 @@
     document.getElementById("seletorIdioma").addEventListener("change", function () {
       aplicarIdioma(this.value);
     });
+    // Usuário e senha fixos (pode ser ajustado conforme necessário)
+const usuarioValido = "admin";
+const senhaValida = "1234";
+
+// Verifica se o usuário já está autenticado
+window.addEventListener("load", () => {
+  if (localStorage.getItem("autenticado") === "true") {
+    mostrarTelaPrincipal();
+  } else {
+    document.getElementById("telaLogin").style.display = "flex";
+  }
+
+  const dadosSalvos = localStorage.getItem("chamada");
+  if (dadosSalvos) {
+    tabela.innerHTML = dadosSalvos;
+  }
+  aplicarIdioma("pt-BR");
+});
+
+// Função de login
+function fazerLogin() {
+  const usuario = document.getElementById("usuario").value;
+  const senha = document.getElementById("senha").value;
+
+  if (usuario === usuarioValido && senha === senhaValida) {
+    localStorage.setItem("autenticado", "true");
+    mostrarTelaPrincipal();
+  } else {
+    document.getElementById("erroLogin").style.display = "block";
+  }
+}
+
+// Mostrar conteúdo principal e esconder tela de login
+function mostrarTelaPrincipal() {
+  document.getElementById("telaLogin").style.display = "none";
+  document.getElementById("conteudoPrincipal").style.display = "block";
+}
+
+// (Opcional) Função para deslogar
+function sair() {
+  localStorage.removeItem("autenticado");
+  location.reload();
+}
+
   </script>
 </body>
 </html>
