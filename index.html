@@ -1,167 +1,202 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <title>Lista de Chamada - Inglês</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
-  <style>
-    body {
-      padding: 20px;
-    }
-    .container {
-      max-width: 900px;
-      margin: auto;
-    }
-  </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Sistema de Chamada - Inglês</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"/>
 </head>
-<body>
-  <div class="container">
-    <h2 class="mb-4">📋 Lista de Chamada - Inglês</h2>
+<body class="bg-light">
 
-    <div class="mb-3">
-      <input type="text" id="nomeAluno" class="form-control" placeholder="Nome do Aluno">
-    </div>
-    <div class="mb-3">
-      <input type="date" id="dataChamada" class="form-control">
-    </div>
-    <div class="mb-3">
-      <select id="presenca" class="form-control">
-        <option value="Presente">Presente</option>
-        <option value="Faltou">Faltou</option>
-      </select>
-    </div>
-    <button class="btn btn-primary mb-4" onclick="registrarChamada()">Registrar Chamada</button>
+<div class="container my-4" id="loginContainer">
+  <h2>Login</h2>
+  <input type="text" id="loginUsuario" class="form-control mb-2" placeholder="Usuário" />
+  <input type="password" id="loginSenha" class="form-control mb-2" placeholder="Senha" />
+  <button class="btn btn-primary" onclick="fazerLogin()">Entrar</button>
+</div>
 
-    <div class="d-flex gap-2 mb-3 flex-wrap">
-      <button class="btn btn-success" onclick="exportarCSV()">⬇️ Exportar CSV</button>
-      <button class="btn btn-danger" onclick="exportarPDF()">📄 Exportar PDF</button>
-      <button class="btn btn-outline-success" onclick="enviarWhatsApp()">📱 WhatsApp</button>
-      <button class="btn btn-outline-primary" onclick="enviarEmail()">📧 E-mail</button>
-    </div>
+<div class="container my-4 d-none" id="mainContainer">
+  <h2>Sistema de Chamada</h2>
+  <p>Usuário logado: <span id="usuarioAtual"></span> (<span id="tipoUsuarioAtual"></span>)</p>
+  <button class="btn btn-secondary btn-sm mb-3" onclick="logout()">Sair</button>
 
-    <input type="text" id="filtroNome" class="form-control mb-3" placeholder="🔍 Buscar por nome" oninput="filtrarTabela()">
+  <div id="adminPanel" class="mb-4 d-none">
+    <h4>Cadastro de Usuário</h4>
+    <input type="text" id="novoUsuario" class="form-control mb-2" placeholder="Nome de usuário" />
+    <input type="password" id="novaSenha" class="form-control mb-2" placeholder="Senha" />
+    <select id="tipoUsuario" class="form-select mb-2">
+      <option value="professor">Professor</option>
+      <option value="admin">Admin</option>
+    </select>
+    <button class="btn btn-success mb-2" onclick="cadastrarUsuario()">Cadastrar Usuário</button>
 
-    <table class="table table-bordered" id="tabelaChamada">
-      <thead class="table-light">
-        <tr>
-          <th>Aluno</th>
-          <th>Data</th>
-          <th>Status</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
+    <h4>Lista de Usuários</h4>
+    <ul id="listaUsuarios" class="list-group mb-3"></ul>
   </div>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <div id="professorPanel">
+    <h4>Cadastro de Aluno</h4>
+    <input type="text" id="nomeAluno" class="form-control mb-2" placeholder="Nome do Aluno" />
+    <button class="btn btn-primary mb-2" onclick="adicionarAluno()">Adicionar Aluno</button>
 
-  <script>
-    let chamadas = JSON.parse(localStorage.getItem("chamadas")) || [];
+    <h4>Chamada</h4>
+    <textarea id="conteudoAula" class="form-control mb-2" placeholder="Conteúdo da aula de hoje"></textarea>
+    <ul id="listaAlunos" class="list-group mb-2"></ul>
+    <button class="btn btn-success" onclick="registrarChamada()">Registrar Chamada</button>
+  </div>
 
-    function salvarChamadas() {
-      localStorage.setItem("chamadas", JSON.stringify(chamadas));
-    }
+  <h4 class="mt-4">Histórico de Chamadas</h4>
+  <ul id="historicoChamadas" class="list-group"></ul>
+</div>
 
-    function registrarChamada() {
-      const nome = document.getElementById("nomeAluno").value;
-      const data = document.getElementById("dataChamada").value;
-      const presenca = document.getElementById("presenca").value;
+<script>
+let usuarios = JSON.parse(localStorage.getItem('usuarios')) || [
+  { usuario: 'admin', senha: 'admin', tipo: 'admin' }
+];
+let chamadas = JSON.parse(localStorage.getItem('chamadas')) || [];
+let usuarioLogado = JSON.parse(localStorage.getItem('usuarioLogado'));
 
-      if (!nome || !data) {
-        alert("Preencha todos os campos.");
-        return;
-      }
+function salvarUsuarios() {
+  localStorage.setItem('usuarios', JSON.stringify(usuarios));
+}
 
-      chamadas.push({ nome, data, presenca });
-      salvarChamadas();
-      atualizarTabela();
-      document.getElementById("nomeAluno").value = "";
-    }
+function salvarChamadas() {
+  localStorage.setItem('chamadas', JSON.stringify(chamadas));
+}
 
-    function atualizarTabela() {
-      const tbody = document.querySelector("#tabelaChamada tbody");
-      tbody.innerHTML = "";
+function fazerLogin() {
+  const usuario = document.getElementById('loginUsuario').value;
+  const senha = document.getElementById('loginSenha').value;
+  const encontrado = usuarios.find(u => u.usuario === usuario && u.senha === senha);
+  if (encontrado) {
+    usuarioLogado = encontrado;
+    localStorage.setItem('usuarioLogado', JSON.stringify(encontrado));
+    carregarTela();
+  } else {
+    alert('Usuário ou senha incorretos.');
+  }
+}
 
-      chamadas.forEach(chamada => {
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td>${chamada.nome}</td>
-          <td>${chamada.data}</td>
-          <td>${chamada.presenca}</td>
-        `;
-        tbody.appendChild(tr);
-      });
-    }
+function logout() {
+  usuarioLogado = null;
+  localStorage.removeItem('usuarioLogado');
+  location.reload();
+}
 
-    function exportarCSV() {
-      let csv = "Aluno,Data,Status\n";
-      chamadas.forEach(c => {
-        csv += `"${c.nome}","${c.data}","${c.presenca}"\n`;
-      });
+function carregarTela() {
+  document.getElementById('loginContainer').classList.add('d-none');
+  document.getElementById('mainContainer').classList.remove('d-none');
+  document.getElementById('usuarioAtual').textContent = usuarioLogado.usuario;
+  document.getElementById('tipoUsuarioAtual').textContent = usuarioLogado.tipo;
 
-      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-      const link = document.createElement("a");
-      link.href = URL.createObjectURL(blob);
-      link.download = "lista_chamada.csv";
-      link.click();
-    }
+  if (usuarioLogado.tipo === 'admin') {
+    document.getElementById('adminPanel').classList.remove('d-none');
+    document.getElementById('professorPanel').classList.add('d-none');
+    atualizarListaUsuarios();
+  } else {
+    document.getElementById('adminPanel').classList.add('d-none');
+    document.getElementById('professorPanel').classList.remove('d-none');
+    atualizarListaAlunos();
+  }
 
-    function exportarPDF() {
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF();
-      doc.text("Lista de Chamada", 10, 10);
+  atualizarHistoricoChamadas();
+}
 
-      let y = 20;
-      chamadas.forEach(c => {
-        doc.text(`Aluno: ${c.nome} | Data: ${c.data} | Status: ${c.presenca}`, 10, y);
-        y += 10;
-      });
+function cadastrarUsuario() {
+  const usuario = document.getElementById('novoUsuario').value;
+  const senha = document.getElementById('novaSenha').value;
+  const tipo = document.getElementById('tipoUsuario').value;
+  if (usuario && senha) {
+    usuarios.push({ usuario, senha, tipo });
+    salvarUsuarios();
+    atualizarListaUsuarios();
+  }
+}
 
-      doc.save("lista_chamada.pdf");
-    }
+function atualizarListaUsuarios() {
+  const lista = document.getElementById('listaUsuarios');
+  lista.innerHTML = '';
+  usuarios.forEach((u, index) => {
+    const item = document.createElement('li');
+    item.className = 'list-group-item d-flex justify-content-between align-items-center';
+    item.innerHTML = `
+      ${u.usuario} (${u.tipo})
+      <button class="btn btn-danger btn-sm" onclick="removerUsuario(${index})">Excluir</button>
+    `;
+    lista.appendChild(item);
+  });
+}
 
-    function enviarWhatsApp() {
-      const linhas = document.querySelectorAll('#tabelaChamada tbody tr');
-      if (!linhas.length) return alert("Nenhuma chamada para enviar.");
+function removerUsuario(index) {
+  usuarios.splice(index, 1);
+  salvarUsuarios();
+  atualizarListaUsuarios();
+}
 
-      let mensagem = '📋 Lista de Chamada:\n\n';
-      linhas.forEach(tr => {
-        const tds = tr.querySelectorAll('td');
-        mensagem += `👤 ${tds[0].innerText}\n📅 ${tds[1].innerText}\n✅ ${tds[2].innerText}\n\n`;
-      });
+function adicionarAluno() {
+  const nome = document.getElementById('nomeAluno').value;
+  if (!nome) return;
+  let alunos = JSON.parse(localStorage.getItem('alunos_' + usuarioLogado.usuario)) || [];
+  alunos.push({ nome });
+  localStorage.setItem('alunos_' + usuarioLogado.usuario, JSON.stringify(alunos));
+  atualizarListaAlunos();
+  document.getElementById('nomeAluno').value = '';
+}
 
-      const textoCodificado = encodeURIComponent(mensagem);
-      const link = `https://wa.me/?text=${textoCodificado}`;
-      window.open(link, '_blank');
-    }
+function atualizarListaAlunos() {
+  const lista = document.getElementById('listaAlunos');
+  lista.innerHTML = '';
+  const alunos = JSON.parse(localStorage.getItem('alunos_' + usuarioLogado.usuario)) || [];
+  alunos.forEach((aluno, i) => {
+    const item = document.createElement('li');
+    item.className = 'list-group-item';
+    item.innerHTML = `
+      <input type="checkbox" id="aluno_${i}" class="form-check-input me-2">
+      ${aluno.nome}
+    `;
+    lista.appendChild(item);
+  });
+}
 
-    function enviarEmail() {
-      const linhas = document.querySelectorAll('#tabelaChamada tbody tr');
-      if (!linhas.length) return alert("Nenhuma chamada para enviar.");
+function registrarChamada() {
+  const alunos = JSON.parse(localStorage.getItem('alunos_' + usuarioLogado.usuario)) || [];
+  const presentes = [];
+  alunos.forEach((aluno, i) => {
+    const presente = document.getElementById(`aluno_${i}`).checked;
+    presentes.push({ nome: aluno.nome, presente });
+  });
+  const conteudo = document.getElementById('conteudoAula').value;
+  const chamada = {
+    professor: usuarioLogado.usuario,
+    data: new Date().toLocaleString(),
+    conteudo,
+    presencas: presentes
+  };
+  chamadas.push(chamada);
+  salvarChamadas();
+  atualizarHistoricoChamadas();
+  document.getElementById('conteudoAula').value = '';
+}
 
-      let corpo = '📋 Lista de Chamada:\n\n';
-      linhas.forEach(tr => {
-        const tds = tr.querySelectorAll('td');
-        corpo += `👤 ${tds[0].innerText}\n📅 ${tds[1].innerText}\n✅ ${tds[2].innerText}\n\n`;
-      });
+function atualizarHistoricoChamadas() {
+  const lista = document.getElementById('historicoChamadas');
+  lista.innerHTML = '';
+  const minhasChamadas = chamadas.filter(c => c.professor === usuarioLogado?.usuario || usuarioLogado?.tipo === 'admin');
+  minhasChamadas.reverse().forEach(c => {
+    const item = document.createElement('li');
+    item.className = 'list-group-item';
+    item.innerHTML = `
+      <strong>${c.data}</strong> - Prof: ${c.professor}<br/>
+      <em>${c.conteudo}</em><br/>
+      ${c.presencas.map(p => `${p.nome}: ${p.presente ? 'Presente' : 'Faltou'}`).join('<br/>')}
+    `;
+    lista.appendChild(item);
+  });
+}
 
-      const assunto = encodeURIComponent('Lista de Chamada');
-      const corpoCodificado = encodeURIComponent(corpo);
-      const link = `mailto:?subject=${assunto}&body=${corpoCodificado}`;
-      window.location.href = link;
-    }
-
-    function filtrarTabela() {
-      const filtro = document.getElementById("filtroNome").value.toLowerCase();
-      const linhas = document.querySelectorAll("#tabelaChamada tbody tr");
-
-      linhas.forEach(linha => {
-        const nome = linha.cells[0].textContent.toLowerCase();
-        linha.style.display = nome.includes(filtro) ? "" : "none";
-      });
-    }
-
-    atualizarTabela();
-  </script>
+if (usuarioLogado) {
+  carregarTela();
+}
+</script>
 </body>
 </html>
