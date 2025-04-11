@@ -1,17 +1,13 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Lista de Chamada - Aulas de Inglês</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
-    body {
-      padding: 20px;
-    }
-    .table-responsive {
-      overflow-x: auto;
-    }
+    body { padding: 20px; }
+    .table-responsive { overflow-x: auto; }
   </style>
 </head>
 <body>
@@ -29,6 +25,22 @@
     <button class="btn btn-primary" onclick="fazerLogin()">Entrar</button>
   </div>
 
+  <!-- Área do Admin -->
+  <div id="admin-area" style="display:none;">
+    <h2>👑 Gerenciar Usuários</h2>
+    <form id="user-form" class="mb-3">
+      <input type="text" id="new-username" placeholder="Usuário" required>
+      <input type="password" id="new-password" placeholder="Senha" required>
+      <select id="new-type">
+        <option value="professor">Professor</option>
+        <option value="admin">Admin</option>
+      </select>
+      <button type="submit" class="btn btn-sm btn-success">Cadastrar Usuário</button>
+    </form>
+    <h4>Usuários Cadastrados:</h4>
+    <ul id="user-list"></ul>
+  </div>
+
   <!-- Conteúdo Principal -->
   <div id="conteudoPrincipal" style="display: none;">
     <div class="container">
@@ -44,43 +56,33 @@
 
       <!-- Formulário -->
       <div class="row g-3 mb-4">
-        <div class="col-md-4">
-          <input type="text" id="aluno" class="form-control" placeholder="Nome do Aluno">
-        </div>
-        <div class="col-md-2">
-          <input type="date" id="data" class="form-control">
-        </div>
+        <div class="col-md-3"><input type="text" id="aluno" class="form-control" placeholder="Nome do Aluno"></div>
+        <div class="col-md-2"><input type="date" id="data" class="form-control"></div>
         <div class="col-md-2">
           <select id="presenca" class="form-select">
             <option value="Presente">Presente</option>
             <option value="Faltou">Faltou</option>
           </select>
         </div>
-        <div class="col-md-4 d-grid gap-2 d-md-block">
+        <div class="col-md-3"><input type="text" id="conteudo" class="form-control" placeholder="Conteúdo da Aula"></div>
+        <div class="col-md-2 d-grid gap-2 d-md-block">
           <button class="btn btn-success" onclick="adicionarChamada()">Adicionar</button>
           <button class="btn btn-outline-info" onclick="exportarPDF()">📄 PDF</button>
           <button class="btn btn-outline-warning" onclick="exportarCSV()">📊 CSV</button>
         </div>
       </div>
 
-      <!-- Busca -->
       <input type="text" id="busca" class="form-control mb-3" placeholder="🔍 Buscar aluno..." oninput="filtrarAlunos()">
 
-      <!-- Tabela -->
       <div class="table-responsive">
         <table class="table table-bordered table-striped" id="tabelaChamada">
           <thead class="table-light">
-            <tr>
-              <th>Aluno</th>
-              <th>Data</th>
-              <th>Presença</th>
-            </tr>
+            <tr><th>Aluno</th><th>Data</th><th>Presença</th><th>Conteúdo</th></tr>
           </thead>
           <tbody></tbody>
         </table>
       </div>
 
-      <!-- Controles -->
       <div class="mt-3 text-end">
         <button class="btn btn-outline-success">📱 WhatsApp</button>
         <button class="btn btn-outline-primary">📧 E-mail</button>
@@ -92,21 +94,32 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script>
-    // Autenticação simples
-    const usuarios = {
-      admin: '1234',
-      professor: 'abcd'
-    };
+    function getUsers() {
+      return JSON.parse(localStorage.getItem('usuarios')) || {
+        "admin": { senha: "1234", tipo: "admin" },
+        "professor": { senha: "abcd", tipo: "professor" }
+      };
+    }
+
+    function saveUsers(users) {
+      localStorage.setItem('usuarios', JSON.stringify(users));
+    }
 
     function fazerLogin() {
       const usuario = document.getElementById('loginUsuario').value;
       const senha = document.getElementById('loginSenha').value;
+      const users = getUsers();
 
-      if (usuarios[usuario] === senha) {
-        localStorage.setItem('usuarioLogado', usuario);
+      if (users[usuario] && users[usuario].senha === senha) {
+        localStorage.setItem('usuarioLogado', JSON.stringify({ nome: usuario, tipo: users[usuario].tipo }));
         document.getElementById('telaLogin').style.display = 'none';
         document.getElementById('conteudoPrincipal').style.display = 'block';
         carregarChamada();
+
+        if (users[usuario].tipo === 'admin') {
+          document.getElementById('admin-area').style.display = 'block';
+          renderUserList();
+        }
       } else {
         alert('Usuário ou senha inválidos!');
       }
@@ -117,27 +130,27 @@
       location.reload();
     }
 
-    // Adiciona chamada
     function adicionarChamada() {
       const aluno = document.getElementById('aluno').value.trim();
       const data = document.getElementById('data').value;
       const presenca = document.getElementById('presenca').value;
+      const conteudo = document.getElementById('conteudo').value.trim();
 
-      if (!aluno || !data) {
+      if (!aluno || !data || !conteudo) {
         alert('Preencha todos os campos.');
         return;
       }
 
-      const novaLinha = `<tr><td>${aluno}</td><td>${data}</td><td>${presenca}</td></tr>`;
+      const novaLinha = `<tr><td>${aluno}</td><td>${data}</td><td>${presenca}</td><td>${conteudo}</td></tr>`;
       document.querySelector('#tabelaChamada tbody').innerHTML += novaLinha;
 
       salvarChamada();
       document.getElementById('aluno').value = '';
       document.getElementById('data').value = '';
       document.getElementById('presenca').value = 'Presente';
+      document.getElementById('conteudo').value = '';
     }
 
-    // Armazenamento local
     function salvarChamada() {
       const linhas = Array.from(document.querySelectorAll('#tabelaChamada tbody tr'));
       const dados = linhas.map(linha => {
@@ -145,7 +158,8 @@
         return {
           aluno: colunas[0].innerText,
           data: colunas[1].innerText,
-          presenca: colunas[2].innerText
+          presenca: colunas[2].innerText,
+          conteudo: colunas[3].innerText
         };
       });
       localStorage.setItem('listaChamada', JSON.stringify(dados));
@@ -156,42 +170,74 @@
       const tbody = document.querySelector('#tabelaChamada tbody');
       tbody.innerHTML = '';
       dados.forEach(item => {
-        const linha = `<tr><td>${item.aluno}</td><td>${item.data}</td><td>${item.presenca}</td></tr>`;
+        const linha = `<tr><td>${item.aluno}</td><td>${item.data}</td><td>${item.presenca}</td><td>${item.conteudo}</td></tr>`;
         tbody.innerHTML += linha;
       });
     }
 
-    // Exportação
     function exportarPDF() {
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF();
-      html2canvas(document.querySelector('#tabelaChamada')).then(canvas => {
-        const imgData = canvas.toDataURL('image/png');
-        const imgProps = doc.getImageProperties(imgData);
-        const pdfWidth = doc.internal.pageSize.getWidth();
-        const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
-        doc.addImage(imgData, 'PNG', 0, 10, pdfWidth, pdfHeight);
-        doc.save('lista_chamada.pdf');
+      const dados = JSON.parse(localStorage.getItem('listaChamada')) || [];
+      const colunas = ["Aluno", "Data", "Presença", "Conteúdo"];
+      const larguraCol = [50, 30, 30, 80];
+      const linhaAltura = 10;
+      let y = 30;
+
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(16);
+      doc.setTextColor(40, 40, 40);
+      doc.text("📋 Lista de Chamada", 14, 20);
+
+      doc.setFontSize(11);
+      doc.setFillColor(173, 216, 230);
+      doc.setTextColor(0, 0, 0);
+
+      let x = 14;
+      colunas.forEach((col, i) => {
+        doc.rect(x, y, larguraCol[i], linhaAltura, 'F');
+        doc.text(col, x + 2, y + 7);
+        x += larguraCol[i];
       });
+      y += linhaAltura;
+
+      dados.forEach((item, index) => {
+        if (y > 270) { doc.addPage(); y = 20; }
+        x = 14;
+        const valores = [item.aluno, item.data, item.presenca, item.conteudo];
+        const corLinha = index % 2 === 0 ? [245, 245, 245] : [255, 255, 255];
+        doc.setFillColor(...corLinha);
+        valores.forEach((val, i) => {
+          doc.rect(x, y, larguraCol[i], linhaAltura, 'F');
+          doc.text(String(val), x + 2, y + 7);
+          x += larguraCol[i];
+        });
+        y += linhaAltura;
+      });
+
+      const dataExportacao = new Date().toLocaleString("pt-BR");
+      doc.setFontSize(9);
+      doc.setTextColor(100);
+      doc.text(`Exportado em: ${dataExportacao}`, 14, 285);
+      doc.save("lista_chamada.pdf");
     }
 
     function exportarCSV() {
-      const linhas = document.querySelectorAll('#tabelaChamada tbody tr');
-      let csv = 'Aluno,Data,Presença\n';
-      linhas.forEach(linha => {
-        const cols = linha.querySelectorAll('td');
-        const linhaCSV = Array.from(cols).map(col => col.innerText).join(',');
-        csv += linhaCSV + '\n';
+      const dados = JSON.parse(localStorage.getItem('listaChamada')) || [];
+      let csv = 'Aluno,Data,Presença,Conteúdo\n';
+      dados.forEach(item => {
+        csv += `"${item.aluno}","${item.data}","${item.presenca}","${item.conteudo}"\n`;
       });
-
-      const blob = new Blob([csv], { type: 'text/csv' });
-      const link = document.createElement('a');
-      link.href = URL.createObjectURL(blob);
-      link.download = 'lista_chamada.csv';
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.setAttribute("href", url);
+      link.setAttribute("download", "lista_chamada.csv");
+      document.body.appendChild(link);
       link.click();
+      document.body.removeChild(link);
     }
 
-    // Filtro
     function filtrarAlunos() {
       const filtro = document.getElementById('busca').value.toLowerCase();
       const linhas = document.querySelectorAll('#tabelaChamada tbody tr');
@@ -201,7 +247,6 @@
       });
     }
 
-    // Troca de idioma
     function trocarIdioma() {
       const idioma = document.getElementById('seletorIdioma').value;
       if (idioma === 'en-US') {
@@ -223,13 +268,38 @@
       }
     }
 
-    // Verifica se está logado ao carregar
+    function renderUserList() {
+      const users = getUsers();
+      const lista = Object.entries(users).map(([nome, dados]) => `<li>${nome} (${dados.tipo})</li>`).join('');
+      document.getElementById('user-list').innerHTML = lista;
+    }
+
+    document.getElementById('user-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const username = document.getElementById('new-username').value;
+      const password = document.getElementById('new-password').value;
+      const tipo = document.getElementById('new-type').value;
+      const users = getUsers();
+      if (users[username]) {
+        alert('Usuário já existe!');
+        return;
+      }
+      users[username] = { senha: password, tipo };
+      saveUsers(users);
+      renderUserList();
+      e.target.reset();
+    });
+
     window.onload = () => {
-      const logado = localStorage.getItem('usuarioLogado');
-      if (logado) {
+      const user = JSON.parse(localStorage.getItem('usuarioLogado'));
+      if (user) {
         document.getElementById('telaLogin').style.display = 'none';
         document.getElementById('conteudoPrincipal').style.display = 'block';
         carregarChamada();
+        if (user.tipo === 'admin') {
+          document.getElementById('admin-area').style.display = 'block';
+          renderUserList();
+        }
       }
     };
   </script>
