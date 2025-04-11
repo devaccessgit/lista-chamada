@@ -16,6 +16,10 @@ function carregarAlunos() {
   
     if (btnRegistrar) {
       btnRegistrar.addEventListener('click', () => {
+        aulasSalvas.push(novaAula);
+        localStorage.setItem('aulas', JSON.stringify(aulasSalvas));
+        exibirListaAulas(); // 👈 Adicione isso logo após salvar
+        alert('✅ Aula registrada com sucesso!');
         const dataAula = document.getElementById('data-aula').value;
         const nomeAluno = document.getElementById('nome-aluno').value.trim();
         const conteudo = document.getElementById('conteudo-aula').value.trim();
@@ -24,7 +28,7 @@ function carregarAlunos() {
           alert('Por favor, preencha todos os campos.');
           return;
         }
-  
+        exibirListaAulas();
         const novaAula = {
           data: dataAula,
           nome: nomeAluno,
@@ -40,4 +44,26 @@ function carregarAlunos() {
       });
     }
   });
+  function exibirListaAulas() {
+    const lista = document.getElementById('lista-aulas');
+    const aulas = JSON.parse(localStorage.getItem('aulas')) || [];
+  
+    if (aulas.length === 0) {
+      lista.innerHTML = "<p>Nenhuma aula registrada ainda.</p>";
+      return;
+    }
+  
+    let html = "<ul class='list-group'>";
+    aulas.forEach((aula, i) => {
+      html += `
+        <li class='list-group-item'>
+          <strong>📅 ${aula.data}</strong><br>
+          👤 ${aula.nome}<br>
+          📘 ${aula.conteudo}
+        </li>`;
+    });
+    html += "</ul>";
+  
+    lista.innerHTML = html;
+  }
   window.onload = carregarAlunos

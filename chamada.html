@@ -29,6 +29,8 @@
 </div>
 <button id="registrar-aula" class="btn btn-primary">💾 Registrar Aula</button>
 <button id="exportar-pdf" class="btn btn-secondary">📄 Exportar PDF</button>
+<h3>📋 Lista de Aulas Registradas:</h3>
+<div id="lista-aulas"></div>
 <body>
   <div class="container">
     <h2>Lista de Presença</h2>
@@ -36,8 +38,7 @@
       <thead><tr><th>Aluno</th><th>Presente</th></tr></thead>
       <tbody id="listaAlunos"></tbody>
     </table>
-    <button onclick="exportarCSV()">Exportar CSV</button>
-  </div>
+   </div>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="js/chamada.js"></script>
   <script src="js/exportar.js"></script>
