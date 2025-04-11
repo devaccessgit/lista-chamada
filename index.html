@@ -9,42 +9,57 @@
       font-family: Arial, sans-serif;
       margin: 20px;
     }
+
+    form {
+      margin-bottom: 20px;
+    }
+
     table {
       border-collapse: collapse;
       width: 100%;
     }
+
     th, td {
       border: 1px solid #ccc;
       padding: 10px;
     }
+
     th {
       background-color: #f0f0f0;
+    }
+
+    button {
+      margin-top: 10px;
+      padding: 8px 12px;
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
-  <h1>Lista de Chamada - Aulas de Inglês</h1>
+  <h1>📋 Lista de Chamada - Aulas de Inglês</h1>
 
   <form id="formChamada">
     <label>
-      Data da Aula:
+      📅 Data da Aula:
       <input type="date" id="dataAula" required>
     </label>
     <br><br>
     <label>
-      Nome do Aluno:
+      👤 Nome do Aluno:
       <input type="text" id="nomeAluno" required>
     </label>
     <br><br>
     <label>
-      Conteúdo Aplicado:
+      📚 Conteúdo Aplicado:
       <input type="text" id="conteudoAula" required>
     </label>
     <br><br>
-    <button type="submit">Adicionar à Lista</button>
+    <button type="submit">➕ Adicionar à Lista</button>
   </form>
 
-  <h2>Chamada</h2>
+  <button onclick="limparLista()">🗑️ Limpar Lista</button>
+
+  <h2>📄 Chamada</h2>
   <table id="tabelaChamada">
     <thead>
       <tr>
@@ -60,6 +75,15 @@
     const form = document.getElementById("formChamada");
     const tabela = document.querySelector("#tabelaChamada tbody");
 
+    // Carregar dados salvos ao iniciar
+    window.addEventListener("load", () => {
+      const dadosSalvos = localStorage.getItem("chamada");
+      if (dadosSalvos) {
+        tabela.innerHTML = dadosSalvos;
+      }
+    });
+
+    // Evento de envio do formulário
     form.addEventListener("submit", function(event) {
       event.preventDefault();
 
@@ -75,8 +99,19 @@
       `;
       tabela.appendChild(novaLinha);
 
+      // Salvar no localStorage
+      localStorage.setItem('chamada', tabela.innerHTML);
+
       form.reset();
     });
+
+    // Função para limpar a lista
+    function limparLista() {
+      if (confirm("Tem certeza que deseja limpar a lista?")) {
+        tabela.innerHTML = "";
+        localStorage.removeItem("chamada");
+      }
+    }
   </script>
 </body>
 </html>
