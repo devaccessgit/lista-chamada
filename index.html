@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Lista de Chamada - Aulas de Inglês</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 10px;
+    }
+    th {
+      background-color: #f0f0f0;
+    }
+  </style>
+</head>
+<body>
+  <h1>Lista de Chamada - Aulas de Inglês</h1>
+
+  <form id="formChamada">
+    <label>
+      Data da Aula:
+      <input type="date" id="dataAula" required>
+    </label>
+    <br><br>
+    <label>
+      Nome do Aluno:
+      <input type="text" id="nomeAluno" required>
+    </label>
+    <br><br>
+    <label>
+      Conteúdo Aplicado:
+      <input type="text" id="conteudoAula" required>
+    </label>
+    <br><br>
+    <button type="submit">Adicionar à Lista</button>
+  </form>
+
+  <h2>Chamada</h2>
+  <table id="tabelaChamada">
+    <thead>
+      <tr>
+        <th>Data da Aula</th>
+        <th>Nome do Aluno</th>
+        <th>Conteúdo Aplicado</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script>
+    const form = document.getElementById("formChamada");
+    const tabela = document.querySelector("#tabelaChamada tbody");
+
+    form.addEventListener("submit", function(event) {
+      event.preventDefault();
+
+      const data = document.getElementById("dataAula").value;
+      const nome = document.getElementById("nomeAluno").value;
+      const conteudo = document.getElementById("conteudoAula").value;
+
+      const novaLinha = document.createElement("tr");
+      novaLinha.innerHTML = `
+        <td>${data}</td>
+        <td>${nome}</td>
+        <td>${conteudo}</td>
+      `;
+      tabela.appendChild(novaLinha);
+
+      form.reset();
+    });
+  </script>
+</body>
+</html>
