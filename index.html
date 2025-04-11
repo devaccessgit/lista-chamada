@@ -13,6 +13,29 @@
 <body>
   <!-- Tela de Login -->
   <div id="telaLogin" class="container">
+    <div id="gestaoUsuarios" style="display:none">
+      <h3 class="mb-3">👥 Gerenciar Usuários</h3>
+      <div class="row g-3 mb-3">
+        <div class="col-md-3">
+          <input type="text" id="novoUsuario" class="form-control" placeholder="Novo Usuário">
+        </div>
+        <div class="col-md-3">
+          <input type="password" id="novaSenha" class="form-control" placeholder="Senha">
+        </div>
+        <div class="col-md-3">
+          <select id="tipoUsuario" class="form-select">
+            <option value="professor">Professor</option>
+            <option value="admin">Admin</option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <button class="btn btn-primary w-100" onclick="cadastrarUsuario()">Cadastrar Usuário</button>
+        </div>
+      </div>
+    
+      <h5>Usuários Cadastrados:</h5>
+      <ul id="listaUsuarios" class="list-group"></ul>
+    </div>
     <h2 class="text-center mb-4">🔐 Login</h2>
     <div class="mb-3">
       <label class="form-label">Usuário:</label>
@@ -112,7 +135,78 @@
     const usuarios = JSON.parse(localStorage.getItem('usuarios')) || {
       admin: { senha: "1234", tipo: "admin", alunos: [] }
     };
-
+     
+    function verificarAdmin() {
+      const usuario = localStorage.getItem('usuarioLogado');
+      const usuarios = JSON.parse(localStorage.getItem('usuarios')) || {};
+      if (usuarios[usuario] === 'admin') {
+        document.getElementById('gestaoUsuarios').style.display = 'block';
+        listarUsuarios();
+      }
+    }
+  
+    function cadastrarUsuario() {
+      const usuario = document.getElementById('novoUsuario').value.trim();
+      const senha = document.getElementById('novaSenha').value.trim();
+      const tipo = document.getElementById('tipoUsuario').value;
+  
+      if (!usuario || !senha) {
+        alert('Preencha todos os campos!');
+        return;
+      }
+  
+      const usuarios = JSON.parse(localStorage.getItem('usuarios')) || {};
+  
+      if (usuarios[usuario]) {
+        alert('Usuário já existe!');
+        return;
+      }
+  
+      usuarios[usuario] = { senha, tipo };
+      localStorage.setItem('usuarios', JSON.stringify(usuarios));
+  
+      listarUsuarios();
+      document.getElementById('novoUsuario').value = '';
+      document.getElementById('novaSenha').value = '';
+    }
+  
+    function listarUsuarios() {
+      const usuarios = JSON.parse(localStorage.getItem('usuarios')) || {};
+      const lista = document.getElementById('listaUsuarios');
+      lista.innerHTML = '';
+  
+      Object.entries(usuarios).forEach(([nome, dados]) => {
+        const item = `<li class="list-group-item d-flex justify-content-between align-items-center">
+          ${nome} (${dados.tipo})
+          <button class="btn btn-sm btn-danger" onclick="excluirUsuario('${nome}')">Excluir</button>
+        </li>`;
+        lista.innerHTML += item;
+      });
+    }
+  
+    function excluirUsuario(nome) {
+      const usuarios = JSON.parse(localStorage.getItem('usuarios')) || {};
+      delete usuarios[nome];
+      localStorage.setItem('usuarios', JSON.stringify(usuarios));
+      listarUsuarios();
+    }
+  
+    // Atualizar login para buscar do localStorage corretamente
+    function fazerLogin() {
+      const usuario = document.getElementById('loginUsuario').value;
+      const senha = document.getElementById('loginSenha').value;
+      const usuarios = JSON.parse(localStorage.getItem('usuarios')) || {};
+  
+      if (usuarios[usuario] && usuarios[usuario].senha === senha) {
+        localStorage.setItem('usuarioLogado', usuario);
+        document.getElementById('telaLogin').style.display = 'none';
+        document.getElementById('conteudoPrincipal').style.display = 'block';
+        carregarChamada();
+        verificarAdmin();
+      } else {
+        alert('Usuário ou senha inválidos!');
+      }
+    }
     function fazerLogin() {
       const usuario = loginUsuario.value;
       const senha = loginSenha.value;
