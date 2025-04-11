@@ -50,9 +50,16 @@
 </div>
 
 <script>
-let usuarios = JSON.parse(localStorage.getItem('usuarios')) || [
-  { usuario: 'admin', senha: 'admin', tipo: 'admin' }
-];
+  let usuarios = JSON.parse(localStorage.getItem("usuarios"));
+  if (!Array.isArray(usuarios)) {
+      usuarios = [{
+          nome: "Administrador",
+          usuario: "admin",
+          senha: "admin",
+          tipo: "admin"
+      }];
+      localStorage.setItem("usuarios", JSON.stringify(usuarios));
+  }
 let chamadas = JSON.parse(localStorage.getItem('chamadas')) || [];
 let usuarioLogado = JSON.parse(localStorage.getItem('usuarioLogado'));
 
