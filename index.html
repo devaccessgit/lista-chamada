@@ -48,7 +48,10 @@
       <button onclick="limparLista()" class="btn btn-danger">🗑️ Limpar Lista</button>
       <button onclick="exportarPDF()" class="btn btn-success">📤 Exportar como PDF</button>
     </div>
-
+    <div class="mb-3">
+      <label for="filtroAluno" class="form-label">🔎 Buscar por Nome do Aluno:</label>
+      <input type="text" id="filtroAluno" class="form-control" placeholder="Digite o nome do aluno">
+    </div>
     <h2>📄 Chamada</h2>
     <div class="table-responsive">
       <table id="tabelaChamada" class="table table-bordered table-striped table-hover bg-white shadow-sm">
@@ -125,6 +128,20 @@
         doc.save("lista-de-chamada.pdf");
       });
     }
+    // Filtro de busca
+       document.getElementById("filtroAluno").addEventListener("input", function () {
+       const filtro = this.value.toLowerCase();
+       const linhas = tabela.getElementsByTagName("tr");
+
+    for (let i = 0; i < linhas.length; i++) {
+       const nomeAluno = linhas[i].cells[1]?.textContent.toLowerCase();
+    if (nomeAluno && nomeAluno.includes(filtro)) {
+      linhas[i].style.display = "";
+    } else {
+      linhas[i].style.display = "none";
+    }
+  }
+});
   </script>
 </body>
 </html>
