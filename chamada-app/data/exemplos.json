@@ -1,0 +1,7 @@
+{
+    "usuarios": [
+      { "nome": "admin", "senha": "admin123", "tipo": "admin" },
+      { "nome": "professor1", "senha": "123456", "tipo": "professor", "alunos": ["Ana", "Carlos"] }
+    ],
+    "chamadas": []
+  }
