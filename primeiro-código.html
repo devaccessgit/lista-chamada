@@ -302,6 +302,46 @@
         }
       }
     };
+    function enviarWhatsApp() {
+      const dados = JSON.parse(localStorage.getItem('listaChamada')) || [];
+      if (dados.length === 0) {
+        alert("Não há chamadas para enviar.");
+        return;
+      }
+    
+      let mensagem = "*📋 Lista de Chamada - Aulas de Inglês*\n\n";
+      dados.forEach(item => {
+        mensagem += `👤 *${item.aluno}*\n📅 ${item.data} - ${item.presenca}\n📘 Conteúdo: ${item.conteudo}\n\n`;
+      });
+    
+      const numero = prompt("Digite o número do WhatsApp (com DDD e sem espaços):", "11999999999");
+      if (!numero) return;
+    
+      const link = `https://wa.me/55${numero}?text=${encodeURIComponent(mensagem)}`;
+      window.open(link, "_blank");
+    }
+    <button class="btn btn-outline-success" onclick="enviarWhatsApp()">📱 WhatsApp</button>
+    
+    function enviarEmail() {
+      const dados = JSON.parse(localStorage.getItem('listaChamada')) || [];
+      if (dados.length === 0) {
+        alert("Não há chamadas para enviar.");
+        return;
+      }
+    
+      let corpo = "📋 Lista de Chamada - Aulas de Inglês\n\n";
+      dados.forEach(item => {
+        corpo += `👤 ${item.aluno}\n📅 ${item.data} - ${item.presenca}\n📘 Conteúdo: ${item.conteudo}\n\n`;
+      });
+    
+      const assunto = "Lista de Chamada - Aula de Inglês";
+      const destinatario = prompt("Digite o e-mail do destinatário:", "exemplo@email.com");
+      if (!destinatario) return;
+    
+      const mailto = `mailto:${destinatario}?subject=${encodeURIComponent(assunto)}&body=${encodeURIComponent(corpo)}`;
+      window.location.href = mailto;
+    }
+    <button class="btn btn-outline-primary" onclick="enviarEmail()">📧 E-mail</button>
   </script>
-</body>
+  </body>
 </html>
