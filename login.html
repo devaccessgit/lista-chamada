@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8" />
+  <title>Login</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" />
+</head>
+<body class="bg-light">
+  <div class="container mt-5">
+    <h2 class="text-center" id="loginTitle">Login</h2>
+    <select class="form-select my-3" id="langSelect">
+      <option value="pt">Português</option>
+      <option value="en">English</option>
+    </select>
+    <form id="loginForm">
+      <input type="text" id="loginUsername" class="form-control my-2" placeholder="Usuário" required />
+      <input type="password" id="loginPassword" class="form-control my-2" placeholder="Senha" required />
+      <button type="submit" class="btn btn-primary w-100">Entrar</button>
+    </form>
+  </div>
+
+  <script>
+    const lang = localStorage.getItem('lang') || 'pt';
+    document.getElementById("langSelect").value = lang;
+    document.getElementById("langSelect").addEventListener("change", e => {
+      localStorage.setItem('lang', e.target.value);
+      location.reload();
+    });
+
+    const textos = {
+      pt: { login: "Login", user: "Usuário", pass: "Senha", enter: "Entrar" },
+      en: { login: "Login", user: "Username", pass: "Password", enter: "Enter" }
+    };
+
+    const t = textos[lang];
+    document.getElementById("loginTitle").innerText = t.login;
+    document.getElementById("loginUsername").placeholder = t.user;
+    document.getElementById("loginPassword").placeholder = t.pass;
+    document.querySelector("button").innerText = t.enter;
+
+    // Criação inicial de usuários
+    if (!localStorage.getItem('usuarios')) {
+      const defaultUsers = [
+        { id: 1, nome: "admin", senha: "123", role: "admin" },
+        { id: 2, nome: "professor", senha: "123", role: "professor" }
+      ];
+      localStorage.setItem('usuarios', JSON.stringify(defaultUsers));
+    }
+
+    document.getElementById("loginForm").addEventListener("submit", function (e) {
+      e.preventDefault();
+      const nome = document.getElementById("loginUsername").value;
+      const senha = document.getElementById("loginPassword").value;
+      const usuarios = JSON.parse(localStorage.getItem("usuarios")) || [];
+
+      const user = usuarios.find(u => u.nome === nome && u.senha === senha);
+      if (user) {
+        localStorage.setItem("usuarioLogado", JSON.stringify(user));
+        window.location.href = user.role === "admin" ? "admin.html" : "professor.html";
+      } else {
+        alert("Credenciais inválidas");
+      }
+    });
+  </script>
+</body>
+</html>
