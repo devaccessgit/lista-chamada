@@ -1,242 +1,222 @@
+<!-- Salve como index.html -->
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Lista de Chamada - Aulas de Inglês</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Lista de Chamada</title>
   <style>
-    body { padding: 20px; }
-    .table-responsive { overflow-x: auto; }
-    .position-top-right { position: absolute; top: 20px; right: 20px; }
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    .top-bar {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+    .hidden {
+      display: none;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-top: 10px;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: left;
+    }
+    button {
+      padding: 5px 10px;
+    }
   </style>
 </head>
 <body>
-  <!-- Tela de Login -->
-  <div id="telaLogin" class="container">
-    <h2 class="text-center mb-4">🔐 Login</h2>
-    <div class="mb-3">
-      <label for="loginUsuario" class="form-label">Usuário:</label>
-      <input type="text" class="form-control" id="loginUsuario">
-    </div>
-    <div class="mb-3">
-      <label for="loginSenha" class="form-label">Senha:</label>
-      <input type="password" class="form-control" id="loginSenha">
-    </div>
-    <button class="btn btn-primary" onclick="fazerLogin()">Entrar</button>
+  <div class="top-bar">
+    <button onclick="toggleLang()">🌐 <span id="lang-btn">EN</span></button>
+    <button onclick="logout()">Logout</button>
   </div>
 
-  <!-- Área do Admin -->
-  <div id="admin-area" style="display:none;">
-    <h2>👑 Gerenciar Usuários</h2>
-    <form id="user-form" class="mb-3">
-      <input type="text" id="new-username" placeholder="Usuário" required>
-      <input type="password" id="new-password" placeholder="Senha" required>
-      <select id="new-type">
-        <option value="professor">Professor</option>
-        <option value="admin">Admin</option>
-      </select>
-      <select id="new-teacher" style="display:none;">
-        <!-- Professores serão listados aqui -->
-      </select>
-      <button type="submit" class="btn btn-sm btn-success">Cadastrar Usuário</button>
-    </form>
-
-    <!-- Tabela de Usuários Cadastrados -->
-    <h4>Usuários Cadastrados:</h4>
-    <div class="table-responsive">
-      <table class="table table-bordered table-striped" id="user-table">
-        <thead class="table-light">
-          <tr>
-            <th>Usuário</th>
-            <th>Tipo</th>
-            <th>Ações</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </div>
+  <h2 id="title">Login</h2>
+  <div id="login-section">
+    <input id="username" placeholder="Usuário" /><br/>
+    <input id="password" type="password" placeholder="Senha" /><br/>
+    <button onclick="login()">Entrar</button>
   </div>
 
-  <!-- Conteúdo Principal -->
-  <div id="conteudoPrincipal" style="display: none;">
-    <div class="container">
-      <div class="d-flex justify-content-between align-items-center mb-3">
-        <button onclick="sair()" class="btn btn-outline-secondary">🚪 Sair</button>
-        <select id="seletorIdioma" class="form-select w-auto" onchange="trocarIdioma()" class="position-top-right">
-          <option value="pt-BR">🇧🇷 Português</option>
-          <option value="en-US">🇺🇸 English</option>
-        </select>
-      </div>
-      <h1 class="text-center mb-4">📋 Lista de Chamada - Aulas de Inglês</h1>
-      <!-- Formulário -->
-      <div class="row g-3 mb-4">
-        <div class="col-md-3"><input type="text" id="aluno" class="form-control" placeholder="Nome do Aluno"></div>
-        <div class="col-md-2"><input type="date" id="data" class="form-control"></div>
-        <div class="col-md-2">
-          <select id="presenca" class="form-select">
-            <option value="Presente">Presente</option>
-            <option value="Faltou">Faltou</option>
-          </select>
-        </div>
-        <div class="col-md-3"><input type="text" id="conteudo" class="form-control" placeholder="Conteúdo da Aula"></div>
-        <div class="col-md-2 d-grid gap-2 d-md-block">
-          <button class="btn btn-success" onclick="adicionarChamada()">Adicionar</button>
-          <button class="btn btn-outline-info" onclick="exportarPDF()">📄 PDF</button>
-          <button class="btn btn-outline-warning" onclick="exportarCSV()">📊 CSV</button>
-        </div>
-      </div>
-      <input type="text" id="busca" class="form-control mb-3" placeholder="🔍 Buscar aluno..." oninput="filtrarAlunos()">
-      <div class="table-responsive">
-        <table class="table table-bordered table-striped" id="tabelaChamada">
-          <thead class="table-light">
-            <tr><th>Aluno</th><th>Data</th><th>Presença</th><th>Conteúdo</th><th>Ações</th></tr>
-          </thead>
-          <tbody></tbody>
-        </table>
-      </div>
-      <div class="mt-3 text-end">
-        <button class="btn btn-outline-success" onclick="enviarWhatsApp()">📱 WhatsApp</button>
-        <button class="btn btn-outline-primary" onclick="enviarEmail()">📧 E-mail</button>
-      </div>
-    </div>
+  <div id="admin-section" class="hidden">
+    <h3 id="admin-title">Usuários Cadastrados</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Usuário</th>
+          <th>Senha</th>
+          <th>Ação</th>
+        </tr>
+      </thead>
+      <tbody id="user-list"></tbody>
+    </table>
+    <input id="new-user" placeholder="Novo usuário" />
+    <input id="new-pass" placeholder="Senha" type="password"/>
+    <button onclick="addUser()">Cadastrar</button>
   </div>
 
-  <!-- Scripts -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <div id="professor-section" class="hidden">
+    <h3 id="call-title">Lista de Chamada</h3>
+    <input id="student-name" placeholder="Nome do aluno" />
+    <button onclick="addCall()">Adicionar Chamada</button>
+    <table>
+      <thead>
+        <tr>
+          <th>Aluno</th>
+          <th>Professor</th>
+          <th>Ação</th>
+        </tr>
+      </thead>
+      <tbody id="call-list"></tbody>
+    </table>
+  </div>
+
   <script>
-    function getUsers() {
-      return JSON.parse(localStorage.getItem('usuarios')) || {
-        "admin": { senha: "1234", tipo: "admin", professor: "" },
-        "professor1": { senha: "abcd", tipo: "professor", professor: "professor1" }
-      };
+    let currentUser = '';
+    let currentLang = 'pt';
+
+    const users = JSON.parse(localStorage.getItem("users") || "[]");
+    const calls = JSON.parse(localStorage.getItem("calls") || "[]");
+
+    function saveUsers() {
+      localStorage.setItem("users", JSON.stringify(users));
+      renderUsers();
     }
 
-    function saveUsers(users) {
-      localStorage.setItem('usuarios', JSON.stringify(users));
+    function saveCalls() {
+      localStorage.setItem("calls", JSON.stringify(calls));
+      renderCalls();
     }
 
-    function fazerLogin() {
-      const usuario = document.getElementById('loginUsuario').value;
-      const senha = document.getElementById('loginSenha').value;
-      const users = getUsers();
-      if (users[usuario] && users[usuario].senha === senha) {
-        localStorage.setItem('usuarioLogado', JSON.stringify({ nome: usuario, tipo: users[usuario].tipo, professor: users[usuario].professor }));
-        document.getElementById('telaLogin').style.display = 'none';
-        document.getElementById('conteudoPrincipal').style.display = 'block';
-        carregarChamada();
-        if (users[usuario].tipo === 'admin') {
-          document.getElementById('admin-area').style.display = 'block';
-          renderUserList();
-        }
+    function login() {
+      const user = document.getElementById("username").value;
+      const pass = document.getElementById("password").value;
+      if (user === "admin" && pass === "admin123") {
+        currentUser = "admin";
+        showAdmin();
       } else {
-        alert('Usuário ou senha inválidos!');
+        const found = users.find(u => u.user === user && u.pass === pass);
+        if (found) {
+          currentUser = user;
+          showProfessor();
+        } else {
+          alert(translate("Usuário ou senha inválidos", "Invalid username or password"));
+        }
       }
     }
 
-    function sair() {
-      localStorage.removeItem('usuarioLogado');
+    function logout() {
       location.reload();
     }
 
-    function renderUserList() {
-      const users = getUsers();
-      const tbody = document.querySelector('#user-table tbody');
-      tbody.innerHTML = '';
-      for (const user in users) {
-        if (users[user].tipo !== 'admin') { // Apenas lista usuários que não sejam admin
-          const tr = document.createElement('tr');
-          tr.innerHTML = `
-            <td>${user}</td>
-            <td>${users[user].tipo}</td>
-            <td><button class="btn btn-danger" onclick="deleteUser('${user}')">Excluir</button></td>
-          `;
-          tbody.appendChild(tr);
-        }
-      }
+    function addUser() {
+      const user = document.getElementById("new-user").value;
+      const pass = document.getElementById("new-pass").value;
+      if (!user || !pass) return;
+      users.push({ user, pass });
+      saveUsers();
+      document.getElementById("new-user").value = '';
+      document.getElementById("new-pass").value = '';
     }
 
-    function deleteUser(username) {
-      const users = getUsers();
-      delete users[username];
-      saveUsers(users);
-      renderUserList();
+    function deleteUser(index) {
+      users.splice(index, 1);
+      saveUsers();
     }
 
-    function adicionarChamada() {
-      const aluno = document.getElementById('aluno').value.trim();
-      const data = document.getElementById('data').value;
-      const presenca = document.getElementById('presenca').value;
-      const conteudo = document.getElementById('conteudo').value.trim();
-      if (!aluno || !data || !conteudo) {
-        alert('Preencha todos os campos.');
-        return;
-      }
-      const novaLinha = `<tr><td>${aluno}</td><td>${data}</td><td>${presenca}</td><td>${conteudo}</td><td><button class="btn btn-danger" onclick="excluirChamada(this)">Excluir</button></td></tr>`;
-      document.querySelector('#tabelaChamada tbody').innerHTML += novaLinha;
-      salvarChamada();
-      document.getElementById('aluno').value = '';
-      document.getElementById('data').value = '';
-      document.getElementById('presenca').value = 'Presente';
-      document.getElementById('conteudo').value = '';
+    function addCall() {
+      const student = document.getElementById("student-name").value;
+      if (!student) return;
+      calls.push({ student, professor: currentUser });
+      saveCalls();
+      document.getElementById("student-name").value = '';
     }
 
-    function excluirChamada(btn) {
-      btn.closest('tr').remove();
-      salvarChamada();
+    function deleteCall(index) {
+      calls.splice(index, 1);
+      saveCalls();
     }
 
-    function salvarChamada() {
-      const chamadas = [];
-      document.querySelectorAll('#tabelaChamada tbody tr').forEach(row => {
-        const cols = row.querySelectorAll('td');
-        chamadas.push({
-          aluno: cols[0].textContent,
-          data: cols[1].textContent,
-          presenca: cols[2].textContent,
-          conteudo: cols[3].textContent
-        });
+    function showAdmin() {
+      document.getElementById("login-section").classList.add("hidden");
+      document.getElementById("admin-section").classList.remove("hidden");
+      document.getElementById("professor-section").classList.remove("hidden");
+      renderUsers();
+      renderCalls();
+    }
+
+    function showProfessor() {
+      document.getElementById("login-section").classList.add("hidden");
+      document.getElementById("professor-section").classList.remove("hidden");
+      renderCalls();
+    }
+
+    function renderUsers() {
+      const list = document.getElementById("user-list");
+      list.innerHTML = "";
+      users.forEach((u, i) => {
+        list.innerHTML += `<tr>
+          <td>${u.user}</td>
+          <td>${u.pass}</td>
+          <td><button onclick="deleteUser(${i})">${translate("Excluir", "Delete")}</button></td>
+        </tr>`;
       });
-      localStorage.setItem('chamadas', JSON.stringify(chamadas));
     }
 
-    function carregarChamada() {
-      const usuarioLogado = JSON.parse(localStorage.getItem('usuarioLogado'));
-      const chamadas = JSON.parse(localStorage.getItem('chamadas')) || [];
-      const tbody = document.querySelector('#tabelaChamada tbody');
-      tbody.innerHTML = '';
-      chamadas.forEach(chamada => {
-        if (usuarioLogado.tipo === 'admin' || chamada.professor === usuarioLogado.professor) {
-          const tr = document.createElement('tr');
-          tr.innerHTML = `
-            <td>${chamada.aluno}</td>
-            <td>${chamada.data}</td>
-            <td>${chamada.presenca}</td>
-            <td>${chamada.conteudo}</td>
-            <td><button class="btn btn-danger" onclick="excluirChamada(this)">Excluir</button></td>
-          `;
-          tbody.appendChild(tr);
+    function renderCalls() {
+      const list = document.getElementById("call-list");
+      list.innerHTML = "";
+      calls.forEach((c, i) => {
+        if (currentUser === "admin" || c.professor === currentUser) {
+          list.innerHTML += `<tr>
+            <td>${c.student}</td>
+            <td>${c.professor}</td>
+            <td><button onclick="deleteCall(${i})">${translate("Excluir", "Delete")}</button></td>
+          </tr>`;
         }
       });
     }
 
-    function filtrarAlunos() {
-      const busca = document.getElementById('busca').value.toLowerCase();
-      document.querySelectorAll('#tabelaChamada tbody tr').forEach(row => {
-        const aluno = row.querySelector('td').textContent.toLowerCase();
-        row.style.display = aluno.includes(busca) ? '' : 'none';
+    function toggleLang() {
+      currentLang = currentLang === 'pt' ? 'en' : 'pt';
+      document.getElementById("lang-btn").innerText = currentLang === 'pt' ? 'EN' : 'PT';
+      applyTranslations();
+    }
+
+    function translate(pt, en) {
+      return currentLang === 'pt' ? pt : en;
+    }
+
+    function applyTranslations() {
+      document.getElementById("title").innerText = translate("Login", "Login");
+      document.getElementById("admin-title").innerText = translate("Usuários Cadastrados", "Registered Users");
+      document.getElementById("call-title").innerText = translate("Lista de Chamada", "Attendance List");
+
+      document.querySelectorAll("input").forEach(input => {
+        if (input.placeholder.includes("Usuário")) input.placeholder = translate("Usuário", "Username");
+        if (input.placeholder.includes("Senha")) input.placeholder = translate("Senha", "Password");
+        if (input.placeholder.includes("Novo usuário")) input.placeholder = translate("Novo usuário", "New user");
+        if (input.placeholder.includes("Nome do aluno")) input.placeholder = translate("Nome do aluno", "Student name");
+      });
+
+      document.querySelectorAll("button").forEach(btn => {
+        if (btn.innerText.includes("Entrar")) btn.innerText = translate("Entrar", "Login");
+        if (btn.innerText.includes("Cadastrar")) btn.innerText = translate("Cadastrar", "Register");
+        if (btn.innerText.includes("Adicionar Chamada")) btn.innerText = translate("Adicionar Chamada", "Add Attendance");
+        if (btn.innerText.includes("Excluir")) btn.innerText = translate("Excluir", "Delete");
+        if (btn.innerText.includes("Logout")) btn.innerText = translate("Logout", "Logout");
       });
     }
 
-    function trocarIdioma() {
-      const idioma = document.getElementById('seletorIdioma').value;
-      const elements = document.querySelectorAll('[data-pt], [data-en]');
-      elements.forEach(el => {
-        el.textContent = el.getAttribute(`data-${idioma}`);
-      });
-    }
-
+    applyTranslations();
   </script>
 </body>
 </html>
