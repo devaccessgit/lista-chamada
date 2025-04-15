@@ -153,36 +153,40 @@
     }
 
     // Função para registrar chamada
-    function registrarChamada() {
-      const nomeAluno = document.getElementById('nomeChamada').value.trim();
-      const presente = document.getElementById('presente').checked;
-      const dataAtual = new Date().toLocaleDateString();
-      if (!nomeAluno) return alert('Informe o nome do aluno!');
-      const chamada = { aluno: nomeAluno, presente: presente, data: dataAtual };
-      chamadas.push(chamada);
-      localStorage.setItem('chamadas', JSON.stringify(chamadas));
-      document.getElementById('nomeChamada').value = '';
-      document.getElementById('presente').checked = false;
-      alert('Chamada registrada com sucesso!');
-    }
+function registrarChamada() {
+  const nomeAluno = document.getElementById('nomeChamada').value.trim();
+  const presente = document.getElementById('presente').checked;
+  const dataAtual = new Date().toLocaleDateString(); // Certificando-se de que a data seja no formato correto
+  if (!nomeAluno) return alert('Informe o nome do aluno!');
+  const chamada = { aluno: nomeAluno, presente: presente, data: dataAtual };
+  chamadas.push(chamada);
+  localStorage.setItem('chamadas', JSON.stringify(chamadas));
+  
+  // Atualizar histórico após registrar a chamada
+  exibirHistorico(dataAtual); // Passando a data registrada para garantir que seja filtrada corretamente
 
-    // Exibir histórico de chamadas
-    function exibirHistorico(data) {
-      const historicoFiltrado = chamadas.filter(chamada => chamada.data === data);
-      let historicoHtml = '<table>';
-      historicoHtml += '<tr><th>Aluno</th><th>Presente</th><th>Data</th></tr>';
-      historicoFiltrado.forEach(chamada => {
-        historicoHtml += `
-          <tr>
-            <td>${chamada.aluno}</td>
-            <td>${chamada.presente ? 'Sim' : 'Não'}</td>
-            <td>${chamada.data}</td>
-          </tr>
-        `;
-      });
-      historicoHtml += '</table>';
-      document.getElementById('historico').innerHTML = historicoHtml;
-    }
+  document.getElementById('nomeChamada').value = '';
+  document.getElementById('presente').checked = false;
+  alert('Chamada registrada com sucesso!');
+}
+
+// Exibir histórico de chamadas
+function exibirHistorico(data) {
+  const historicoFiltrado = chamadas.filter(chamada => chamada.data === data);
+  let historicoHtml = '<table>';
+  historicoHtml += '<tr><th>Aluno</th><th>Presente</th><th>Data</th></tr>';
+  historicoFiltrado.forEach(chamada => {
+    historicoHtml += `
+      <tr>
+        <td>${chamada.aluno}</td>
+        <td>${chamada.presente ? 'Sim' : 'Não'}</td>
+        <td>${chamada.data}</td>
+      </tr>
+    `;
+  });
+  historicoHtml += '</table>';
+  document.getElementById('historico').innerHTML = historicoHtml;
+}
 
     // Função para exportar CSV
     function exportarCSV() {
