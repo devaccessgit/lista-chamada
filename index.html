@@ -8,6 +8,7 @@
   <style>
     body { padding: 20px; }
     .table-responsive { overflow-x: auto; }
+    .delete-btn { color: red; cursor: pointer; }
   </style>
 </head>
 <body>
@@ -24,11 +25,10 @@
     </div>
     <button class="btn btn-primary" onclick="fazerLogin()">Entrar</button>
   </div>
-
   <!-- Área do Admin -->
   <div id="admin-area" style="display:none;">
     <h2>👑 Gerenciar Usuários</h2>
-    <form id="user-form" class="mb-3" onsubmit="cadastrarUsuario(event)">
+    <form id="user-form" class="mb-3">
       <input type="text" id="new-username" placeholder="Usuário" required>
       <input type="password" id="new-password" placeholder="Senha" required>
       <select id="new-type">
@@ -40,7 +40,6 @@
     <h4>Usuários Cadastrados:</h4>
     <ul id="user-list"></ul>
   </div>
-
   <!-- Conteúdo Principal -->
   <div id="conteudoPrincipal" style="display: none;">
     <div class="container">
@@ -52,7 +51,6 @@
         </select>
       </div>
       <h1 class="text-center mb-4">📋 Lista de Chamada - Aulas de Inglês</h1>
-      
       <!-- Formulário -->
       <div class="row g-3 mb-4">
         <div class="col-md-3"><input type="text" id="aluno" class="form-control" placeholder="Nome do Aluno"></div>
@@ -74,7 +72,7 @@
       <div class="table-responsive">
         <table class="table table-bordered table-striped" id="tabelaChamada">
           <thead class="table-light">
-            <tr><th>Aluno</th><th>Data</th><th>Presença</th><th>Conteúdo</th></tr>
+            <tr><th>Aluno</th><th>Data</th><th>Presença</th><th>Conteúdo</th><th>Ações</th></tr>
           </thead>
           <tbody></tbody>
         </table>
@@ -85,37 +83,30 @@
       </div>
     </div>
   </div>
-
   <!-- Scripts -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script>
-    // Função para recuperar os usuários do localStorage
     function getUsers() {
       return JSON.parse(localStorage.getItem('usuarios')) || {
-        "admin": { senha: "1234", tipo: "admin" },
-        "professor": { senha: "abcd", tipo: "professor" }
+        "admin": { senha: "1234", tipo: "admin", alunos: [] },
+        "professor": { senha: "abcd", tipo: "professor", alunos: ["aluno1", "aluno2"] }
       };
     }
 
-    // Função para salvar os usuários no localStorage
     function saveUsers(users) {
       localStorage.setItem('usuarios', JSON.stringify(users));
     }
 
-    // Função para realizar o login
     function fazerLogin() {
       const usuario = document.getElementById('loginUsuario').value;
       const senha = document.getElementById('loginSenha').value;
       const users = getUsers();
-
       if (users[usuario] && users[usuario].senha === senha) {
         localStorage.setItem('usuarioLogado', JSON.stringify({ nome: usuario, tipo: users[usuario].tipo }));
         document.getElementById('telaLogin').style.display = 'none';
         document.getElementById('conteudoPrincipal').style.display = 'block';
         carregarChamada();
-
-        // Verifica se o usuário logado é admin e exibe a área de gerenciamento
         if (users[usuario].tipo === 'admin') {
           document.getElementById('admin-area').style.display = 'block';
           renderUserList();
@@ -125,69 +116,46 @@
       }
     }
 
-    // Função para cadastrar novos usuários
-    function cadastrarUsuario(event) {
-      event.preventDefault();
-
-      const novoUsuario = document.getElementById('new-username').value.trim();
-      const novaSenha = document.getElementById('new-password').value.trim();
-      const tipoUsuario = document.getElementById('new-type').value;
-
-      if (novoUsuario && novaSenha) {
-        const users = getUsers();
-        users[novoUsuario] = { senha: novaSenha, tipo: tipoUsuario };
-        saveUsers(users);
-
-        alert('Usuário cadastrado com sucesso!');
-        renderUserList();
-      } else {
-        alert('Por favor, preencha todos os campos!');
-      }
-    }
-
-    // Função para renderizar a lista de usuários cadastrados
-    function renderUserList() {
-      const users = getUsers();
-      const listaUsuarios = document.getElementById('user-list');
-      listaUsuarios.innerHTML = '';
-
-      for (let usuario in users) {
-        const li = document.createElement('li');
-        li.textContent = `${usuario} - ${users[usuario].tipo}`;
-        listaUsuarios.appendChild(li);
-      }
-    }
-
-    // Função para sair do sistema
     function sair() {
       localStorage.removeItem('usuarioLogado');
       location.reload();
     }
 
-    // Função para adicionar uma chamada à lista
     function adicionarChamada() {
       const aluno = document.getElementById('aluno').value.trim();
       const data = document.getElementById('data').value;
       const presenca = document.getElementById('presenca').value;
       const conteudo = document.getElementById('conteudo').value.trim();
-
       if (!aluno || !data || !conteudo) {
         alert('Preencha todos os campos.');
         return;
       }
 
-      const novaLinha = `<tr><td>${aluno}</td><td>${data}</td><td>${presenca}</td><td>${conteudo}</td></tr>`;
+      const usuarioLogado = JSON.parse(localStorage.getItem('usuarioLogado'));
+      const users = getUsers();
+      const alunosDoProfessor = users[usuarioLogado.nome].alunos;
+
+      // Verificar se o aluno pertence ao professor logado
+      if (usuarioLogado.tipo === 'professor' && !alunosDoProfessor.includes(aluno)) {
+        alert('Este aluno não pertence ao seu grupo.');
+        return;
+      }
+
+      const novaLinha = `<tr><td>${aluno}</td><td>${data}</td><td>${presenca}</td><td>${conteudo}</td><td><button class="delete-btn" onclick="excluirChamada(this)">Excluir</button></td></tr>`;
       document.querySelector('#tabelaChamada tbody').innerHTML += novaLinha;
       salvarChamada();
-
-      // Limpar campos após adicionar
       document.getElementById('aluno').value = '';
       document.getElementById('data').value = '';
       document.getElementById('presenca').value = 'Presente';
       document.getElementById('conteudo').value = '';
     }
 
-    // Função para salvar as chamadas no localStorage
+    function excluirChamada(button) {
+      const row = button.closest('tr');
+      row.remove();
+      salvarChamada();
+    }
+
     function salvarChamada() {
       const linhas = Array.from(document.querySelectorAll('#tabelaChamada tbody tr'));
       const dados = linhas.map(linha => {
@@ -199,69 +167,36 @@
           conteudo: colunas[3].innerText
         };
       });
-
       localStorage.setItem('listaChamada', JSON.stringify(dados));
     }
 
-    // Função para carregar as chamadas no início
     function carregarChamada() {
       const dados = JSON.parse(localStorage.getItem('listaChamada')) || [];
+      const usuarioLogado = JSON.parse(localStorage.getItem('usuarioLogado'));
+      const users = getUsers();
+      const alunosDoProfessor = users[usuarioLogado.nome].alunos;
+
       const tbody = document.querySelector('#tabelaChamada tbody');
       tbody.innerHTML = '';
-
-      dados.forEach(item => {
-        const linha = `<tr><td>${item.aluno}</td><td>${item.data}</td><td>${item.presenca}</td><td>${item.conteudo}</td></tr>`;
-        tbody.innerHTML += linha;
+      dados.forEach(chamada => {
+        // Adiciona chamada apenas se for do aluno do professor
+        if (usuarioLogado.tipo === 'professor' && !alunosDoProfessor.includes(chamada.aluno)) return;
+        tbody.innerHTML += `<tr><td>${chamada.aluno}</td><td>${chamada.data}</td><td>${chamada.presenca}</td><td>${chamada.conteudo}</td><td><button class="delete-btn" onclick="excluirChamada(this)">Excluir</button></td></tr>`;
       });
     }
 
-    // Funções para exportar PDF e CSV
-    function exportarPDF() {
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF();
-      const dados = JSON.parse(localStorage.getItem('listaChamada')) || [];
-      const colunas = ["Aluno", "Data", "Presença", "Conteúdo"];
-      const larguraCol = [50, 30, 30, 50];
-      const dadosFormatados = dados.map(item => [item.aluno, item.data, item.presenca, item.conteudo]);
-      doc.autoTable(colunas, dadosFormatados, { columnWidths: larguraCol });
-      doc.save('chamada.pdf');
-    }
-
-    function exportarCSV() {
-      const dados = JSON.parse(localStorage.getItem('listaChamada')) || [];
-      let csv = "Aluno,Data,Presença,Conteúdo\n";
-      dados.forEach(item => {
-        csv += `${item.aluno},${item.data},${item.presenca},${item.conteudo}\n`;
-      });
-      const blob = new Blob([csv], { type: 'text/csv' });
-      const link = document.createElement('a');
-      link.href = URL.createObjectURL(blob);
-      link.download = 'chamada.csv';
-      link.click();
-    }
-
-    // Função para filtrar os alunos pela busca
-    function filtrarAlunos() {
-      const filtro = document.getElementById('busca').value.toLowerCase();
-      const linhas = Array.from(document.querySelectorAll('#tabelaChamada tbody tr'));
-
-      linhas.forEach(linha => {
-        const nomeAluno = linha.cells[0].textContent.toLowerCase();
-        if (nomeAluno.includes(filtro)) {
-          linha.style.display = '';
-        } else {
-          linha.style.display = 'none';
-        }
+    function renderUserList() {
+      const users = getUsers();
+      const userList = document.getElementById('user-list');
+      userList.innerHTML = '';
+      Object.keys(users).forEach(user => {
+        userList.innerHTML += `<li>${user} (${users[user].tipo})</li>`;
       });
     }
 
-    // Funções para enviar pelo WhatsApp ou Email
-    function enviarWhatsApp() {
-      alert('Funcionalidade em breve...');
-    }
-
-    function enviarEmail() {
-      alert('Funcionalidade em breve...');
+    function trocarIdioma() {
+      const idioma = document.getElementById('seletorIdioma').value;
+      // Função para trocar o idioma
     }
   </script>
 </body>
