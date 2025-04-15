@@ -38,7 +38,6 @@
     document.getElementById("loginPassword").placeholder = t.pass;
     document.querySelector("button").innerText = t.enter;
 
-    // Criação inicial de usuários
     if (!localStorage.getItem('usuarios')) {
       const defaultUsers = [
         { id: 1, nome: "admin", senha: "123", role: "admin" },

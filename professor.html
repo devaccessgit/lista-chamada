@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <title>Professor</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
   <div class="container mt-4">
@@ -16,12 +17,13 @@
     </form>
 
     <h4>Minhas Chamadas</h4>
-<ul class="list-group" id="listaChamadas"></ul>
+    <ul class="list-group" id="listaChamadas"></ul>
 
-<div class="mt-3">
-  <button class="btn btn-outline-primary me-2" onclick="exportarCSV()">Exportar CSV</button>
-  <button class="btn btn-outline-danger" onclick="exportarPDF()">Exportar PDF</button>
-</div>
+    <div class="mt-3">
+      <button class="btn btn-outline-primary me-2" onclick="exportarCSV()">Exportar CSV</button>
+      <button class="btn btn-outline-danger" onclick="exportarPDF()">Exportar PDF</button>
+    </div>
+  </div>
 
   <script>
     const user = JSON.parse(localStorage.getItem('usuarioLogado'));
@@ -37,7 +39,7 @@
       const minhasChamadas = chamadas.filter(c => c.professor === user.nome);
       const lista = document.getElementById("listaChamadas");
       lista.innerHTML = "";
-      minhasChamadas.forEach((c, i) => {
+      minhasChamadas.forEach((c) => {
         lista.innerHTML += `<li class="list-group-item">${c.data} - ${c.aluno}</li>`;
       });
     }
@@ -60,35 +62,38 @@
     carregarChamadas();
 
     function exportarCSV() {
-        const chamadas = JSON.parse(localStorage.getItem('chamadas')) || [];
-        const minhasChamadas = chamadas.filter(c => c.professor === user.nome);
-      
-        let csv = "Data,Aluno\n";
-        minhasChamadas.forEach(c => {
-          csv += `${c.data},${c.aluno}\n`;
-        });
-      
-        const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-        const link = document.createElement("a");
-        link.href = URL.createObjectURL(blob);
-        link.download = "chamadas.csv";
-        link.click();
-      }
-      
-      function exportarPDF() {
-        const minhasChamadas = JSON.parse(localStorage.getItem('chamadas'))
-          .filter(c => c.professor === user.nome);
-      
-        let texto = `Relatório de Chamadas - Professor: ${user.nome}\n\n`;
-        minhasChamadas.forEach(c => {
-          texto += `Data: ${c.data} | Aluno: ${c.aluno}\n`;
-        });
-      
-        const janela = window.open("", "", "width=800,height=600");
-        janela.document.write("<pre>" + texto + "</pre>");
-        janela.document.close();
-        janela.print();
-      }
+      const chamadas = JSON.parse(localStorage.getItem('chamadas')) || [];
+      const minhasChamadas = chamadas.filter(c => c.professor === user.nome);
+
+      let csv = "Data,Aluno\n";
+      minhasChamadas.forEach(c => {
+        csv += `${c.data},${c.aluno}\n`;
+      });
+
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = "chamadas.csv";
+      link.click();
+    }
+
+    async function exportarPDF() {
+      const { jsPDF } = window.jspdf;
+      const minhasChamadas = JSON.parse(localStorage.getItem('chamadas'))
+        .filter(c => c.professor === user.nome);
+
+      const doc = new jsPDF();
+      doc.setFontSize(14);
+      doc.text(`Relatório de Chamadas - Professor: ${user.nome}`, 10, 10);
+
+      let y = 20;
+      minhasChamadas.forEach(c => {
+        doc.text(`${c.data} - ${c.aluno}`, 10, y);
+        y += 10;
+      });
+
+      doc.save("chamadas.pdf");
+    }
   </script>
 </body>
 </html>

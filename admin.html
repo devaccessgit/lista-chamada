@@ -37,7 +37,7 @@
       const usuarios = JSON.parse(localStorage.getItem('usuarios')) || [];
       const tbody = document.querySelector('#usuariosTable tbody');
       tbody.innerHTML = "";
-      usuarios.forEach((u, i) => {
+      usuarios.forEach((u) => {
         tbody.innerHTML += `
           <tr>
             <td>${u.nome}</td>
@@ -58,7 +58,6 @@
       const chamadas = JSON.parse(localStorage.getItem('chamadas')) || [];
       document.getElementById("chamadasContent").innerText = JSON.stringify(chamadas, null, 2);
 
-      // Contando as chamadas por aluno
       const chamadasPorAluno = chamadas.reduce((acc, chamada) => {
         acc[chamada.aluno] = (acc[chamada.aluno] || 0) + 1;
         return acc;
@@ -67,7 +66,6 @@
       const labels = Object.keys(chamadasPorAluno);
       const data = Object.values(chamadasPorAluno);
 
-      // Criando o gráfico com os dados
       const ctx = document.getElementById('frequentStudentsChart').getContext('2d');
       const chart = new Chart(ctx, {
         type: 'bar',
