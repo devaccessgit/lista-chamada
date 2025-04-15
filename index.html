@@ -1,95 +1,212 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <title>Painel do Administrador</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Painel do Professor</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    #historico table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    #historico th, #historico td {
+      padding: 8px;
+      text-align: left;
+      border: 1px solid #ddd;
+    }
+
+    #historico th {
+      background-color: #f4f4f4;
+    }
+  </style>
 </head>
 <body class="bg-light">
+  <div class="container py-4">
+    <h2 class="text-center mb-4">Painel do Professor</h2>
+    <div class="text-end mb-3">
+      <span class="me-2">Professor logado: <strong id="nomeProfessor">Professor X</strong></span>
+      <button class="btn btn-danger btn-sm" onclick="logout()">Sair</button>
+    </div>
 
-  <div class="container mt-5">
-    <h1 class="mb-4">Painel do Administrador</h1>
-
-    <!-- Cadastro de professor -->
+    <!-- Cadastrar Aluno -->
     <div class="card mb-4">
-      <div class="card-header">Cadastrar Novo Professor</div>
+      <div class="card-header">Cadastrar Aluno</div>
       <div class="card-body">
-        <form id="form-cadastro">
-          <div class="mb-3">
-            <label for="nomeProfessor" class="form-label">Nome do Professor</label>
-            <input type="text" class="form-control" id="nomeProfessor" required>
+        <div class="row g-3">
+          <div class="col-md-6">
+            <input type="text" class="form-control" id="nomeAluno" placeholder="Nome do aluno">
           </div>
-          <div class="mb-3">
-            <label for="emailProfessor" class="form-label">Email</label>
-            <input type="email" class="form-control" id="emailProfessor" required>
+          <div class="col-md-6">
+            <button class="btn btn-primary w-100" onclick="adicionarAluno()">Cadastrar</button>
           </div>
-          <button type="submit" class="btn btn-primary">Cadastrar</button>
-        </form>
+        </div>
       </div>
     </div>
 
-    <!-- Lista de professores -->
-    <div class="card">
-      <div class="card-header">Professores Cadastrados</div>
-      <ul class="list-group list-group-flush" id="listaProfessores"></ul>
+    <!-- Lista de Alunos -->
+    <div class="card mb-4">
+      <div class="card-header">Lista de Alunos</div>
+      <div class="card-body">
+        <table class="table table-bordered">
+          <thead>
+            <tr>
+              <th>Nome</th>
+              <th>Status</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="tabelaAlunos"></tbody>
+        </table>
+        <div class="text-end">
+          <button class="btn btn-success" onclick="exportarCSV()">Exportar CSV</button>
+          <button class="btn btn-danger" onclick="exportarPDF()">Exportar PDF</button>
+        </div>
+      </div>
     </div>
 
-    <div class="mt-4">
-      <a href="index.html" class="btn btn-secondary">Voltar para Login</a>
+    <!-- Registro de Presença -->
+    <div class="card mb-4">
+      <div class="card-header">Registro de Presença</div>
+      <div class="card-body">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <input type="text" class="form-control" id="nomeChamada" placeholder="Nome do aluno">
+          </div>
+          <div class="col-md-6">
+            <div class="form-check">
+              <input type="checkbox" id="presente" class="form-check-input">
+              <label class="form-check-label" for="presente">Presente</label>
+            </div>
+          </div>
+          <div class="col-12 mt-2">
+            <button class="btn btn-primary w-100" onclick="registrarChamada()">Registrar Chamada</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Histórico de Chamadas -->
+    <div class="card mb-4">
+      <div class="card-header">Histórico de Chamadas</div>
+      <div class="card-body">
+        <input type="date" id="dataSelecionada" class="form-control mt-3" onchange="exibirHistorico(document.getElementById('dataSelecionada').value)">
+        <div id="historico" class="mt-3"></div>
+      </div>
     </div>
   </div>
 
   <script>
-    const listaProfessores = document.getElementById('listaProfessores');
-    const form = document.getElementById('form-cadastro');
+    const alunos = JSON.parse(localStorage.getItem('alunos')) || [];
+    let chamadas = JSON.parse(localStorage.getItem('chamadas')) || [];
 
-    // Carrega os professores ao iniciar
-    document.addEventListener('DOMContentLoaded', carregarProfessores);
-
-    function carregarProfessores() {
-      const professores = JSON.parse(localStorage.getItem('professores')) || [];
-      listaProfessores.innerHTML = '';
-
-      professores.forEach((prof, index) => {
-        const li = document.createElement('li');
-        li.className = 'list-group-item d-flex justify-content-between align-items-center';
-        li.innerHTML = `
-          <div>
-            <strong>${prof.nome}</strong> - ${prof.email}
-          </div>
-          <div>
-            <button class="btn btn-sm btn-success me-2" onclick="acessarPainel('${prof.email}')">Acessar</button>
-            <button class="btn btn-sm btn-danger" onclick="excluirProfessor(${index})">Excluir</button>
-          </div>
+    function renderizarTabela() {
+      const tabela = document.getElementById('tabelaAlunos');
+      tabela.innerHTML = '';
+      alunos.forEach((aluno, index) => {
+        tabela.innerHTML += `
+          <tr>
+            <td>${aluno.nome}</td>
+            <td>
+              <select onchange="atualizarStatus(${index}, this.value)" class="form-select">
+                <option value="presente" ${aluno.status === 'presente' ? 'selected' : ''}>Presente</option>
+                <option value="ausente" ${aluno.status === 'ausente' ? 'selected' : ''}>Ausente</option>
+              </select>
+            </td>
+            <td>
+              <button class="btn btn-danger btn-sm" onclick="removerAluno(${index})">Remover</button>
+            </td>
+          </tr>
         `;
-        listaProfessores.appendChild(li);
       });
     }
 
-    form.addEventListener('submit', function(e) {
-      e.preventDefault();
-      const nome = document.getElementById('nomeProfessor').value;
-      const email = document.getElementById('emailProfessor').value;
-
-      const professores = JSON.parse(localStorage.getItem('professores')) || [];
-      professores.push({ nome, email });
-      localStorage.setItem('professores', JSON.stringify(professores));
-
-      form.reset();
-      carregarProfessores();
-    });
-
-    function excluirProfessor(index) {
-      const professores = JSON.parse(localStorage.getItem('professores')) || [];
-      professores.splice(index, 1);
-      localStorage.setItem('professores', JSON.stringify(professores));
-      carregarProfessores();
+    function adicionarAluno() {
+      const nome = document.getElementById('nomeAluno').value.trim();
+      if (!nome) return alert('Informe o nome do aluno');
+      alunos.push({ nome, status: 'presente' });
+      localStorage.setItem('alunos', JSON.stringify(alunos));
+      document.getElementById('nomeAluno').value = '';
+      renderizarTabela();
     }
 
-    function acessarPainel(email) {
-      localStorage.setItem('professorLogado', email);
-      window.location.href = 'index.html'; // redireciona para a página principal do sistema
+    function atualizarStatus(index, status) {
+      alunos[index].status = status;
+      localStorage.setItem('alunos', JSON.stringify(alunos));
     }
+
+    function removerAluno(index) {
+      if (confirm('Tem certeza que deseja remover o aluno?')) {
+        alunos.splice(index, 1);
+        localStorage.setItem('alunos', JSON.stringify(alunos));
+        renderizarTabela();
+      }
+    }
+
+    function logout() {
+      alert('Logout efetuado!');
+      // Redirecionar para tela de login futuramente
+    }
+
+    // Função de registro de chamada
+    function registrarChamada() {
+      const nomeAluno = document.getElementById('nomeChamada').value.trim();
+      const presente = document.getElementById('presente').checked;
+      const dataAtual = new Date().toLocaleDateString();
+      
+      if (!nomeAluno) return alert('Informe o nome do aluno!');
+      
+      const chamada = {
+        aluno: nomeAluno,
+        presente: presente,
+        data: dataAtual
+      };
+      
+      chamadas.push(chamada);
+      localStorage.setItem('chamadas', JSON.stringify(chamadas));
+      
+      document.getElementById('nomeChamada').value = '';
+      document.getElementById('presente').checked = false;
+      alert('Chamada registrada com sucesso!');
+    }
+
+    // Exibir Histórico de Chamadas
+    function exibirHistorico(data) {
+      const historicoFiltrado = chamadas.filter(chamada => chamada.data === data);
+      
+      let historicoHtml = '<table>';
+      historicoHtml += '<tr><th>Aluno</th><th>Presente</th><th>Data</th></tr>';
+      
+      historicoFiltrado.forEach(chamada => {
+        historicoHtml += `<tr>
+                            <td>${chamada.aluno}</td>
+                            <td>${chamada.presente ? 'Sim' : 'Não'}</td>
+                            <td>${chamada.data}</td>
+                          </tr>`;
+      });
+      
+      historicoHtml += '</table>';
+      
+      document.getElementById('historico').innerHTML = historicoHtml;
+    }
+
+    // Funções de exportação
+    function exportarCSV() {
+      let csv = 'Nome,Status\n';
+      alunos.forEach(a => csv += `${a.nome},${a.status}\n`);
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = 'chamada.csv';
+      link.click();
+    }
+
+    function exportarPDF() {
+      alert('Exportação para PDF será implementada em breve!');
+    }
+
+    renderizarTabela();
   </script>
 </body>
 </html>
