@@ -1,5 +1,8 @@
 <html lang="pt-BR">
 
+<!DOCTYPE html>
+<html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -20,7 +23,7 @@
         }
 
         .language-toggle {
-            position: fixed;
+            position: absolute;
             top: 10px;
             right: 10px;
             z-index: 999;
@@ -56,13 +59,15 @@
                 loginTitle: 'Login',
                 usernameLabel: 'Nome de usuário',
                 passwordLabel: 'Senha',
-                loginButton: 'Entrar'
+                loginButton: 'Entrar',
+                alertInvalid: 'Usuário ou senha incorretos'
             },
             en: {
                 loginTitle: 'Login',
                 usernameLabel: 'Username',
                 passwordLabel: 'Password',
-                loginButton: 'Login'
+                loginButton: 'Login',
+                alertInvalid: 'Invalid username or password'
             }
         };
 
@@ -97,7 +102,8 @@
                 localStorage.setItem('usuarioLogado', JSON.stringify(user));
                 window.location.href = 'index.html';
             } else {
-                alert('Usuário ou senha incorretos');
+                const lang = localStorage.getItem('lang') || 'pt';
+                alert(translations[lang].alertInvalid);
             }
         });
 
