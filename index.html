@@ -1,65 +1,91 @@
 <!DOCTYPE html>
-<html lang="pt">
+<html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <title>Login</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" />
+  <meta charset="UTF-8">
+  <title>Lista de Chamada - Login</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body class="bg-light">
-  <div class="container mt-5">
-    <h2 class="text-center" id="loginTitle">Login</h2>
-    <select class="form-select my-3" id="langSelect">
-      <option value="pt">Português</option>
-      <option value="en">English</option>
-    </select>
+
+  <!-- Tela de Login -->
+  <div id="loginSection" class="container mt-5">
+    <h2>Login</h2>
     <form id="loginForm">
-      <input type="text" id="loginUsername" class="form-control my-2" placeholder="Usuário" required />
-      <input type="password" id="loginPassword" class="form-control my-2" placeholder="Senha" required />
-      <button type="submit" class="btn btn-primary w-100">Entrar</button>
+      <div class="mb-3">
+        <label for="loginUsername" class="form-label">Usuário</label>
+        <input type="text" class="form-control" id="loginUsername" required>
+      </div>
+      <div class="mb-3">
+        <label for="loginPassword" class="form-label">Senha</label>
+        <input type="password" class="form-control" id="loginPassword" required>
+      </div>
+      <button type="submit" class="btn btn-primary">Entrar</button>
     </form>
+    <div id="loginError" class="text-danger mt-3" style="display:none;">Credenciais inválidas</div>
+  </div>
+
+  <!-- Área Admin -->
+  <div id="adminSection" class="container mt-5" style="display:none;">
+    <h2>Bem-vindo, Admin</h2>
+    <p>Aqui ficam as funcionalidades de administrador.</p>
+    <button class="btn btn-secondary" onclick="logout()">Sair</button>
+  </div>
+
+  <!-- Área Professor -->
+  <div id="professorSection" class="container mt-5" style="display:none;">
+    <h2>Bem-vindo, Professor</h2>
+    <p>Aqui ficam as funcionalidades do professor.</p>
+    <button class="btn btn-secondary" onclick="logout()">Sair</button>
   </div>
 
   <script>
-    const lang = localStorage.getItem('lang') || 'pt';
-    document.getElementById("langSelect").value = lang;
-    document.getElementById("langSelect").addEventListener("change", e => {
-      localStorage.setItem('lang', e.target.value);
-      location.reload();
-    });
+    const defaultUsers = [
+      { nome: "admin", senha: "123", role: "admin" },
+      { nome: "professor", senha: "123", role: "professor" }
+    ];
+    localStorage.setItem("usuarios", JSON.stringify(defaultUsers));
 
-    const textos = {
-      pt: { login: "Login", user: "Usuário", pass: "Senha", enter: "Entrar" },
-      en: { login: "Login", user: "Username", pass: "Password", enter: "Enter" }
-    };
+    const loginForm = document.getElementById("loginForm");
+    const loginError = document.getElementById("loginError");
 
-    const t = textos[lang];
-    document.getElementById("loginTitle").innerText = t.login;
-    document.getElementById("loginUsername").placeholder = t.user;
-    document.getElementById("loginPassword").placeholder = t.pass;
-    document.querySelector("button").innerText = t.enter;
-
-    if (!localStorage.getItem('usuarios')) {
-      const defaultUsers = [
-        { id: 1, nome: "admin", senha: "123", role: "admin" },
-        { id: 2, nome: "professor", senha: "123", role: "professor" }
-      ];
-      localStorage.setItem('usuarios', JSON.stringify(defaultUsers));
-    }
-
-    document.getElementById("loginForm").addEventListener("submit", function (e) {
+    loginForm.addEventListener("submit", function (e) {
       e.preventDefault();
       const nome = document.getElementById("loginUsername").value;
       const senha = document.getElementById("loginPassword").value;
-      const usuarios = JSON.parse(localStorage.getItem("usuarios")) || [];
+      const usuarios = JSON.parse(localStorage.getItem("usuarios"));
 
       const user = usuarios.find(u => u.nome === nome && u.senha === senha);
+
       if (user) {
         localStorage.setItem("usuarioLogado", JSON.stringify(user));
-        window.location.href = user.role === "admin" ? "admin.html" : "professor.html";
+        mostrarArea(user.role);
       } else {
-        alert("Credenciais inválidas");
+        loginError.style.display = "block";
       }
     });
+
+    function mostrarArea(role) {
+      document.getElementById("loginSection").style.display = "none";
+      document.getElementById("loginError").style.display = "none";
+      if (role === "admin") {
+        document.getElementById("adminSection").style.display = "block";
+      } else {
+        document.getElementById("professorSection").style.display = "block";
+      }
+    }
+
+    function logout() {
+      localStorage.removeItem("usuarioLogado");
+      location.reload();
+    }
+
+    // Se o usuário já estiver logado, exibe a área dele
+    window.onload = () => {
+      const usuario = JSON.parse(localStorage.getItem("usuarioLogado"));
+      if (usuario) {
+        mostrarArea(usuario.role);
+      }
+    };
   </script>
 </body>
 </html>
