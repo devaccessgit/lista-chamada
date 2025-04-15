@@ -2,90 +2,94 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>Lista de Chamada - Login</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <title>Painel do Administrador</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
 </head>
 <body class="bg-light">
 
-  <!-- Tela de Login -->
-  <div id="loginSection" class="container mt-5">
-    <h2>Login</h2>
-    <form id="loginForm">
-      <div class="mb-3">
-        <label for="loginUsername" class="form-label">Usuário</label>
-        <input type="text" class="form-control" id="loginUsername" required>
-      </div>
-      <div class="mb-3">
-        <label for="loginPassword" class="form-label">Senha</label>
-        <input type="password" class="form-control" id="loginPassword" required>
-      </div>
-      <button type="submit" class="btn btn-primary">Entrar</button>
-    </form>
-    <div id="loginError" class="text-danger mt-3" style="display:none;">Credenciais inválidas</div>
-  </div>
+  <div class="container mt-5">
+    <h1 class="mb-4">Painel do Administrador</h1>
 
-  <!-- Área Admin -->
-  <div id="adminSection" class="container mt-5" style="display:none;">
-    <h2>Bem-vindo, Admin</h2>
-    <p>Aqui ficam as funcionalidades de administrador.</p>
-    <button class="btn btn-secondary" onclick="logout()">Sair</button>
-  </div>
+    <!-- Cadastro de professor -->
+    <div class="card mb-4">
+      <div class="card-header">Cadastrar Novo Professor</div>
+      <div class="card-body">
+        <form id="form-cadastro">
+          <div class="mb-3">
+            <label for="nomeProfessor" class="form-label">Nome do Professor</label>
+            <input type="text" class="form-control" id="nomeProfessor" required>
+          </div>
+          <div class="mb-3">
+            <label for="emailProfessor" class="form-label">Email</label>
+            <input type="email" class="form-control" id="emailProfessor" required>
+          </div>
+          <button type="submit" class="btn btn-primary">Cadastrar</button>
+        </form>
+      </div>
+    </div>
 
-  <!-- Área Professor -->
-  <div id="professorSection" class="container mt-5" style="display:none;">
-    <h2>Bem-vindo, Professor</h2>
-    <p>Aqui ficam as funcionalidades do professor.</p>
-    <button class="btn btn-secondary" onclick="logout()">Sair</button>
+    <!-- Lista de professores -->
+    <div class="card">
+      <div class="card-header">Professores Cadastrados</div>
+      <ul class="list-group list-group-flush" id="listaProfessores"></ul>
+    </div>
+
+    <div class="mt-4">
+      <a href="index.html" class="btn btn-secondary">Voltar para Login</a>
+    </div>
   </div>
 
   <script>
-    const defaultUsers = [
-      { nome: "admin", senha: "123", role: "admin" },
-      { nome: "professor", senha: "123", role: "professor" }
-    ];
-    localStorage.setItem("usuarios", JSON.stringify(defaultUsers));
+    const listaProfessores = document.getElementById('listaProfessores');
+    const form = document.getElementById('form-cadastro');
 
-    const loginForm = document.getElementById("loginForm");
-    const loginError = document.getElementById("loginError");
+    // Carrega os professores ao iniciar
+    document.addEventListener('DOMContentLoaded', carregarProfessores);
 
-    loginForm.addEventListener("submit", function (e) {
+    function carregarProfessores() {
+      const professores = JSON.parse(localStorage.getItem('professores')) || [];
+      listaProfessores.innerHTML = '';
+
+      professores.forEach((prof, index) => {
+        const li = document.createElement('li');
+        li.className = 'list-group-item d-flex justify-content-between align-items-center';
+        li.innerHTML = `
+          <div>
+            <strong>${prof.nome}</strong> - ${prof.email}
+          </div>
+          <div>
+            <button class="btn btn-sm btn-success me-2" onclick="acessarPainel('${prof.email}')">Acessar</button>
+            <button class="btn btn-sm btn-danger" onclick="excluirProfessor(${index})">Excluir</button>
+          </div>
+        `;
+        listaProfessores.appendChild(li);
+      });
+    }
+
+    form.addEventListener('submit', function(e) {
       e.preventDefault();
-      const nome = document.getElementById("loginUsername").value;
-      const senha = document.getElementById("loginPassword").value;
-      const usuarios = JSON.parse(localStorage.getItem("usuarios"));
+      const nome = document.getElementById('nomeProfessor').value;
+      const email = document.getElementById('emailProfessor').value;
 
-      const user = usuarios.find(u => u.nome === nome && u.senha === senha);
+      const professores = JSON.parse(localStorage.getItem('professores')) || [];
+      professores.push({ nome, email });
+      localStorage.setItem('professores', JSON.stringify(professores));
 
-      if (user) {
-        localStorage.setItem("usuarioLogado", JSON.stringify(user));
-        mostrarArea(user.role);
-      } else {
-        loginError.style.display = "block";
-      }
+      form.reset();
+      carregarProfessores();
     });
 
-    function mostrarArea(role) {
-      document.getElementById("loginSection").style.display = "none";
-      document.getElementById("loginError").style.display = "none";
-      if (role === "admin") {
-        document.getElementById("adminSection").style.display = "block";
-      } else {
-        document.getElementById("professorSection").style.display = "block";
-      }
+    function excluirProfessor(index) {
+      const professores = JSON.parse(localStorage.getItem('professores')) || [];
+      professores.splice(index, 1);
+      localStorage.setItem('professores', JSON.stringify(professores));
+      carregarProfessores();
     }
 
-    function logout() {
-      localStorage.removeItem("usuarioLogado");
-      location.reload();
+    function acessarPainel(email) {
+      localStorage.setItem('professorLogado', email);
+      window.location.href = 'index.html'; // redireciona para a página principal do sistema
     }
-
-    // Se o usuário já estiver logado, exibe a área dele
-    window.onload = () => {
-      const usuario = JSON.parse(localStorage.getItem("usuarioLogado"));
-      if (usuario) {
-        mostrarArea(usuario.role);
-      }
-    };
   </script>
 </body>
 </html>
