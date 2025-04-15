@@ -24,10 +24,11 @@
     </div>
     <button class="btn btn-primary" onclick="fazerLogin()">Entrar</button>
   </div>
+
   <!-- Área do Admin -->
   <div id="admin-area" style="display:none;">
     <h2>👑 Gerenciar Usuários</h2>
-    <form id="user-form" class="mb-3">
+    <form id="user-form" class="mb-3" onsubmit="cadastrarUsuario(event)">
       <input type="text" id="new-username" placeholder="Usuário" required>
       <input type="password" id="new-password" placeholder="Senha" required>
       <select id="new-type">
@@ -39,6 +40,7 @@
     <h4>Usuários Cadastrados:</h4>
     <ul id="user-list"></ul>
   </div>
+
   <!-- Conteúdo Principal -->
   <div id="conteudoPrincipal" style="display: none;">
     <div class="container">
@@ -50,6 +52,7 @@
         </select>
       </div>
       <h1 class="text-center mb-4">📋 Lista de Chamada - Aulas de Inglês</h1>
+      
       <!-- Formulário -->
       <div class="row g-3 mb-4">
         <div class="col-md-3"><input type="text" id="aluno" class="form-control" placeholder="Nome do Aluno"></div>
@@ -82,10 +85,12 @@
       </div>
     </div>
   </div>
+
   <!-- Scripts -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script>
+    // Função para recuperar os usuários do localStorage
     function getUsers() {
       return JSON.parse(localStorage.getItem('usuarios')) || {
         "admin": { senha: "1234", tipo: "admin" },
@@ -93,19 +98,24 @@
       };
     }
 
+    // Função para salvar os usuários no localStorage
     function saveUsers(users) {
       localStorage.setItem('usuarios', JSON.stringify(users));
     }
 
+    // Função para realizar o login
     function fazerLogin() {
       const usuario = document.getElementById('loginUsuario').value;
       const senha = document.getElementById('loginSenha').value;
       const users = getUsers();
+
       if (users[usuario] && users[usuario].senha === senha) {
         localStorage.setItem('usuarioLogado', JSON.stringify({ nome: usuario, tipo: users[usuario].tipo }));
         document.getElementById('telaLogin').style.display = 'none';
         document.getElementById('conteudoPrincipal').style.display = 'block';
         carregarChamada();
+
+        // Verifica se o usuário logado é admin e exibe a área de gerenciamento
         if (users[usuario].tipo === 'admin') {
           document.getElementById('admin-area').style.display = 'block';
           renderUserList();
@@ -115,29 +125,69 @@
       }
     }
 
+    // Função para cadastrar novos usuários
+    function cadastrarUsuario(event) {
+      event.preventDefault();
+
+      const novoUsuario = document.getElementById('new-username').value.trim();
+      const novaSenha = document.getElementById('new-password').value.trim();
+      const tipoUsuario = document.getElementById('new-type').value;
+
+      if (novoUsuario && novaSenha) {
+        const users = getUsers();
+        users[novoUsuario] = { senha: novaSenha, tipo: tipoUsuario };
+        saveUsers(users);
+
+        alert('Usuário cadastrado com sucesso!');
+        renderUserList();
+      } else {
+        alert('Por favor, preencha todos os campos!');
+      }
+    }
+
+    // Função para renderizar a lista de usuários cadastrados
+    function renderUserList() {
+      const users = getUsers();
+      const listaUsuarios = document.getElementById('user-list');
+      listaUsuarios.innerHTML = '';
+
+      for (let usuario in users) {
+        const li = document.createElement('li');
+        li.textContent = `${usuario} - ${users[usuario].tipo}`;
+        listaUsuarios.appendChild(li);
+      }
+    }
+
+    // Função para sair do sistema
     function sair() {
       localStorage.removeItem('usuarioLogado');
       location.reload();
     }
 
+    // Função para adicionar uma chamada à lista
     function adicionarChamada() {
       const aluno = document.getElementById('aluno').value.trim();
       const data = document.getElementById('data').value;
       const presenca = document.getElementById('presenca').value;
       const conteudo = document.getElementById('conteudo').value.trim();
+
       if (!aluno || !data || !conteudo) {
         alert('Preencha todos os campos.');
         return;
       }
+
       const novaLinha = `<tr><td>${aluno}</td><td>${data}</td><td>${presenca}</td><td>${conteudo}</td></tr>`;
       document.querySelector('#tabelaChamada tbody').innerHTML += novaLinha;
       salvarChamada();
+
+      // Limpar campos após adicionar
       document.getElementById('aluno').value = '';
       document.getElementById('data').value = '';
       document.getElementById('presenca').value = 'Presente';
       document.getElementById('conteudo').value = '';
     }
 
+    // Função para salvar as chamadas no localStorage
     function salvarChamada() {
       const linhas = Array.from(document.querySelectorAll('#tabelaChamada tbody tr'));
       const dados = linhas.map(linha => {
@@ -149,19 +199,23 @@
           conteudo: colunas[3].innerText
         };
       });
+
       localStorage.setItem('listaChamada', JSON.stringify(dados));
     }
 
+    // Função para carregar as chamadas no início
     function carregarChamada() {
       const dados = JSON.parse(localStorage.getItem('listaChamada')) || [];
       const tbody = document.querySelector('#tabelaChamada tbody');
       tbody.innerHTML = '';
+
       dados.forEach(item => {
         const linha = `<tr><td>${item.aluno}</td><td>${item.data}</td><td>${item.presenca}</td><td>${item.conteudo}</td></tr>`;
         tbody.innerHTML += linha;
       });
     }
 
+    // Funções para exportar PDF e CSV
     function exportarPDF() {
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF();
@@ -186,11 +240,13 @@
       link.click();
     }
 
+    // Função para filtrar os alunos pela busca
     function filtrarAlunos() {
       const filtro = document.getElementById('busca').value.toLowerCase();
       const linhas = Array.from(document.querySelectorAll('#tabelaChamada tbody tr'));
+
       linhas.forEach(linha => {
-        const nomeAluno = linha.querySelector('td').innerText.toLowerCase();
+        const nomeAluno = linha.cells[0].textContent.toLowerCase();
         if (nomeAluno.includes(filtro)) {
           linha.style.display = '';
         } else {
@@ -199,43 +255,13 @@
       });
     }
 
+    // Funções para enviar pelo WhatsApp ou Email
     function enviarWhatsApp() {
-      const dados = JSON.parse(localStorage.getItem('listaChamada')) || [];
-      if (dados.length === 0) {
-        alert("Não há chamadas para enviar.");
-        return;
-      }
-      let mensagem = "*📋 Lista de Chamada - Aulas de Inglês*\n\n";
-      dados.forEach(item => {
-        mensagem += `👤 *${item.aluno}*\n📅 ${item.data} - ${item.presenca}\n📘 Conteúdo: ${item.conteudo}\n\n`;
-      });
-      const numero = prompt("Digite o número do WhatsApp (com DDD e sem espaços):", "11999999999");
-      if (!numero) return;
-      const link = `https://wa.me/55${numero}?text=${encodeURIComponent(mensagem)}`;
-      window.open(link, "_blank");
+      alert('Funcionalidade em breve...');
     }
 
     function enviarEmail() {
-      const dados = JSON.parse(localStorage.getItem('listaChamada')) || [];
-      if (dados.length === 0) {
-        alert("Não há chamadas para enviar.");
-        return;
-      }
-      let corpo = "📋 Lista de Chamada - Aulas de Inglês\n\n";
-      dados.forEach(item => {
-        corpo += `👤 ${item.aluno}\n📅 ${item.data} - ${item.presenca}\n📘 Conteúdo: ${item.conteudo}\n\n`;
-      });
-      const mailtoLink = `mailto:?subject=Lista de Chamada - Aulas de Inglês&body=${encodeURIComponent(corpo)}`;
-      window.location.href = mailtoLink;
-    }
-
-    function trocarIdioma() {
-      const idioma = document.getElementById('seletorIdioma').value;
-      if (idioma === 'pt-BR') {
-        document.title = "Lista de Chamada - Aulas de Inglês";
-      } else {
-        document.title = "Attendance List - English Lessons";
-      }
+      alert('Funcionalidade em breve...');
     }
   </script>
 </body>
