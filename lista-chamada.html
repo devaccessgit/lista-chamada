@@ -77,8 +77,8 @@
         </table>
       </div>
       <div class="mt-3 text-end">
-        <button class="btn btn-outline-success">📱 WhatsApp</button>
-        <button class="btn btn-outline-primary">📧 E-mail</button>
+        <button class="btn btn-outline-success" onclick="enviarWhatsApp()">📱 WhatsApp</button>
+        <button class="btn btn-outline-primary" onclick="enviarEmail()">📧 E-mail</button>
       </div>
     </div>
   </div>
@@ -92,9 +92,11 @@
         "professor": { senha: "abcd", tipo: "professor" }
       };
     }
+
     function saveUsers(users) {
       localStorage.setItem('usuarios', JSON.stringify(users));
     }
+
     function fazerLogin() {
       const usuario = document.getElementById('loginUsuario').value;
       const senha = document.getElementById('loginSenha').value;
@@ -112,10 +114,12 @@
         alert('Usuário ou senha inválidos!');
       }
     }
+
     function sair() {
       localStorage.removeItem('usuarioLogado');
       location.reload();
     }
+
     function adicionarChamada() {
       const aluno = document.getElementById('aluno').value.trim();
       const data = document.getElementById('data').value;
@@ -133,6 +137,7 @@
       document.getElementById('presenca').value = 'Presente';
       document.getElementById('conteudo').value = '';
     }
+
     function salvarChamada() {
       const linhas = Array.from(document.querySelectorAll('#tabelaChamada tbody tr'));
       const dados = linhas.map(linha => {
@@ -146,6 +151,7 @@
       });
       localStorage.setItem('listaChamada', JSON.stringify(dados));
     }
+
     function carregarChamada() {
       const dados = JSON.parse(localStorage.getItem('listaChamada')) || [];
       const tbody = document.querySelector('#tabelaChamada tbody');
@@ -155,162 +161,84 @@
         tbody.innerHTML += linha;
       });
     }
+
     function exportarPDF() {
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF();
       const dados = JSON.parse(localStorage.getItem('listaChamada')) || [];
       const colunas = ["Aluno", "Data", "Presença", "Conteúdo"];
-      const larguraCol = [50, 30, 30, 80];
-      const linhaAltura = 10;
-      let y = 30;
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(16);
-      doc.setTextColor(40, 40, 40);
-      doc.text("📋 Lista de Chamada", 14, 20);
-      doc.setFontSize(11);
-      doc.setFillColor(173, 216, 230);
-      doc.setTextColor(0, 0, 0);
-      let x = 14;
-      colunas.forEach((col, i) => {
-        doc.rect(x, y, larguraCol[i], linhaAltura, 'F');
-        doc.text(col, x + 2, y + 7);
-        x += larguraCol[i];
-      });
-      y += linhaAltura;
-      dados.forEach((item, index) => {
-        if (y > 270) { doc.addPage(); y = 20; }
-        x = 14;
-        const valores = [item.aluno, item.data, item.presenca, item.conteudo];
-        const corLinha = index % 2 === 0 ? [245, 245, 245] : [255, 255, 255];
-        doc.setFillColor(...corLinha);
-        valores.forEach((val, i) => {
-          doc.rect(x, y, larguraCol[i], linhaAltura, 'F');
-          doc.text(String(val), x + 2, y + 7);
-          x += larguraCol[i];
-        });
-        y += linhaAltura;
-      });
-      const dataExportacao = new Date().toLocaleString("pt-BR");
-      doc.setFontSize(9);
-      doc.setTextColor(100);
-      doc.text(`Exportado em: ${dataExportacao}`, 14, 285);
-      doc.save("lista_chamada.pdf");
+      const larguraCol = [50, 30, 30, 50];
+      const dadosFormatados = dados.map(item => [item.aluno, item.data, item.presenca, item.conteudo]);
+      doc.autoTable(colunas, dadosFormatados, { columnWidths: larguraCol });
+      doc.save('chamada.pdf');
     }
+
     function exportarCSV() {
       const dados = JSON.parse(localStorage.getItem('listaChamada')) || [];
-      let csv = 'Aluno,Data,Presença,Conteúdo\n';
+      let csv = "Aluno,Data,Presença,Conteúdo\n";
       dados.forEach(item => {
-        csv += `"${item.aluno}","${item.data}","${item.presenca}","${item.conteudo}"\n`;
+        csv += `${item.aluno},${item.data},${item.presenca},${item.conteudo}\n`;
       });
-      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.setAttribute("href", url);
-      link.setAttribute("download", "lista_chamada.csv");
-      document.body.appendChild(link);
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = 'chamada.csv';
       link.click();
-      document.body.removeChild(link);
     }
+
     function filtrarAlunos() {
       const filtro = document.getElementById('busca').value.toLowerCase();
-      const linhas = document.querySelectorAll('#tabelaChamada tbody tr');
+      const linhas = Array.from(document.querySelectorAll('#tabelaChamada tbody tr'));
       linhas.forEach(linha => {
-        const nome = linha.querySelector('td').innerText.toLowerCase();
-        linha.style.display = nome.includes(filtro) ? '' : 'none';
+        const nomeAluno = linha.querySelector('td').innerText.toLowerCase();
+        if (nomeAluno.includes(filtro)) {
+          linha.style.display = '';
+        } else {
+          linha.style.display = 'none';
+        }
       });
     }
-    function trocarIdioma() {
-      const idioma = document.getElementById('seletorIdioma').value;
-      if (idioma === 'en-US') {
-        document.querySelector('h1').innerText = '📋 Attendance List - English Classes';
-        document.getElementById('aluno').placeholder = 'Student Name';
-        document.getElementById('busca').placeholder = '🔍 Search student...';
-        document.getElementById('presenca').innerHTML = `
-          <option value="Presente">Present</option>
-          <option value="Faltou">Absent</option>
-        `;
-      } else {
-        document.querySelector('h1').innerText = '📋 Lista de Chamada - Aulas de Inglês';
-        document.getElementById('aluno').placeholder = 'Nome do Aluno';
-        document.getElementById('busca').placeholder = '🔍 Buscar aluno...';
-        document.getElementById('presenca').innerHTML = `
-          <option value="Presente">Presente</option>
-          <option value="Faltou">Faltou</option>
-        `;
-      }
-    }
-    function renderUserList() {
-      const users = getUsers();
-      const lista = Object.entries(users).map(([nome, dados]) => `<li>${nome} (${dados.tipo})</li>`).join('');
-      document.getElementById('user-list').innerHTML = lista;
-    }
-    document.getElementById('user-form').addEventListener('submit', function(e) {
-      e.preventDefault();
-      const username = document.getElementById('new-username').value;
-      const password = document.getElementById('new-password').value;
-      const tipo = document.getElementById('new-type').value;
-      const users = getUsers();
-      if (users[username]) {
-        alert('Usuário já existe!');
-        return;
-      }
-      users[username] = { senha: password, tipo };
-      saveUsers(users);
-      renderUserList();
-      e.target.reset();
-    });
-    window.onload = () => {
-      const user = JSON.parse(localStorage.getItem('usuarioLogado'));
-      if (user) {
-        document.getElementById('telaLogin').style.display = 'none';
-        document.getElementById('conteudoPrincipal').style.display = 'block';
-        carregarChamada();
-        if (user.tipo === 'admin') {
-          document.getElementById('admin-area').style.display = 'block';
-          renderUserList();
-        }
-      }
-    };
+
     function enviarWhatsApp() {
       const dados = JSON.parse(localStorage.getItem('listaChamada')) || [];
       if (dados.length === 0) {
         alert("Não há chamadas para enviar.");
         return;
       }
-    
       let mensagem = "*📋 Lista de Chamada - Aulas de Inglês*\n\n";
       dados.forEach(item => {
         mensagem += `👤 *${item.aluno}*\n📅 ${item.data} - ${item.presenca}\n📘 Conteúdo: ${item.conteudo}\n\n`;
       });
-    
       const numero = prompt("Digite o número do WhatsApp (com DDD e sem espaços):", "11999999999");
       if (!numero) return;
-    
       const link = `https://wa.me/55${numero}?text=${encodeURIComponent(mensagem)}`;
       window.open(link, "_blank");
     }
-    <button class="btn btn-outline-success" onclick="enviarWhatsApp()">📱 WhatsApp</button>
-    
+
     function enviarEmail() {
       const dados = JSON.parse(localStorage.getItem('listaChamada')) || [];
       if (dados.length === 0) {
         alert("Não há chamadas para enviar.");
         return;
       }
-    
       let corpo = "📋 Lista de Chamada - Aulas de Inglês\n\n";
       dados.forEach(item => {
         corpo += `👤 ${item.aluno}\n📅 ${item.data} - ${item.presenca}\n📘 Conteúdo: ${item.conteudo}\n\n`;
       });
-    
-      const assunto = "Lista de Chamada - Aula de Inglês";
-      const destinatario = prompt("Digite o e-mail do destinatário:", "exemplo@email.com");
-      if (!destinatario) return;
-    
-      const mailto = `mailto:${destinatario}?subject=${encodeURIComponent(assunto)}&body=${encodeURIComponent(corpo)}`;
-      window.location.href = mailto;
+      const mailtoLink = `mailto:?subject=Lista de Chamada - Aulas de Inglês&body=${encodeURIComponent(corpo)}`;
+      window.location.href = mailtoLink;
     }
-    <button class="btn btn-outline-primary" onclick="enviarEmail()">📧 E-mail</button>
+
+    function trocarIdioma() {
+      const idioma = document.getElementById('seletorIdioma').value;
+      if (idioma === 'pt-BR') {
+        document.title = "Lista de Chamada - Aulas de Inglês";
+        // Adicione mais traduções para outros elementos conforme necessário.
+      } else {
+        document.title = "Attendance List - English Lessons";
+        // Adicione traduções em inglês conforme necessário.
+      }
+    }
   </script>
-  </body>
+</body>
 </html>
