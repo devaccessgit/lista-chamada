@@ -24,7 +24,6 @@
     </div>
     <button class="btn btn-primary" onclick="fazerLogin()">Entrar</button>
   </div>
-
   <!-- Área do Admin -->
   <div id="admin-area" style="display:none;">
     <h2>👑 Gerenciar Usuários</h2>
@@ -40,7 +39,6 @@
     <h4>Usuários Cadastrados:</h4>
     <ul id="user-list"></ul>
   </div>
-
   <!-- Conteúdo Principal -->
   <div id="conteudoPrincipal" style="display: none;">
     <div class="container">
@@ -51,9 +49,7 @@
           <option value="en-US">🇺🇸 English</option>
         </select>
       </div>
-
       <h1 class="text-center mb-4">📋 Lista de Chamada - Aulas de Inglês</h1>
-
       <!-- Formulário -->
       <div class="row g-3 mb-4">
         <div class="col-md-3"><input type="text" id="aluno" class="form-control" placeholder="Nome do Aluno"></div>
@@ -71,9 +67,7 @@
           <button class="btn btn-outline-warning" onclick="exportarCSV()">📊 CSV</button>
         </div>
       </div>
-
       <input type="text" id="busca" class="form-control mb-3" placeholder="🔍 Buscar aluno..." oninput="filtrarAlunos()">
-
       <div class="table-responsive">
         <table class="table table-bordered table-striped" id="tabelaChamada">
           <thead class="table-light">
@@ -82,14 +76,12 @@
           <tbody></tbody>
         </table>
       </div>
-
       <div class="mt-3 text-end">
         <button class="btn btn-outline-success">📱 WhatsApp</button>
         <button class="btn btn-outline-primary">📧 E-mail</button>
       </div>
     </div>
   </div>
-
   <!-- Scripts -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -100,22 +92,18 @@
         "professor": { senha: "abcd", tipo: "professor" }
       };
     }
-
     function saveUsers(users) {
       localStorage.setItem('usuarios', JSON.stringify(users));
     }
-
     function fazerLogin() {
       const usuario = document.getElementById('loginUsuario').value;
       const senha = document.getElementById('loginSenha').value;
       const users = getUsers();
-
       if (users[usuario] && users[usuario].senha === senha) {
         localStorage.setItem('usuarioLogado', JSON.stringify({ nome: usuario, tipo: users[usuario].tipo }));
         document.getElementById('telaLogin').style.display = 'none';
         document.getElementById('conteudoPrincipal').style.display = 'block';
         carregarChamada();
-
         if (users[usuario].tipo === 'admin') {
           document.getElementById('admin-area').style.display = 'block';
           renderUserList();
@@ -124,33 +112,27 @@
         alert('Usuário ou senha inválidos!');
       }
     }
-
     function sair() {
       localStorage.removeItem('usuarioLogado');
       location.reload();
     }
-
     function adicionarChamada() {
       const aluno = document.getElementById('aluno').value.trim();
       const data = document.getElementById('data').value;
       const presenca = document.getElementById('presenca').value;
       const conteudo = document.getElementById('conteudo').value.trim();
-
       if (!aluno || !data || !conteudo) {
         alert('Preencha todos os campos.');
         return;
       }
-
       const novaLinha = `<tr><td>${aluno}</td><td>${data}</td><td>${presenca}</td><td>${conteudo}</td></tr>`;
       document.querySelector('#tabelaChamada tbody').innerHTML += novaLinha;
-
       salvarChamada();
       document.getElementById('aluno').value = '';
       document.getElementById('data').value = '';
       document.getElementById('presenca').value = 'Presente';
       document.getElementById('conteudo').value = '';
     }
-
     function salvarChamada() {
       const linhas = Array.from(document.querySelectorAll('#tabelaChamada tbody tr'));
       const dados = linhas.map(linha => {
@@ -164,7 +146,6 @@
       });
       localStorage.setItem('listaChamada', JSON.stringify(dados));
     }
-
     function carregarChamada() {
       const dados = JSON.parse(localStorage.getItem('listaChamada')) || [];
       const tbody = document.querySelector('#tabelaChamada tbody');
@@ -174,7 +155,6 @@
         tbody.innerHTML += linha;
       });
     }
-
     function exportarPDF() {
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF();
@@ -183,16 +163,13 @@
       const larguraCol = [50, 30, 30, 80];
       const linhaAltura = 10;
       let y = 30;
-
       doc.setFont("helvetica", "bold");
       doc.setFontSize(16);
       doc.setTextColor(40, 40, 40);
       doc.text("📋 Lista de Chamada", 14, 20);
-
       doc.setFontSize(11);
       doc.setFillColor(173, 216, 230);
       doc.setTextColor(0, 0, 0);
-
       let x = 14;
       colunas.forEach((col, i) => {
         doc.rect(x, y, larguraCol[i], linhaAltura, 'F');
@@ -200,7 +177,6 @@
         x += larguraCol[i];
       });
       y += linhaAltura;
-
       dados.forEach((item, index) => {
         if (y > 270) { doc.addPage(); y = 20; }
         x = 14;
@@ -214,14 +190,12 @@
         });
         y += linhaAltura;
       });
-
       const dataExportacao = new Date().toLocaleString("pt-BR");
       doc.setFontSize(9);
       doc.setTextColor(100);
       doc.text(`Exportado em: ${dataExportacao}`, 14, 285);
       doc.save("lista_chamada.pdf");
     }
-
     function exportarCSV() {
       const dados = JSON.parse(localStorage.getItem('listaChamada')) || [];
       let csv = 'Aluno,Data,Presença,Conteúdo\n';
@@ -237,7 +211,6 @@
       link.click();
       document.body.removeChild(link);
     }
-
     function filtrarAlunos() {
       const filtro = document.getElementById('busca').value.toLowerCase();
       const linhas = document.querySelectorAll('#tabelaChamada tbody tr');
@@ -246,7 +219,6 @@
         linha.style.display = nome.includes(filtro) ? '' : 'none';
       });
     }
-
     function trocarIdioma() {
       const idioma = document.getElementById('seletorIdioma').value;
       if (idioma === 'en-US') {
@@ -267,13 +239,11 @@
         `;
       }
     }
-
     function renderUserList() {
       const users = getUsers();
       const lista = Object.entries(users).map(([nome, dados]) => `<li>${nome} (${dados.tipo})</li>`).join('');
       document.getElementById('user-list').innerHTML = lista;
     }
-
     document.getElementById('user-form').addEventListener('submit', function(e) {
       e.preventDefault();
       const username = document.getElementById('new-username').value;
@@ -289,7 +259,6 @@
       renderUserList();
       e.target.reset();
     });
-
     window.onload = () => {
       const user = JSON.parse(localStorage.getItem('usuarioLogado'));
       if (user) {
