@@ -48,12 +48,12 @@
     }
 
     function excluirUsuario(id) {
-      let usuarios = JSON.parse(localStorage.getItem('usuarios')) || [];
-      usuarios = usuarios.filter(u => u.id !== id);
-      localStorage.setItem('usuarios', JSON.stringify(usuarios));
-      carregarUsuarios();
-    }
-
+        let usuarios = JSON.parse(localStorage.getItem('usuarios')) || [];
+        usuarios = usuarios.filter(u => u.id !== id);
+        localStorage.setItem('usuarios', JSON.stringify(usuarios));
+        carregarUsuarios();
+      }
+      
     function carregarChamadas() {
       const chamadas = JSON.parse(localStorage.getItem('chamadas')) || [];
       document.getElementById("chamadasContent").innerText = JSON.stringify(chamadas, null, 2);

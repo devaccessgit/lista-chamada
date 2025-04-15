@@ -27,7 +27,7 @@
 
   <script>
     const user = JSON.parse(localStorage.getItem('usuarioLogado'));
-    if (!user || user.role !== 'professor') window.location.href = 'login.html';
+if (!user || user.role !== 'admin') window.location.href = 'login.html';
 
     function logout() {
       localStorage.removeItem("usuarioLogado");
