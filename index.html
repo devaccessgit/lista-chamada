@@ -1,180 +1,198 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Painel do Professor</title>
+  <meta charset="UTF-8">
+  <title>Sistema de Chamada</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet"> <!-- FontAwesome -->
   <style>
-    #historico table {
-      width: 100%;
-      border-collapse: collapse;
+    .tabela-chamada th, .tabela-chamada td {
+      vertical-align: middle;
     }
-    #historico th, #historico td {
-      padding: 8px;
-      text-align: left;
-      border: 1px solid #ddd;
-    }
-    #historico th {
-      background-color: #f4f4f4;
-    }
-    /* Responsividade */
-    @media (max-width: 768px) {
-      .container {
-        padding-left: 15px;
-        padding-right: 15px;
-      }
+    #historico {
+      margin-top: 20px;
     }
   </style>
 </head>
 <body class="bg-light">
-  <div class="container py-4">
-    <h2 class="text-center mb-4">Painel do Professor</h2>
-    <div class="text-end mb-3">
-      <span class="me-2">Professor logado: <strong id="nomeProfessor">Professor X</strong></span>
-      <button class="btn btn-danger btn-sm" onclick="logout()">Sair</button>
-    </div>
 
-    <!-- Cadastrar Aluno -->
-    <div class="card mb-4">
-      <div class="card-header">Cadastrar Aluno</div>
-      <div class="card-body">
-        <div class="row g-3">
-          <div class="col-md-6">
-            <input type="text" class="form-control" id="nomeAluno" placeholder="Nome do aluno">
-          </div>
-          <div class="col-md-6">
-            <button class="btn btn-primary w-100" onclick="adicionarAluno()">Cadastrar</button>
-          </div>
-        </div>
+  <div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2>Sistema de Chamada</h2>
+      <div>
+        <button class="btn btn-secondary btn-sm me-2" onclick="alternarTema()">Tema Claro/Escuro</button>
+        <button class="btn btn-outline-danger btn-sm" onclick="logout()">Sair</button>
       </div>
     </div>
 
-    <!-- Lista de Alunos -->
-    <div class="card mb-4">
-      <div class="card-header">Lista de Alunos</div>
-      <div class="card-body">
-        <table class="table table-bordered">
-          <thead>
-            <tr>
-              <th>Nome</th>
-              <th>Status</th>
-              <th>Ações</th>
-            </tr>
-          </thead>
-          <tbody id="tabelaAlunos"></tbody>
-        </table>
-        <div class="text-end">
-          <button class="btn btn-success" onclick="exportarCSV()">Exportar CSV</button>
-          <button class="btn btn-danger" onclick="exportarPDF()">Exportar PDF</button>
-        </div>
+    <div id="notificacao"></div>
+
+    <div class="input-group mb-3">
+      <input type="text" id="nomeChamada" class="form-control" placeholder="Nome do aluno">
+      <div class="input-group-text">
+        <input type="checkbox" id="presente" class="form-check-input me-1"> Presente
       </div>
+      <button class="btn btn-primary" onclick="registrarChamada()">Registrar</button>
     </div>
 
-    <!-- Registro de Presença -->
-    <div class="card mb-4">
-      <div class="card-header">Registro de Presença</div>
-      <div class="card-body">
-        <div class="row g-3">
-          <div class="col-md-6">
-            <input type="text" class="form-control" id="nomeChamada" placeholder="Nome do aluno">
-          </div>
-          <div class="col-md-6">
-            <div class="form-check">
-              <input type="checkbox" id="presente" class="form-check-input">
-              <label class="form-check-label" for="presente">Presente</label>
-            </div>
-          </div>
-          <div class="col-12 mt-2">
-            <button class="btn btn-primary w-100" onclick="registrarChamada()">Registrar Chamada</button>
-          </div>
-        </div>
-      </div>
+    <div class="table-responsive">
+      <table class="table table-bordered tabela-chamada" id="tabelaAlunos">
+        <thead class="table-dark">
+          <tr>
+            <th>Nome</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
     </div>
 
-    <!-- Histórico de Chamadas -->
-    <div class="card mb-4">
-      <div class="card-header">Histórico de Chamadas</div>
-      <div class="card-body">
-        <input type="date" id="dataSelecionada" class="form-control mt-3" onchange="exibirHistorico(document.getElementById('dataSelecionada').value)">
-        <div id="historico" class="mt-3"></div>
-      </div>
+    <div class="mb-3">
+      <button class="btn btn-success" onclick="exportarCSV()">Exportar CSV</button>
+      <button class="btn btn-danger" onclick="exportarPDF()">Exportar PDF</button>
+      <button class="btn btn-info" onclick="enviarWhatsApp()">Enviar WhatsApp</button>
+      <button class="btn btn-dark" onclick="enviarEmail()">Enviar E-mail</button>
     </div>
+
+    <div class="mb-3">
+      <label for="dataHistorico" class="form-label">Ver histórico por data:</label>
+      <input type="date" id="dataHistorico" class="form-control" onchange="exibirHistorico(this.value)">
+    </div>
+
+    <div id="historico"></div>
   </div>
 
   <script>
-    const alunos = JSON.parse(localStorage.getItem('alunos')) || [];
+    let alunos = JSON.parse(localStorage.getItem('alunos')) || [];
 
-    // Função para renderizar a tabela de alunos
     function renderizarTabela() {
-      const tabela = document.getElementById('tabelaAlunos');
+      const tabela = document.getElementById('tabelaAlunos').getElementsByTagName('tbody')[0];
       tabela.innerHTML = '';
-      alunos.forEach((aluno, index) => {
-        tabela.innerHTML += `
-          <tr>
-            <td>${aluno.nome}</td>
-            <td>
-              <select onchange="atualizarStatus(${index}, this.value)" class="form-select">
-                <option value="presente" ${aluno.status === 'presente' ? 'selected' : ''}><i class="fas fa-check-circle"></i> Presente</option>
-                <option value="ausente" ${aluno.status === 'ausente' ? 'selected' : ''}><i class="fas fa-times-circle"></i> Ausente</option>
-              </select>
-            </td>
-            <td>
-              <button class="btn btn-danger btn-sm" onclick="removerAluno(${index})">Remover</button>
-            </td>
-          </tr>
-        `;
+      alunos.forEach(aluno => {
+        const row = tabela.insertRow();
+        row.innerHTML = `<td>${aluno.nome}</td><td>${aluno.status || '-'}</td>`;
       });
     }
 
-    // Adicionar aluno à lista
-    function adicionarAluno() {
-      const nome = document.getElementById('nomeAluno').value.trim();
-      if (!nome) return alert('Informe o nome do aluno');
-      alunos.push({ nome, status: 'presente' });
-      localStorage.setItem('alunos', JSON.stringify(alunos));
-      document.getElementById('nomeAluno').value = '';
-      renderizarTabela();
-    }
-
-    // Atualizar status do aluno
-    function atualizarStatus(index, status) {
-      alunos[index].status = status;
-      localStorage.setItem('alunos', JSON.stringify(alunos));
-    }
-
-    // Remover aluno da lista
-    function removerAluno(index) {
-      if (confirm('Tem certeza que deseja remover o aluno?')) {
-        alunos.splice(index, 1);
-        localStorage.setItem('alunos', JSON.stringify(alunos));
-        renderizarTabela();
+    function registrarChamada() {
+      const nome = document.getElementById('nomeChamada').value.trim();
+      if (!nome) {
+        exibirNotificacao('Por favor, insira o nome do aluno para registrar a presença.', 'danger');
+        return;
       }
+
+      const aluno = alunos.find(a => a.nome.toLowerCase() === nome.toLowerCase());
+      if (!aluno) {
+        exibirNotificacao('Aluno não encontrado.', 'danger');
+        return;
+      }
+
+      const presente = document.getElementById('presente').checked;
+      aluno.status = presente ? 'presente' : 'ausente';
+      localStorage.setItem('alunos', JSON.stringify(alunos));
+      renderizarTabela();
+      exibirNotificacao(`Presença de ${nome} registrada com sucesso!`, 'success');
+
+      const dataHoje = new Date().toISOString().split('T')[0];
+      const historico = JSON.parse(localStorage.getItem('historico')) || {};
+      if (!historico[dataHoje]) historico[dataHoje] = [];
+      historico[dataHoje].push({ nome, status: presente ? 'presente' : 'ausente' });
+      localStorage.setItem('historico', JSON.stringify(historico));
     }
 
-    // Função de logout
-    function logout() {
-      alert('Logout efetuado!');
-      // Redirecionar para a tela de login futuramente
+    function exibirNotificacao(mensagem, tipo) {
+      const div = document.getElementById('notificacao');
+      div.innerHTML = `<div class="alert alert-${tipo}" role="alert">${mensagem}</div>`;
+      setTimeout(() => div.innerHTML = '', 3000);
     }
 
-    // Função para exportar CSV
     function exportarCSV() {
       let csv = 'Nome,Status\n';
-      alunos.forEach(a => csv += `${a.nome},${a.status}\n`);
+      alunos.forEach(a => {
+        csv += `${a.nome},${a.status || '-'}\n`;
+      });
+
       const blob = new Blob([csv], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
-      link.href = URL.createObjectURL(blob);
+      link.href = url;
       link.download = 'chamada.csv';
       link.click();
     }
 
-    // Função para exportar PDF (ainda não implementada)
     function exportarPDF() {
-      alert('Exportação para PDF será implementada em breve!');
+      let texto = 'Lista de chamada:\n\n';
+      alunos.forEach(a => {
+        texto += `• ${a.nome}: ${a.status || '-'}\n`;
+      });
+
+      const blob = new Blob([texto], { type: 'application/pdf' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'chamada.pdf';
+      link.click();
     }
 
+    function gerarTextoChamada() {
+      let texto = 'Lista de chamada:\n\n';
+      alunos.forEach(a => {
+        texto += `• ${a.nome}: ${a.status || '-'}\n`;
+      });
+      return texto;
+    }
+
+    function enviarWhatsApp() {
+      const texto = encodeURIComponent(gerarTextoChamada());
+      window.open(`https://wa.me/?text=${texto}`, '_blank');
+    }
+
+    function enviarEmail() {
+      const assunto = encodeURIComponent("Lista de Chamada");
+      const corpo = encodeURIComponent(gerarTextoChamada());
+      window.open(`mailto:?subject=${assunto}&body=${corpo}`);
+    }
+
+    function exibirHistorico(data) {
+      const historico = JSON.parse(localStorage.getItem('historico')) || {};
+      const registros = historico[data] || [];
+      const div = document.getElementById('historico');
+      if (registros.length === 0) {
+        div.innerHTML = '<p>Nenhuma chamada registrada para essa data.</p>';
+        return;
+      }
+
+      let tabela = '<table class="table table-striped mt-3"><thead><tr><th>Nome</th><th>Status</th></tr></thead><tbody>';
+      registros.forEach(reg => {
+        tabela += `<tr><td>${reg.nome}</td><td>${reg.status}</td></tr>`;
+      });
+      tabela += '</tbody></table>';
+      div.innerHTML = tabela;
+    }
+
+    function alternarTema() {
+      const body = document.body;
+      body.classList.toggle('bg-light');
+      body.classList.toggle('bg-dark');
+      body.classList.toggle('text-white');
+      const temaAtual = body.classList.contains('bg-dark') ? 'escuro' : 'claro';
+      localStorage.setItem('tema', temaAtual);
+    }
+
+    function aplicarTemaSalvo() {
+      const tema = localStorage.getItem('tema');
+      if (tema === 'escuro') {
+        document.body.classList.add('bg-dark', 'text-white');
+        document.body.classList.remove('bg-light');
+      }
+    }
+
+    function logout() {
+      localStorage.removeItem('usuarioLogado');
+      location.reload();
+    }
+
+    aplicarTemaSalvo();
     renderizarTabela();
   </script>
 </body>
