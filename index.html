@@ -8,6 +8,7 @@
   <style>
     body { padding: 20px; }
     .table-responsive { overflow-x: auto; }
+    .position-top-right { position: absolute; top: 20px; right: 20px; }
   </style>
 </head>
 <body>
@@ -49,7 +50,6 @@
           <tr>
             <th>Usuário</th>
             <th>Tipo</th>
-            <th>Professor</th>
             <th>Ações</th>
           </tr>
         </thead>
@@ -63,7 +63,7 @@
     <div class="container">
       <div class="d-flex justify-content-between align-items-center mb-3">
         <button onclick="sair()" class="btn btn-outline-secondary">🚪 Sair</button>
-        <select id="seletorIdioma" class="form-select w-auto" onchange="trocarIdioma()">
+        <select id="seletorIdioma" class="form-select w-auto" onchange="trocarIdioma()" class="position-top-right">
           <option value="pt-BR">🇧🇷 Português</option>
           <option value="en-US">🇺🇸 English</option>
         </select>
@@ -109,7 +109,7 @@
     function getUsers() {
       return JSON.parse(localStorage.getItem('usuarios')) || {
         "admin": { senha: "1234", tipo: "admin", professor: "" },
-        "professor": { senha: "abcd", tipo: "professor", professor: "" }
+        "professor1": { senha: "abcd", tipo: "professor", professor: "professor1" }
       };
     }
 
@@ -145,14 +145,15 @@
       const tbody = document.querySelector('#user-table tbody');
       tbody.innerHTML = '';
       for (const user in users) {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td>${user}</td>
-          <td>${users[user].tipo}</td>
-          <td>${users[user].professor}</td>
-          <td><button class="btn btn-danger" onclick="deleteUser('${user}')">Excluir</button></td>
-        `;
-        tbody.appendChild(tr);
+        if (users[user].tipo !== 'admin') { // Apenas lista usuários que não sejam admin
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${user}</td>
+            <td>${users[user].tipo}</td>
+            <td><button class="btn btn-danger" onclick="deleteUser('${user}')">Excluir</button></td>
+          `;
+          tbody.appendChild(tr);
+        }
       }
     }
 
@@ -201,19 +202,22 @@
     }
 
     function carregarChamada() {
+      const usuarioLogado = JSON.parse(localStorage.getItem('usuarioLogado'));
       const chamadas = JSON.parse(localStorage.getItem('chamadas')) || [];
       const tbody = document.querySelector('#tabelaChamada tbody');
       tbody.innerHTML = '';
       chamadas.forEach(chamada => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td>${chamada.aluno}</td>
-          <td>${chamada.data}</td>
-          <td>${chamada.presenca}</td>
-          <td>${chamada.conteudo}</td>
-          <td><button class="btn btn-danger" onclick="excluirChamada(this)">Excluir</button></td>
-        `;
-        tbody.appendChild(tr);
+        if (usuarioLogado.tipo === 'admin' || chamada.professor === usuarioLogado.professor) {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${chamada.aluno}</td>
+            <td>${chamada.data}</td>
+            <td>${chamada.presenca}</td>
+            <td>${chamada.conteudo}</td>
+            <td><button class="btn btn-danger" onclick="excluirChamada(this)">Excluir</button></td>
+          `;
+          tbody.appendChild(tr);
+        }
       });
     }
 
@@ -232,6 +236,7 @@
         el.textContent = el.getAttribute(`data-${idioma}`);
       });
     }
+
   </script>
 </body>
 </html>
