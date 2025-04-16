@@ -277,9 +277,37 @@
     }
 
     function limparHistorico() {
-      localStorage.removeItem(storageKeyChamadas);
-      chamadas.length = 0;
-      exibirHistorico();
+      if (confirm('Tem certeza que deseja limpar todo o histórico?')) {
+        localStorage.removeItem(storageKeyChamadas);
+        chamadas.length = 0;
+        exibirHistorico();
+        gerarGraficoPresenca();
+      }
+    }
+
+    function exportarPDF() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      doc.text("Lista de Alunos", 10, 10);
+      doc.autoTable({
+        head: [['Nome', 'Status']],
+        body: alunos.map(a => [a.nome, a.status]),
+      });
+      doc.save("lista_alunos.pdf");
+    }
+
+    function exportarCSV() {
+      let csv = "Nome,Status\n";
+      alunos.forEach(aluno => {
+        csv += `${aluno.nome},${aluno.status}\n`;
+      });
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement("a");
+      link.setAttribute("href", URL.createObjectURL(blob));
+      link.setAttribute("download", "lista_alunos.csv");
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
     }
 
     function gerarGraficoPresenca() {
@@ -322,28 +350,44 @@
       });
     }
 
-    function exportarPDF() {
-      const doc = new jsPDF();
-      doc.text('Lista de Alunos', 10, 10);
-      doc.autoTable({
-        head: [['Nome', 'Status']],
-        body: alunos.map(aluno => [aluno.nome, aluno.status === 'presente' ? 'Presente' : 'Ausente']),
-      });
-      doc.save('lista_alunos.pdf');
-    }
+    function alterarIdioma(lang) {
+      const traducoes = {
+        'pt-BR': {
+          cadastroAluno: 'Cadastrar Aluno',
+          listaAlunos: 'Lista de Alunos',
+          nome: 'Nome',
+          status: 'Status',
+          acoes: 'Ações',
+          registroPresenca: 'Registro de Presença',
+          presente: 'Presente',
+          historicoChamadas: 'Histórico de Chamadas',
+          limparHistorico: 'Limpar Histórico',
+          graficoPresenca: 'Gráfico de Presença',
+          data: 'Data',
+          conteudo: 'Conteúdo'
+        },
+        'en': {
+          cadastroAluno: 'Register Student',
+          listaAlunos: 'Student List',
+          nome: 'Name',
+          status: 'Status',
+          acoes: 'Actions',
+          registroPresenca: 'Attendance Record',
+          presente: 'Present',
+          historicoChamadas: 'Attendance History',
+          limparHistorico: 'Clear History',
+          graficoPresenca: 'Attendance Chart',
+          data: 'Date',
+          conteudo: 'Content'
+        }
+      };
 
-    function exportarCSV() {
-      let csvContent = 'Nome,Status\n';
-      alunos.forEach(aluno => {
-        csvContent += `${aluno.nome},${aluno.status}\n`;
+      const textos = traducoes[lang];
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (textos[key]) el.textContent = textos[key];
       });
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-      const link = document.createElement('a');
-      link.href = URL.createObjectURL(blob);
-      link.download = 'lista_alunos.csv';
-      link.click();
     }
-
     renderizarTabela(); // Inicializa a tabela ao carregar a página
   </script>
 </body>
