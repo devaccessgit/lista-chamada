@@ -210,6 +210,7 @@
 
       exibirNotificacao(`Presença de ${nome} registrada com sucesso!`, 'success');
       renderizarTabela();
+      exibirHistorico(data); // Atualizar o histórico imediatamente após o registro
     }
 
     function gerarGraficoPresenca() {
