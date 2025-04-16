@@ -206,6 +206,64 @@
     document.getElementById('toggleTheme').addEventListener('click', () => {
       document.body.classList.toggle('dark-mode');
     });
+    function alternarTema() {
+      document.body.classList.toggle('dark-mode');
+    }
+  
+    function mostrarCadastro() {
+      document.getElementById('login-section').style.display = 'none';
+      document.getElementById('cadastro-section').style.display = 'block';
+    }
+  
+    function mostrarLogin() {
+      document.getElementById('cadastro-section').style.display = 'none';
+      document.getElementById('login-section').style.display = 'block';
+    }
+  
+    function cadastrarUsuario() {
+      const usuario = document.getElementById('cadastroUsuario').value;
+      const tipo = document.getElementById('cadastroTipo').value;
+      if (!usuario || !tipo) {
+        alert('Preencha todos os campos.');
+        return;
+      }
+  
+      const usuarios = JSON.parse(localStorage.getItem('usuarios') || '[]');
+      if (usuarios.find(u => u.usuario === usuario)) {
+        alert('Usuário já existe!');
+        return;
+      }
+  
+      usuarios.push({ usuario, senha: usuario, tipo });
+      localStorage.setItem('usuarios', JSON.stringify(usuarios));
+      alert('Usuário cadastrado com sucesso!');
+      mostrarLogin();
+    }
+  
+    function fazerLogin() {
+      const usuario = document.getElementById('loginUsuario').value;
+      const senha = document.getElementById('loginSenha').value;
+      const usuarios = JSON.parse(localStorage.getItem('usuarios') || '[]');
+      const encontrado = usuarios.find(u => u.usuario === usuario && u.senha === senha);
+      if (encontrado) {
+        alert(`Bem-vindo, ${usuario} (${encontrado.tipo})!`);
+        // Aqui você pode redirecionar ou abrir a próxima seção da aplicação
+      } else {
+        alert('Usuário ou senha inválido.');
+      }
+    }
+  
+    function criarUsuarioAdminPadrao() {
+      let usuarios = JSON.parse(localStorage.getItem('usuarios') || '[]');
+      const existeAdmin = usuarios.some(u => u.usuario === 'admin');
+      if (!existeAdmin) {
+        usuarios.push({ usuario: 'admin', senha: 'admin', tipo: 'admin' });
+        localStorage.setItem('usuarios', JSON.stringify(usuarios));
+        console.log('Usuário admin padrão criado.');
+      }
+    }
+  
+    criarUsuarioAdminPadrao();
   </script>
 </body>
 
