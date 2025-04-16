@@ -69,6 +69,8 @@
         <div class="text-end">
           <button class="btn btn-success" onclick="exportarCSV()">Exportar CSV</button>
           <button class="btn btn-danger" onclick="exportarPDF()">Exportar PDF</button>
+          <button class="btn btn-info" onclick="enviarWhatsApp()">Enviar por WhatsApp</button>
+          <button class="btn btn-primary" onclick="enviarEmail()">Enviar por E-mail</button>
         </div>
       </div>
     </div>
@@ -98,14 +100,27 @@
     <div class="card mb-4">
       <div class="card-header">Histórico de Chamadas</div>
       <div class="card-body">
-        <input type="date" id="dataSelecionada" class="form-control mt-3" onchange="exibirHistorico(document.getElementById('dataSelecionada').value)">
+        <input type="date" id="dataSelecionada" class="form-control mt-3" onchange="exibirHistorico(this.value)">
         <div id="historico" class="mt-3"></div>
+      </div>
+    </div>
+
+    <!-- Gráfico de Presença -->
+    <div class="card mb-4">
+      <div class="card-header">Gráfico de Presença</div>
+      <div class="card-body">
+        <canvas id="graficoPresenca" width="400" height="200"></canvas>
       </div>
     </div>
   </div>
 
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/jsPDF/dist/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
   <script>
     const alunos = JSON.parse(localStorage.getItem('alunos')) || [];
+    const chamadas = JSON.parse(localStorage.getItem('chamadas')) || [];
 
     function exibirNotificacao(mensagem, tipo) {
       const alertContainer = document.getElementById('alert-container');
@@ -167,6 +182,9 @@
 
     function registrarChamada() {
       const nome = document.getElementById('nomeChamada').value.trim();
+      const presente = document.getElementById('presente').checked;
+      const data = new Date().toISOString().split('T')[0];
+
       if (!nome) {
         exibirNotificacao('Por favor, insira o nome do aluno para registrar a presença.', 'danger');
         return;
@@ -178,10 +196,45 @@
         return;
       }
 
-      aluno.status = document.getElementById('presente').checked ? 'presente' : 'ausente';
+      chamadas.push({
+        nome: aluno.nome,
+        status: presente ? 'presente' : 'ausente',
+        data
+      });
+
+      localStorage.setItem('chamadas', JSON.stringify(chamadas));
+      aluno.status = presente ? 'presente' : 'ausente';
       localStorage.setItem('alunos', JSON.stringify(alunos));
+
       exibirNotificacao(`Presença de ${nome} registrada com sucesso!`, 'success');
       renderizarTabela();
+    }
+
+    function obterEstatisticasAluno(nome) {
+      const registros = chamadas.filter(c => c.nome === nome);
+      const totalPresente = registros.filter(c => c.status === 'presente').length;
+      const totalAusente = registros.filter(c => c.status === 'ausente').length;
+      return { totalPresente, totalAusente };
+    }
+
+    function exibirHistorico(data) {
+      const container = document.getElementById('historico');
+      const registros = chamadas.filter(c => c.data === data);
+      if (registros.length === 0) {
+        container.innerHTML = '<p class="text-muted">Nenhum registro para esta data.</p>';
+        return;
+      }
+
+      let html = `
+        <table class="table table-sm">
+          <thead><tr><th>Aluno</th><th>Status</th></tr></thead>
+          <tbody>
+      `;
+      registros.forEach(r => {
+        html += `<tr><td>${r.nome}</td><td>${r.status === 'presente' ? '✅ Presente' : '❌ Ausente'}</td></tr>`;
+      });
+      html += '</tbody></table>';
+      container.innerHTML = html;
     }
 
     function logout() {
@@ -199,9 +252,30 @@
     }
 
     function exportarPDF() {
-      alert('Exportação para PDF será implementada em breve!');
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      doc.text("Lista de Alunos e Presença", 10, 10);
+      let y = 20;
+      alunos.forEach((a, i) => {
+        doc.text(`${i + 1}. ${a.nome} - ${a.status === 'presente' ? '✅ Presente' : '❌ Ausente'}`, 10, y);
+        y += 10;
+      });
+      doc.save("chamada.pdf");
     }
 
+    function enviarWhatsApp() {
+      const mensagem = alunos.map(a => `${a.nome} - ${a.status === 'presente' ? '✅ Presente' : '❌ Ausente'}`).join('%0A');
+      const link = `https://api.whatsapp.com/send?text=${encodeURIComponent(mensagem)}`;
+      window.open(link, '_blank');
+    }
+
+    function enviarEmail() {
+      const mensagem = alunos.map(a => `${a.nome} - ${a.status === 'presente' ? '✅ Presente' : '❌ Ausente'}`).join('\n');
+      const link = `mailto:?subject=Lista de Presença&body=${encodeURIComponent(mensagem)}`;
+      window.location.href = link;
+    }
+
+    // Inicialização
     renderizarTabela();
   </script>
 
