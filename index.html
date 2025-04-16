@@ -53,21 +53,25 @@
 </head>
 <body>
   <div class="container py-4">
-    <h2 class="text-center mb-4">Painel do Professor</h2>
+    <h2 class="text-center mb-4" id="tituloPainel">Painel do Professor</h2>
     <div class="text-end mb-3">
-      <span class="me-2">Professor logado: <strong id="nomeProfessor">Professor X</strong></span>
+      <span class="me-2" id="textoProfessor">Professor logado: <strong id="nomeProfessor">Professor</strong></span>
       <button class="btn btn-danger btn-sm" onclick="logout()">Sair</button>
     </div>
 
-    <div class="d-flex justify-content-end">
-      <button class="btn btn-secondary" onclick="alternarTema()">Alternar Tema</button>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <button class="btn btn-secondary" onclick="alternarTema()">🌙/☀️ Tema</button>
+      <select id="lang" class="form-select w-auto" onchange="alterarIdioma(this.value)">
+        <option value="pt-BR">🇧🇷 Português</option>
+        <option value="en">🇺🇸 English</option>
+      </select>
     </div>
 
     <div id="alert-container"></div>
 
     <!-- Cadastro -->
     <div class="card mb-4">
-      <div class="card-header">Cadastrar Aluno</div>
+      <div class="card-header" data-i18n="cadastroAluno">Cadastrar Aluno</div>
       <div class="card-body">
         <div class="row g-3">
           <div class="col-md-6">
@@ -82,14 +86,14 @@
 
     <!-- Lista de Alunos -->
     <div class="card mb-4">
-      <div class="card-header">Lista de Alunos</div>
+      <div class="card-header" data-i18n="listaAlunos">Lista de Alunos</div>
       <div class="card-body">
         <table class="table table-bordered">
           <thead>
             <tr>
-              <th>Nome</th>
-              <th>Status</th>
-              <th>Ações</th>
+              <th data-i18n="nome">Nome</th>
+              <th data-i18n="status">Status</th>
+              <th data-i18n="acoes">Ações</th>
             </tr>
           </thead>
           <tbody id="tabelaAlunos"></tbody>
@@ -102,7 +106,7 @@
 
     <!-- Registro de Presença -->
     <div class="card mb-4">
-      <div class="card-header">Registro de Presença</div>
+      <div class="card-header" data-i18n="registroPresenca">Registro de Presença</div>
       <div class="card-body">
         <div class="row g-3">
           <div class="col-md-6">
@@ -111,7 +115,7 @@
           <div class="col-md-6">
             <div class="form-check">
               <input type="checkbox" id="presente" class="form-check-input">
-              <label class="form-check-label" for="presente">Presente</label>
+              <label class="form-check-label" for="presente" data-i18n="presente">Presente</label>
             </div>
           </div>
           <div class="col-12 mt-2">
@@ -123,17 +127,17 @@
 
     <!-- Histórico -->
     <div class="card mb-4">
-      <div class="card-header">Histórico de Chamadas</div>
+      <div class="card-header" data-i18n="historicoChamadas">Histórico de Chamadas</div>
       <div class="card-body">
         <input type="date" id="dataSelecionada" class="form-control mt-3" onchange="exibirHistorico(this.value)">
         <div id="historico" class="mt-3"></div>
-        <button class="btn btn-danger mt-3" onclick="limparHistorico()">Limpar Histórico</button>
+        <button class="btn btn-danger mt-3" onclick="limparHistorico()" data-i18n="limparHistorico">Limpar Histórico</button>
       </div>
     </div>
 
     <!-- Gráfico -->
     <div class="card mb-4">
-      <div class="card-header">Gráfico de Presença</div>
+      <div class="card-header" data-i18n="graficoPresenca">Gráfico de Presença</div>
       <div class="card-body">
         <canvas id="graficoPresenca" width="400" height="200"></canvas>
       </div>
@@ -141,9 +145,14 @@
   </div>
 
   <script>
-    const alunos = JSON.parse(localStorage.getItem('alunos')) || [];
-    const chamadas = JSON.parse(localStorage.getItem('chamadas')) || [];
-    let chart;
+    const usuario = JSON.parse(localStorage.getItem('usuarioLogado')) || { nome: 'Professor' };
+    const storageKeyAlunos = `alunos_${usuario.nome}`;
+    const storageKeyChamadas = `chamadas_${usuario.nome}`;
+    const alunos = JSON.parse(localStorage.getItem(storageKeyAlunos)) || [];
+    const chamadas = JSON.parse(localStorage.getItem(storageKeyChamadas)) || [];
+    let chart = null;
+
+    document.getElementById("nomeProfessor").textContent = usuario.nome;
 
     function logout() {
       localStorage.removeItem('usuarioLogado');
@@ -185,7 +194,7 @@
       const nome = document.getElementById('nomeAluno').value.trim();
       if (!nome) return exibirNotificacao('Nome obrigatório.', 'danger');
       alunos.push({ nome, status: 'presente' });
-      localStorage.setItem('alunos', JSON.stringify(alunos));
+      localStorage.setItem(storageKeyAlunos, JSON.stringify(alunos));
       document.getElementById('nomeAluno').value = '';
       renderizarTabela();
       exibirNotificacao(`Aluno ${nome} cadastrado com sucesso.`, 'success');
@@ -193,110 +202,137 @@
 
     function atualizarStatus(i, status) {
       alunos[i].status = status;
-      localStorage.setItem('alunos', JSON.stringify(alunos));
+      localStorage.setItem(storageKeyAlunos, JSON.stringify(alunos));
       gerarGraficoPresenca();
     }
 
     function removerAluno(i) {
       if (confirm('Remover aluno?')) {
         alunos.splice(i, 1);
-        localStorage.setItem('alunos', JSON.stringify(alunos));
+        localStorage.setItem(storageKeyAlunos, JSON.stringify(alunos));
         renderizarTabela();
-        gerarGraficoPresenca();
-        exibirNotificacao('Aluno removido.', 'warning');
-      }
-    }
-
-    function registrarChamada() {
-      const nome = document.getElementById('nomeChamada').value.trim();
-      if (!nome) return exibirNotificacao('Nome obrigatório.', 'danger');
-      
-      const alunoCadastrado = alunos.find(aluno => aluno.nome.toLowerCase() === nome.toLowerCase());
-      if (!alunoCadastrado) return exibirNotificacao('Aluno não cadastrado.', 'danger');
-      
-      const presente = document.getElementById('presente').checked;
-      const data = new Date().toLocaleDateString('pt-BR');
-      chamadas.push({ nome, status: presente ? 'presente' : 'ausente', data });
-      localStorage.setItem('chamadas', JSON.stringify(chamadas));
-      document.getElementById('nomeChamada').value = '';
-      document.getElementById('presente').checked = false;
-      exibirNotificacao(`Chamada registrada para ${nome}.`, 'success');
-      gerarGraficoPresenca();
-    }
-
-    function exibirHistorico(data) {
-      const historicoContainer = document.getElementById('historico');
-      const historicoFiltrado = chamadas.filter(chamada => chamada.data === data);
-      if (historicoFiltrado.length === 0) {
-        historicoContainer.innerHTML = '<p>Sem registros para esta data.</p>';
-        return;
-      }
-      historicoContainer.innerHTML = `
-        <table>
-          <thead>
-            <tr>
-              <th>Nome</th>
-              <th>Status</th>
-              <th>Data</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${historicoFiltrado.map(chamada => `
-              <tr>
-                <td>${chamada.nome}</td>
-                <td>${chamada.status === 'presente' ? '✅ Presente' : '❌ Ausente'}</td>
-                <td>${chamada.data}</td>
-              </tr>`).join('')}
-          </tbody>
-        </table>`;
-    }
-
-    function limparHistorico() {
-      if (confirm('Deseja limpar o histórico de chamadas?')) {
-        localStorage.removeItem('chamadas');
-        chamadas.length = 0;
-        exibirNotificacao('Histórico limpo.', 'warning');
-        exibirHistorico(new Date().toLocaleDateString('pt-BR'));
+        exibirNotificacao('Aluno removido.', 'danger');
       }
     }
 
     function gerarGraficoPresenca() {
-      const dadosPresenca = alunos.map(aluno => {
-        const presentes = chamadas.filter(chamada => chamada.nome === aluno.nome && chamada.status === 'presente').length;
-        return { nome: aluno.nome, presente: presentes };
-      });
-
-      if (chart) chart.destroy();
-      chart = new Chart(document.getElementById('graficoPresenca'), {
-        type: 'bar',
-        data: {
-          labels: dadosPresenca.map(d => d.nome),
-          datasets: [{
-            label: 'Presença',
-            data: dadosPresenca.map(d => d.presente),
-            backgroundColor: 'rgba(54, 162, 235, 0.2)',
-            borderColor: 'rgba(54, 162, 235, 1)',
-            borderWidth: 1
-          }]
-        },
-        options: {
-          responsive: true,
-          scales: {
-            y: { beginAtZero: true }
+      const presente = alunos.filter(aluno => aluno.status === 'presente').length;
+      const ausente = alunos.length - presente;
+      if (chart) {
+        chart.data.datasets[0].data = [presente, ausente];
+        chart.update();
+      } else {
+        chart = new Chart(document.getElementById('graficoPresenca'), {
+          type: 'pie',
+          data: {
+            labels: ['✅ Presente', '❌ Ausente'],
+            datasets: [{
+              data: [presente, ausente],
+              backgroundColor: ['#28a745', '#dc3545']
+            }]
           }
-        }
+        });
+      }
+    }
+
+    function exibirHistorico(data) {
+      const historicoFiltrado = chamadas.filter(chamada => chamada.data === data);
+      const historicoDiv = document.getElementById('historico');
+      if (historicoFiltrado.length === 0) {
+        historicoDiv.innerHTML = '<p>Nenhuma chamada registrada para esta data.</p>';
+        return;
+      }
+      let html = `
+        <table class="table table-bordered">
+          <thead>
+            <tr>
+              <th>Aluno</th>
+              <th>Status</th>
+              <th>Hora</th>
+            </tr>
+          </thead>
+          <tbody>`;
+      historicoFiltrado.forEach(chamada => {
+        html += `
+          <tr>
+            <td>${chamada.aluno}</td>
+            <td>${chamada.presente ? '✅ Presente' : '❌ Ausente'}</td>
+            <td>${chamada.hora}</td>
+          </tr>`;
       });
+      html += `</tbody></table>`;
+      historicoDiv.innerHTML = html;
+    }
+
+    function registrarChamada() {
+      const nome = document.getElementById('nomeChamada').value.trim();
+      if (!nome) return exibirNotificacao('Nome do aluno é obrigatório.', 'danger');
+      const presente = document.getElementById('presente').checked;
+      const data = new Date().toISOString().split('T')[0];
+      const hora = new Date().toLocaleTimeString();
+      chamadas.push({ aluno: nome, presente, data, hora });
+      localStorage.setItem(storageKeyChamadas, JSON.stringify(chamadas));
+      exibirNotificacao(`Chamada registrada para o aluno ${nome}.`, 'success');
+      exibirHistorico(data);
     }
 
     function exportarPDF() {
       const doc = new jsPDF();
       doc.text('Lista de Alunos', 10, 10);
-      const table = alunos.map(aluno => [aluno.nome, aluno.status]);
-      doc.autoTable({ head: [['Nome', 'Status']], body: table });
+      const alunosParaPDF = alunos.map(aluno => [aluno.nome, aluno.status]);
+      doc.autoTable({
+        head: [['Nome', 'Status']],
+        body: alunosParaPDF,
+      });
       doc.save('alunos.pdf');
     }
 
+    function limparHistorico() {
+      if (confirm('Deseja limpar todo o histórico?')) {
+        localStorage.removeItem(storageKeyChamadas);
+        chamadas.length = 0;
+        exibirHistorico(new Date().toISOString().split('T')[0]);
+        exibirNotificacao('Histórico limpo.', 'danger');
+      }
+    }
+
+    function alterarIdioma(idioma) {
+      const traduzir = {
+        'pt-BR': {
+          cadastroAluno: 'Cadastrar Aluno',
+          listaAlunos: 'Lista de Alunos',
+          nome: 'Nome',
+          status: 'Status',
+          acoes: 'Ações',
+          registroPresenca: 'Registro de Presença',
+          presente: 'Presente',
+          historicoChamadas: 'Histórico de Chamadas',
+          limparHistorico: 'Limpar Histórico',
+          graficoPresenca: 'Gráfico de Presença'
+        },
+        en: {
+          cadastroAluno: 'Register Student',
+          listaAlunos: 'Student List',
+          nome: 'Name',
+          status: 'Status',
+          acoes: 'Actions',
+          registroPresenca: 'Presence Registration',
+          presente: 'Present',
+          historicoChamadas: 'Call History',
+          limparHistorico: 'Clear History',
+          graficoPresenca: 'Presence Graph'
+        }
+      };
+      const traducoes = traduzir[idioma];
+      Object.keys(traducoes).forEach(key => {
+        document.querySelectorAll(`[data-i18n=${key}]`).forEach(element => {
+          element.textContent = traducoes[key];
+        });
+      });
+    }
+
     renderizarTabela();
+    alterarIdioma('pt-BR');
   </script>
 </body>
 </html>
