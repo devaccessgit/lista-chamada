@@ -273,6 +273,42 @@
       container.innerHTML = html;
     }
 
+    function enviarWhatsApp() {
+      const data = document.getElementById('dataSelecionada').value;
+      const registros = chamadas.filter(c => c.data === data);
+    
+      if (!registros.length) {
+        exibirNotificacao('Nenhuma chamada registrada nesta data para enviar.', 'danger');
+        return;
+      }
+    
+      let mensagem = `*Histórico de Chamada* - ${data}\n\n`;
+      registros.forEach(r => {
+        mensagem += `${r.nome}: ${r.status === 'presente' ? '✅ Presente' : '❌ Ausente'}\n`;
+      });
+    
+      const url = `https://wa.me/?text=${encodeURIComponent(mensagem)}`;
+      window.open(url, '_blank');
+    }
+    
+    function enviarEmail() {
+      const data = document.getElementById('dataSelecionada').value;
+      const registros = chamadas.filter(c => c.data === data);
+    
+      if (!registros.length) {
+        exibirNotificacao('Nenhuma chamada registrada nesta data para enviar.', 'danger');
+        return;
+      }
+    
+      let corpoEmail = `Histórico de Chamada - ${data}\n\n`;
+      registros.forEach(r => {
+        corpoEmail += `${r.nome}: ${r.status === 'presente' ? '✅ Presente' : '❌ Ausente'}\n`;
+      });
+    
+      const url = `mailto:?subject=Histórico de Chamada - ${data}&body=${encodeURIComponent(corpoEmail)}`;
+      window.location.href = url;
+    }
+
     renderizarTabela();
   </script>
 </body>
