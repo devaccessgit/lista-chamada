@@ -117,13 +117,12 @@
   <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/jsPDF/dist/jspdf.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+ 
   <script>
-    // Carrega os alunos e chamadas do localStorage
     const alunos = JSON.parse(localStorage.getItem('alunos')) || [];
     const chamadas = JSON.parse(localStorage.getItem('chamadas')) || [];
 
-    // Exibe a notificação
     function exibirNotificacao(mensagem, tipo) {
       const alertContainer = document.getElementById('alert-container');
       alertContainer.innerHTML = `
@@ -134,7 +133,6 @@
       `;
     }
 
-    // Atualiza a tabela de alunos
     function renderizarTabela() {
       const tabela = document.getElementById('tabelaAlunos');
       tabela.innerHTML = '';
@@ -155,11 +153,9 @@
         `;
       });
 
-      // Atualiza o gráfico de presença
       gerarGraficoPresenca();
     }
 
-    // Adiciona um novo aluno
     function adicionarAluno() {
       const nome = document.getElementById('nomeAluno').value.trim();
       if (!nome) {
@@ -173,13 +169,11 @@
       exibirNotificacao(`Aluno ${nome} cadastrado com sucesso!`, 'success');
     }
 
-    // Atualiza o status do aluno
     function atualizarStatus(index, status) {
       alunos[index].status = status;
       localStorage.setItem('alunos', JSON.stringify(alunos));
     }
 
-    // Remove um aluno
     function removerAluno(index) {
       if (confirm('Tem certeza que deseja remover o aluno?')) {
         alunos.splice(index, 1);
@@ -189,7 +183,6 @@
       }
     }
 
-    // Registra a presença de um aluno
     function registrarChamada() {
       const nome = document.getElementById('nomeChamada').value.trim();
       const presente = document.getElementById('presente').checked;
@@ -221,7 +214,6 @@
       exibirHistorico(data); // Atualizar o histórico imediatamente após o registro
     }
 
-    // Gera o gráfico de presença
     function gerarGraficoPresenca() {
       const presencas = [];
       const ausencias = [];
@@ -242,73 +234,77 @@
           datasets: [{
             label: 'Presenças',
             data: presencas,
-            backgroundColor: 'rgba(40, 167, 69, 0.5)',
-            borderColor: 'rgba(40, 167, 69, 1)',
+            backgroundColor: 'rgba(0, 123, 255, 0.5)',
+            borderColor: 'rgba(0, 123, 255, 1)',
             borderWidth: 1
           }, {
             label: 'Ausências',
             data: ausencias,
-            backgroundColor: 'rgba(220, 53, 69, 0.5)',
-            borderColor: 'rgba(220, 53, 69, 1)',
+            backgroundColor: 'rgba(255, 0, 0, 0.5)',
+            borderColor: 'rgba(255, 0, 0, 1)',
             borderWidth: 1
           }]
+        },
+        options: {
+          scales: {
+            y: {
+              beginAtZero: true
+            }
+          }
         }
       });
     }
 
-    // Exibe o histórico de chamadas
+    function obterEstatisticasAluno(nomeAluno) {
+      const chamadasAluno = chamadas.filter(chamada => chamada.nome === nomeAluno);
+      const presencas = chamadasAluno.filter(chamada => chamada.status === 'presente').length;
+      const ausencias = chamadasAluno.filter(chamada => chamada.status === 'ausente').length;
+      return { totalPresente: presencas, totalAusente: ausencias };
+    }
+
     function exibirHistorico(dataSelecionada) {
+      // Filtrando o histórico de chamadas pela data selecionada
       const historicoFiltrado = chamadas.filter(chamada => chamada.data === dataSelecionada);
-      let html = `<table class="table table-bordered"><thead><tr><th>Nome</th><th>Status</th><th>Data</th></tr></thead><tbody>`;
+      
+      // Verificando se há chamadas para a data
+      if (historicoFiltrado.length === 0) {
+        document.getElementById('historico').innerHTML = '<p>Nenhuma chamada registrada para esta data.</p>';
+        return;
+      }
+      
+      // Gerando o HTML para a tabela
+      let html = `
+        <table class="table table-bordered">
+          <thead>
+            <tr>
+              <th>Nome</th>
+              <th>Status</th>
+              <th>Data</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+      
       historicoFiltrado.forEach(chamada => {
+        // Formatando a data para um formato mais legível
+        const dataFormatada = new Date(chamada.data).toLocaleDateString('pt-BR');
+        
+        // Adicionando uma linha para cada chamada
         html += `
           <tr>
             <td>${chamada.nome}</td>
             <td>${chamada.status === 'presente' ? '✅ Presente' : '❌ Ausente'}</td>
-            <td>${chamada.data}</td>
+            <td>${dataFormatada}</td>
           </tr>
         `;
       });
+      
       html += `</tbody></table>`;
+      
+      // Atualizando o conteúdo da div 'historico'
       document.getElementById('historico').innerHTML = html;
     }
 
-    // Exporta para CSV
-    function exportarCSV() {
-      const csvContent = "data:text/csv;charset=utf-8,"
-        + "Nome,Status\n"
-        + alunos.map(aluno => `${aluno.nome},${aluno.status}`).join("\n");
-
-      const encodedUri = encodeURI(csvContent);
-      const link = document.createElement('a');
-      link.setAttribute('href', encodedUri);
-      link.setAttribute('download', 'alunos.csv');
-      link.click();
-    }
-
-    // Exporta para PDF
-    function exportarPDF() {
-      const doc = new jsPDF();
-      doc.text('Lista de Alunos', 10, 10);
-      alunos.forEach((aluno, index) => {
-        doc.text(`${aluno.nome} - ${aluno.status}`, 10, 20 + (index * 10));
-      });
-      doc.save('alunos.pdf');
-    }
-
-    // Enviar por WhatsApp
-    function enviarWhatsApp() {
-      const mensagem = alunos.map(aluno => `${aluno.nome}: ${aluno.status}`).join('\n');
-      window.open(`https://wa.me/?text=${encodeURIComponent(mensagem)}`);
-    }
-
-    // Enviar por E-mail
-    function enviarEmail() {
-      const mensagem = alunos.map(aluno => `${aluno.nome}: ${aluno.status}`).join('\n');
-      window.location.href = `mailto:?subject=Lista de Chamadas&body=${encodeURIComponent(mensagem)}`;
-    }
-
-    // Inicializa a renderização inicial da tabela e do gráfico
     renderizarTabela();
   </script>
 </body>
