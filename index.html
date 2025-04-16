@@ -171,7 +171,7 @@ body.dark-theme {
 
     function exibirNotificacao(mensagem, tipo) {
       const alertContainer = document.getElementById('alert-container');
-      alertContainer.innerHTML = `
+      alertContainer.innerHTML = ` 
         <div class="alert alert-${tipo} alert-dismissible fade show" role="alert">
           ${mensagem}
           <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
@@ -231,64 +231,16 @@ body.dark-theme {
     function registrarChamada() {
       const nome = document.getElementById('nomeChamada').value.trim();
       const presente = document.getElementById('presente').checked;
-      const data = new Date().toISOString().split('T')[0];
-
+      const data = new Date().toLocaleDateString();
       if (!nome) {
-        exibirNotificacao('Por favor, insira o nome do aluno para registrar a presença.', 'danger');
+        exibirNotificacao('Por favor, insira o nome do aluno.', 'danger');
         return;
       }
-
-      const aluno = alunos.find(a => a.nome.toLowerCase() === nome.toLowerCase());
-      if (!aluno) {
-        exibirNotificacao('Aluno não encontrado.', 'danger');
-        return;
-      }
-
-      chamadas.push({ nome: aluno.nome, status: presente ? 'presente' : 'ausente', data });
+      chamadas.push({ nome, status: presente ? 'presente' : 'ausente', data });
       localStorage.setItem('chamadas', JSON.stringify(chamadas));
-      aluno.status = presente ? 'presente' : 'ausente';
-      localStorage.setItem('alunos', JSON.stringify(alunos));
-
-      exibirNotificacao(`Presença de ${nome} registrada com sucesso!`, 'success');
-      renderizarTabela();
-      exibirHistorico(data);
-    }
-
-    function obterEstatisticasAluno(nome) {
-      const stats = chamadas.filter(c => c.nome === nome);
-      return {
-        totalPresente: stats.filter(s => s.status === 'presente').length,
-        totalAusente: stats.filter(s => s.status === 'ausente').length
-      };
-    }
-
-    function gerarGraficoPresenca() {
-      const ctx = document.getElementById('graficoPresenca').getContext('2d');
-      if (window.grafico) window.grafico.destroy();
-
-      const presencas = [], ausencias = [], nomes = [];
-      alunos.forEach(a => {
-        const estat = obterEstatisticasAluno(a.nome);
-        presencas.push(estat.totalPresente);
-        ausencias.push(estat.totalAusente);
-        nomes.push(a.nome);
-      });
-
-      window.grafico = new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels: nomes,
-          datasets: [
-            { label: 'Presenças', data: presencas, backgroundColor: 'rgba(0, 123, 255, 0.5)', borderColor: 'rgba(0, 123, 255, 1)', borderWidth: 1 },
-            { label: 'Ausências', data: ausencias, backgroundColor: 'rgba(255, 0, 0, 0.5)', borderColor: 'rgba(255, 0, 0, 1)', borderWidth: 1 }
-          ]
-        },
-        options: {
-          scales: {
-            y: { beginAtZero: true }
-          }
-        }
-      });
+      document.getElementById('nomeChamada').value = '';
+      document.getElementById('presente').checked = false;
+      exibirNotificacao(`Chamada registrada para ${nome}.`, 'success');
     }
 
     function exibirHistorico(data) {
@@ -298,74 +250,60 @@ body.dark-theme {
         container.innerHTML = '<p class="text-muted">Nenhuma chamada registrada nesta data.</p>';
         return;
       }
-      let html = '<table><thead><tr><th>Nome</th><th>Status</th></tr></thead><tbody>';
+      let html = '<table><thead><tr><th>Nome</th><th>Status</th><th>Data</th></tr></thead><tbody>';
       registros.forEach(r => {
-        html += `<tr><td>${r.nome}</td><td>${r.status}</td></tr>`;
+        html += `<tr><td>${r.nome}</td><td>${r.status}</td><td>${r.data}</td></tr>`;
       });
       html += '</tbody></table>';
       container.innerHTML = html;
     }
 
-    function enviarWhatsApp() {
-      const data = document.getElementById('dataSelecionada').value;
-      const registros = chamadas.filter(c => c.data === data);
-    
-      if (!registros.length) {
-        exibirNotificacao('Nenhuma chamada registrada nesta data para enviar.', 'danger');
-        return;
-      }
-    
-      let mensagem = `*Histórico de Chamada* - ${data}\n\n`;
-      registros.forEach(r => {
-        mensagem += `${r.nome}: ${r.status === 'presente' ? '✅ Presente' : '❌ Ausente'}\n`;
+    function gerarGraficoPresenca() {
+      const presencas = alunos.filter(a => a.status === 'presente').length;
+      const ausencias = alunos.length - presencas;
+      const ctx = document.getElementById('graficoPresenca').getContext('2d');
+      new Chart(ctx, {
+        type: 'pie',
+        data: {
+          labels: ['Presente', 'Ausente'],
+          datasets: [{
+            data: [presencas, ausencias],
+            backgroundColor: ['#36A2EB', '#FF6384'],
+          }]
+        }
       });
-    
-      const url = `https://wa.me/?text=${encodeURIComponent(mensagem)}`;
+    }
+
+    function exportarCSV() {
+      let csvContent = 'Nome,Status\n';
+      alunos.forEach(aluno => {
+        csvContent += `${aluno.nome},${aluno.status}\n`;
+      });
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = 'alunos.csv';
+      link.click();
+    }
+
+    function exportarPDF() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      doc.autoTable({ html: '#tabelaAlunos' });
+      doc.save('alunos.pdf');
+    }
+
+    function enviarWhatsApp() {
+      const url = 'https://api.whatsapp.com/send?text=' + encodeURIComponent('Aqui está a lista de alunos!');
       window.open(url, '_blank');
     }
-    
+
     function enviarEmail() {
-      const data = document.getElementById('dataSelecionada').value;
-      const registros = chamadas.filter(c => c.data === data);
-    
-      if (!registros.length) {
-        exibirNotificacao('Nenhuma chamada registrada nesta data para enviar.', 'danger');
-        return;
-      }
-    
-      let corpoEmail = `Histórico de Chamada - ${data}\n\n`;
-      registros.forEach(r => {
-        corpoEmail += `${r.nome}: ${r.status === 'presente' ? '✅ Presente' : '❌ Ausente'}\n`;
-      });
-    
-      const url = `mailto:?subject=Histórico de Chamada - ${data}&body=${encodeURIComponent(corpoEmail)}`;
-      window.location.href = url;
+      const url = 'mailto:?subject=Lista de Alunos&body=' + encodeURIComponent('Aqui está a lista de alunos!');
+      window.open(url, '_blank');
     }
 
-    function alternarTema() {
-      const body = document.body;
-      const navbar = document.querySelector('.navbar');
-      const cards = document.querySelectorAll('.card');
-      const buttons = document.querySelectorAll('.btn');
-    
-      body.classList.toggle('dark-theme');
-      navbar.classList.toggle('dark-theme');
-      cards.forEach(card => card.classList.toggle('dark-theme'));
-      buttons.forEach(button => button.classList.toggle('dark-theme'));
-    
-      // Salvar a preferência do usuário
-      localStorage.setItem('tema', body.classList.contains('dark-theme') ? 'dark' : 'light');
-    }
-    
-    // Carregar o tema preferido do usuário ao carregar a página
-    document.addEventListener('DOMContentLoaded', () => {
-      const temaSalvo = localStorage.getItem('tema');
-      if (temaSalvo === 'dark') {
-        alternarTema();
-      }
-    });
-
-    renderizarTabela();
+    renderizarTabela(); // Inicializa a tabela ao carregar
   </script>
 </body>
 </html>
