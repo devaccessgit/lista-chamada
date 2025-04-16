@@ -95,11 +95,8 @@
           <tbody id="tabelaAlunos"></tbody>
         </table>
         <div class="text-end">
-          <button class="btn btn-success" onclick="exportarCSV()">Exportar CSV</button>
           <button class="btn btn-danger" onclick="exportarPDF()">Exportar PDF</button>
-          <button class="btn btn-info" onclick="enviarWhatsApp()">WhatsApp</button>
-          <button class="btn btn-primary" onclick="enviarEmail()">E-mail</button>
-        </div>
+         </div>
       </div>
     </div>
 
@@ -293,6 +290,55 @@
       }
     }
   
+    document.getElementById('exportarPDF').addEventListener('click', function() {
+      const { jsPDF } = window.jspdf; // Para usar o jsPDF
+      const doc = new jsPDF(); // Criação do documento PDF
+      
+      // Adicionando título
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(20);
+      doc.text("Relatório de Presença", 20, 20);
+      
+      // Configuração de tabela
+      const tabela = document.querySelector('table');
+      const rows = tabela.querySelectorAll('tr');
+      
+      let startY = 40; // Começo da tabela no PDF
+      
+      // Adicionando cabeçalho da tabela com bordas
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(12);
+      const headers = rows[0].querySelectorAll('th');
+      const colWidths = [40, 40, 40, 40]; // Tamanho das colunas (ajustar conforme necessário)
+      
+      // Desenhando cabeçalho
+      headers.forEach((th, index) => {
+          doc.setTextColor(255, 255, 255);
+          doc.setFillColor(54, 162, 235); // Cor de fundo do cabeçalho
+          doc.rect(20 + colWidths[index] * index, startY - 10, colWidths[index], 10, 'F');
+          doc.text(th.innerText, 20 + colWidths[index] * index + 5, startY);
+      });
+      
+      startY += 10;
+      
+      // Adicionando as linhas da tabela com bordas
+      rows.forEach((tr, rowIndex) => {
+          if (rowIndex === 0) return; // Pular o cabeçalho
+          
+          const cols = tr.querySelectorAll('td');
+          cols.forEach((td, colIndex) => {
+              doc.setTextColor(0, 0, 0);
+              doc.rect(20 + colWidths[colIndex] * colIndex, startY - 10, colWidths[colIndex], 10);
+              doc.text(td.innerText, 20 + colWidths[colIndex] * colIndex + 5, startY);
+          });
+          
+          startY += 10;
+      });
+      
+      // Salvar o PDF
+      doc.save("relatorio_presenca.pdf");
+  });
+
     // Inicializa a página
     window.onload = () => {
       const usuario = JSON.parse(localStorage.getItem('usuarioLogado'));
