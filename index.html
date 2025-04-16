@@ -201,9 +201,15 @@
   
     function removerAluno(i) {
       if (confirm('Remover aluno?')) {
+        // Remove o aluno da lista
         alunos.splice(i, 1);
         localStorage.setItem('alunos', JSON.stringify(alunos));
+        
+        // Atualiza a tabela e o gráfico
         renderizarTabela();
+        gerarGraficoPresenca();
+    
+        // Exibe notificação de remoção
         exibirNotificacao('Aluno removido.', 'warning');
       }
     }
@@ -238,34 +244,53 @@
     }
   
     function gerarGraficoPresenca() {
-      const presencas = {};
-      chamadas.forEach(c => {
-        if (!presencas[c.nome]) presencas[c.nome] = { presente: 0, ausente: 0 };
-        presencas[c.nome][c.status]++;
-      });
-  
-      const nomes = Object.keys(presencas);
-      const presentes = nomes.map(nome => presencas[nome].presente || 0);
-      const ausentes = nomes.map(nome => presencas[nome].ausente || 0);
-  
-      const ctx = document.getElementById('graficoPresenca').getContext('2d');
-      if (chart) chart.destroy();
-      chart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels: nomes,
-          datasets: [
-            { label: 'Presente', data: presentes, backgroundColor: 'green' },
-            { label: 'Ausente', data: ausentes, backgroundColor: 'red' }
-          ]
-        },
-        options: {
-          responsive: true,
-          scales: {
-            y: { beginAtZero: true }
-          }
+      const presencasPorAluno = alunos.reduce((acc, aluno) => {
+        if (aluno.status === 'presente') {
+          acc[aluno.nome] = (acc[aluno.nome] || 0) + 1;
         }
-      });
+        return acc;
+      }, {});
+    
+      const labels = Object.keys(presencasPorAluno);
+      const dados = Object.values(presencasPorAluno);
+    
+      if (chart) {
+        chart.data.labels = labels;
+        chart.data.datasets[0].data = dados;
+        chart.update(); // Atualiza o gráfico
+      } else {
+        const ctx = document.getElementById('graficoPresenca').getContext('2d');
+        chart = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: labels,
+            datasets: [{
+              label: 'Presenças registradas',
+              data: dados,
+              backgroundColor: 'rgba(54, 162, 235, 0.6)',
+              borderColor: 'rgba(54, 162, 235, 1)',
+              borderWidth: 1
+            }]
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              legend: { display: false },
+              tooltip: { enabled: true }
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                precision: 0,
+                title: {
+                  display: true,
+                  text: 'Total de Presenças'
+                }
+              }
+            }
+          }
+        });
+      }
     }
   
     // Inicializa a página
