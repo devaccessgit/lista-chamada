@@ -1,93 +1,62 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Painel do Professor</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet"> <!-- FontAwesome -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-    /* Tema Claro */
     body {
       background-color: white;
       color: black;
+      transition: background-color 0.3s, color 0.3s;
     }
-
     .navbar, .card, .btn {
       background-color: #f8f9fa;
       color: black;
     }
-
-    /* Tema Escuro */
     body.dark-theme {
       background-color: #121212;
       color: white;
     }
-
-    .navbar.dark-theme, .card.dark-theme, .btn.dark-theme {
+    .dark-theme .card, .dark-theme .btn {
       background-color: #333;
       color: white;
     }
-
-    .btn {
-      transition: background-color 0.3s, color 0.3s;
-    }
-
-    .navbar, .card, .btn {
-      transition: background-color 0.3s, color 0.3s;
-    }
-
     #historico table {
       width: 100%;
       border-collapse: collapse;
     }
-
     #historico th, #historico td {
       padding: 8px;
       text-align: left;
       border: 1px solid #ddd;
     }
-
     #historico th {
       background-color: #f4f4f4;
     }
-
     @media (max-width: 768px) {
       .container {
-        padding-left: 15px;
-        padding-right: 15px;
+        padding: 0 15px;
       }
       .tabela-alunos, .btn {
         width: 100% !important;
         display: block;
         margin-bottom: 10px;
       }
-      .tabela-alunos th, .tabela-alunos td {
-        font-size: 14px;
-        text-align: left;
-      }
-    }
-
-    .botoes {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
     }
   </style>
 </head>
-<body class="bg-light">
+<body>
   <div class="container py-4">
     <h2 class="text-center mb-4">Painel do Professor</h2>
     <div class="text-end mb-3">
       <span class="me-2">Professor logado: <strong id="nomeProfessor">Professor X</strong></span>
       <button class="btn btn-danger btn-sm" onclick="logout()">Sair</button>
-    </div>
-
-    <!-- Botão para alternar para o painel Admin -->
-    <div class="text-end mb-3">
-      <button class="btn btn-warning btn-sm" onclick="alternarPainelAdmin()">Alternar para Painel Admin</button>
     </div>
 
     <div class="d-flex justify-content-end">
@@ -96,199 +65,220 @@
 
     <div id="alert-container"></div>
 
-    <!-- Painel Professor -->
-    <div id="painelProfessor">
-      <div class="card mb-4">
-        <div class="card-header">Cadastrar Aluno</div>
-        <div class="card-body">
-          <div class="row g-3">
-            <div class="col-md-6">
-              <input type="text" class="form-control" id="nomeAluno" placeholder="Nome do aluno">
-            </div>
-            <div class="col-md-6">
-              <button class="btn btn-primary w-100" onclick="adicionarAluno()">Cadastrar</button>
-            </div>
+    <!-- Cadastro -->
+    <div class="card mb-4">
+      <div class="card-header">Cadastrar Aluno</div>
+      <div class="card-body">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <input type="text" class="form-control" id="nomeAluno" placeholder="Nome do aluno">
           </div>
-        </div>
-      </div>
-
-      <div class="card mb-4">
-        <div class="card-header">Lista de Alunos</div>
-        <div class="card-body">
-          <table class="table table-bordered">
-            <thead>
-              <tr>
-                <th>Nome</th>
-                <th>Status</th>
-                <th>Ações</th>
-              </tr>
-            </thead>
-            <tbody id="tabelaAlunos"></tbody>
-          </table>
-          <div class="text-end">
-            <button class="btn btn-success" onclick="exportarCSV()">Exportar CSV</button>
-            <button class="btn btn-danger" onclick="exportarPDF()">Exportar PDF</button>
-            <button class="btn btn-info" onclick="enviarWhatsApp()">Enviar por WhatsApp</button>
-            <button class="btn btn-primary" onclick="enviarEmail()">Enviar por E-mail</button>
+          <div class="col-md-6">
+            <button class="btn btn-primary w-100" onclick="adicionarAluno()">Cadastrar</button>
           </div>
-        </div>
-      </div>
-
-      <div class="card mb-4">
-        <div class="card-header">Registro de Presença</div>
-        <div class="card-body">
-          <div class="row g-3">
-            <div class="col-md-6">
-              <input type="text" class="form-control" id="nomeChamada" placeholder="Nome do aluno">
-            </div>
-            <div class="col-md-6">
-              <div class="form-check">
-                <input type="checkbox" id="presente" class="form-check-input">
-                <label class="form-check-label" for="presente">Presente</label>
-              </div>
-            </div>
-            <div class="col-12 mt-2">
-              <button class="btn btn-primary w-100" onclick="registrarChamada()">Registrar Chamada</button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="card mb-4">
-        <div class="card-header">Histórico de Chamadas</div>
-        <div class="card-body">
-          <input type="date" id="dataSelecionada" class="form-control mt-3" onchange="exibirHistorico(this.value)">
-          <div id="historico" class="mt-3"></div>
-        </div>
-      </div>
-
-      <div class="card mb-4">
-        <div class="card-header">Gráfico de Presença</div>
-        <div class="card-body">
-          <canvas id="graficoPresenca" width="400" height="200"></canvas>
         </div>
       </div>
     </div>
 
-    <!-- Painel Admin (visível somente para admins) -->
-    <div id="painelAdmin" style="display: none;">
-      <div class="card mb-4">
-        <div class="card-header">Painel do Administrador</div>
-        <div class="card-body">
-          <h5>Gerenciar Professores</h5>
-          <button class="btn btn-danger" onclick="removerProfessor()">Remover Professor</button>
-          <button class="btn btn-primary" onclick="adicionarProfessor()">Adicionar Professor</button>
+    <!-- Lista de Alunos -->
+    <div class="card mb-4">
+      <div class="card-header">Lista de Alunos</div>
+      <div class="card-body">
+        <table class="table table-bordered">
+          <thead>
+            <tr>
+              <th>Nome</th>
+              <th>Status</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="tabelaAlunos"></tbody>
+        </table>
+        <div class="text-end">
+          <button class="btn btn-success" onclick="exportarCSV()">Exportar CSV</button>
+          <button class="btn btn-danger" onclick="exportarPDF()">Exportar PDF</button>
+          <button class="btn btn-info" onclick="enviarWhatsApp()">WhatsApp</button>
+          <button class="btn btn-primary" onclick="enviarEmail()">E-mail</button>
         </div>
       </div>
+    </div>
 
-      <div class="card mb-4">
-        <div class="card-header">Gerenciar Alunos</div>
-        <div class="card-body">
-          <h5>Gerenciar Alunos (Admin)</h5>
-          <button class="btn btn-warning" onclick="removerAluno()">Remover Aluno</button>
+    <!-- Registro de Presença -->
+    <div class="card mb-4">
+      <div class="card-header">Registro de Presença</div>
+      <div class="card-body">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <input type="text" class="form-control" id="nomeChamada" placeholder="Nome do aluno">
+          </div>
+          <div class="col-md-6">
+            <div class="form-check">
+              <input type="checkbox" id="presente" class="form-check-input">
+              <label class="form-check-label" for="presente">Presente</label>
+            </div>
+          </div>
+          <div class="col-12 mt-2">
+            <button class="btn btn-primary w-100" onclick="registrarChamada()">Registrar Chamada</button>
+          </div>
         </div>
+      </div>
+    </div>
+
+    <!-- Histórico -->
+    <div class="card mb-4">
+      <div class="card-header">Histórico de Chamadas</div>
+      <div class="card-body">
+        <input type="date" id="dataSelecionada" class="form-control mt-3" onchange="exibirHistorico(this.value)">
+        <div id="historico" class="mt-3"></div>
+      </div>
+    </div>
+
+    <!-- Gráfico -->
+    <div class="card mb-4">
+      <div class="card-header">Gráfico de Presença</div>
+      <div class="card-body">
+        <canvas id="graficoPresenca" width="400" height="200"></canvas>
       </div>
     </div>
   </div>
 
-  <!-- Scripts -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
     const alunos = JSON.parse(localStorage.getItem('alunos')) || [];
     const chamadas = JSON.parse(localStorage.getItem('chamadas')) || [];
+    let chart;
 
     function logout() {
       localStorage.removeItem('usuarioLogado');
       window.location.href = 'index.html';
     }
 
-    function alternarPainelAdmin() {
-      const painelProfessor = document.getElementById('painelProfessor');
-      const painelAdmin = document.getElementById('painelAdmin');
-      painelProfessor.style.display = painelProfessor.style.display === 'none' ? 'block' : 'none';
-      painelAdmin.style.display = painelAdmin.style.display === 'none' ? 'block' : 'none';
-    }
-
     function alternarTema() {
       document.body.classList.toggle('dark-theme');
-      localStorage.setItem('tema', document.body.classList.contains('dark-theme') ? 'dark' : 'light');
+    }
+
+    function exibirNotificacao(msg, tipo) {
+      document.getElementById('alert-container').innerHTML = `
+        <div class="alert alert-${tipo} alert-dismissible fade show" role="alert">
+          ${msg}
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>`;
+    }
+
+    function renderizarTabela() {
+      const tabela = document.getElementById('tabelaAlunos');
+      tabela.innerHTML = '';
+      alunos.forEach((aluno, i) => {
+        tabela.innerHTML += `
+          <tr>
+            <td>${aluno.nome}</td>
+            <td>
+              <select onchange="atualizarStatus(${i}, this.value)" class="form-select">
+                <option value="presente" ${aluno.status === 'presente' ? 'selected' : ''}>✅ Presente</option>
+                <option value="ausente" ${aluno.status === 'ausente' ? 'selected' : ''}>❌ Ausente</option>
+              </select>
+            </td>
+            <td><button class="btn btn-danger btn-sm" onclick="removerAluno(${i})">Remover</button></td>
+          </tr>`;
+      });
+      gerarGraficoPresenca();
     }
 
     function adicionarAluno() {
-      const nomeAluno = document.getElementById('nomeAluno').value;
-      if (!nomeAluno) {
-        alert('Por favor, insira o nome do aluno.');
-        return;
+      const nome = document.getElementById('nomeAluno').value.trim();
+      if (!nome) return exibirNotificacao('Nome obrigatório.', 'danger');
+      alunos.push({ nome, status: 'presente' });
+      localStorage.setItem('alunos', JSON.stringify(alunos));
+      document.getElementById('nomeAluno').value = '';
+      renderizarTabela();
+      exibirNotificacao(`Aluno ${nome} cadastrado com sucesso.`, 'success');
+    }
+
+    function atualizarStatus(i, status) {
+      alunos[i].status = status;
+      localStorage.setItem('alunos', JSON.stringify(alunos));
+      gerarGraficoPresenca();
+    }
+
+    function removerAluno(i) {
+      if (confirm('Remover aluno?')) {
+        alunos.splice(i, 1);
+        localStorage.setItem('alunos', JSON.stringify(alunos));
+        renderizarTabela();
+        exibirNotificacao('Aluno removido.', 'warning');
       }
-      alunos.push({ nome: nomeAluno, status: 'Presente' });
-      localStorage.setItem('alunos', JSON.stringify(alunos));
-      exibirAlunos();
-      document.getElementById('nomeAluno').value = ''; // Limpar o campo
-    }
-
-    function exibirAlunos() {
-      const tabelaAlunos = document.getElementById('tabelaAlunos');
-      tabelaAlunos.innerHTML = '';
-      alunos.forEach((aluno, index) => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td>${aluno.nome}</td>
-          <td>${aluno.status}</td>
-          <td><button class="btn btn-danger btn-sm" onclick="removerAluno(${index})">Remover</button></td>
-        `;
-        tabelaAlunos.appendChild(tr);
-      });
-    }
-
-    function removerAluno(index) {
-      alunos.splice(index, 1);
-      localStorage.setItem('alunos', JSON.stringify(alunos));
-      exibirAlunos();
-    }
-
-    function exportarCSV() {
-      // Implementar exportação de CSV aqui
-      alert('Função exportar CSV não implementada.');
-    }
-
-    function exportarPDF() {
-      // Implementar exportação de PDF aqui
-      alert('Função exportar PDF não implementada.');
-    }
-
-    function enviarWhatsApp() {
-      alert('Função Enviar por WhatsApp não implementada.');
-    }
-
-    function enviarEmail() {
-      alert('Função Enviar por E-mail não implementada.');
     }
 
     function registrarChamada() {
-      const nomeChamada = document.getElementById('nomeChamada').value;
+      const nome = document.getElementById('nomeChamada').value.trim();
       const presente = document.getElementById('presente').checked;
-      if (!nomeChamada) {
-        alert('Por favor, insira o nome do aluno.');
-        return;
-      }
-      chamadas.push({ nome: nomeChamada, presente });
+      const data = new Date().toLocaleDateString('pt-BR');
+      if (!nome) return exibirNotificacao('Nome obrigatório.', 'danger');
+      chamadas.push({ nome, status: presente ? 'presente' : 'ausente', data });
       localStorage.setItem('chamadas', JSON.stringify(chamadas));
-      document.getElementById('nomeChamada').value = ''; // Limpar o campo
-      document.getElementById('presente').checked = false; // Limpar o checkbox
+      document.getElementById('nomeChamada').value = '';
+      document.getElementById('presente').checked = false;
+      exibirNotificacao(`Chamada registrada para ${nome}.`, 'success');
     }
 
-    function exibirHistorico(data) {
-      const historicoFiltrado = chamadas.filter(chamada => {
-        const dataChamada = new Date(chamada.data).toISOString().split('T')[0];
-        return dataChamada === data;
+    function exibirHistorico(dataInput) {
+      const dataFormatada = new Date(dataInput).toLocaleDateString('pt-BR');
+      const registros = chamadas.filter(c => c.data === dataFormatada);
+      const container = document.getElementById('historico');
+      if (!registros.length) return container.innerHTML = '<p class="text-muted">Nenhuma chamada nesta data.</p>';
+      let html = '<table><thead><tr><th>Nome</th><th>Status</th><th>Data</th></tr></thead><tbody>';
+      registros.forEach(r => html += `<tr><td>${r.nome}</td><td>${r.status}</td><td>${r.data}</td></tr>`);
+      html += '</tbody></table>';
+      container.innerHTML = html;
+    }
+
+    function gerarGraficoPresenca() {
+      const presentes = alunos.filter(a => a.status === 'presente').length;
+      const ausentes = alunos.length - presentes;
+      const ctx = document.getElementById('graficoPresenca').getContext('2d');
+      if (chart) chart.destroy();
+      chart = new Chart(ctx, {
+        type: 'pie',
+        data: {
+          labels: ['Presente', 'Ausente'],
+          datasets: [{
+            data: [presentes, ausentes],
+            backgroundColor: ['#36a2eb', '#ff6384']
+          }]
+        }
       });
-      const historicoContainer = document.getElementById('historico');
-      historicoContainer.innerHTML = `<pre>${JSON.stringify(historicoFiltrado, null, 2)}</pre>`;
     }
 
-    document.addEventListener('DOMContentLoaded', () => {
-      exibirAlunos(); // Exibir alunos no carregamento da página
-    });
+    function exportarCSV() {
+      const csv = alunos.map(a => `${a.nome},${a.status}`).join("\n");
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.setAttribute("href", url);
+      link.setAttribute("download", "alunos.csv");
+      link.click();
+    }
+
+    function exportarPDF() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      doc.autoTable({ head: [['Nome', 'Status']], body: alunos.map(a => [a.nome, a.status]) });
+      doc.save("alunos.pdf");
+    }
+
+    function enviarWhatsApp() {
+      const texto = alunos.map(a => `${a.nome}: ${a.status}`).join('\n');
+      const link = `https://wa.me/?text=${encodeURIComponent(texto)}`;
+      window.open(link, '_blank');
+    }
+
+    function enviarEmail() {
+      const assunto = "Lista de Alunos e Presenças";
+      const corpo = alunos.map(a => `${a.nome}: ${a.status}`).join('\n');
+      const link = `mailto:?subject=${encodeURIComponent(assunto)}&body=${encodeURIComponent(corpo)}`;
+      window.open(link);
+    }
+
+    renderizarTabela();
   </script>
 </body>
 </html>
