@@ -238,42 +238,64 @@
       container.innerHTML = html;
     }
 
-    function gerarGraficoPresenca() {
-      const presencas = alunos.reduce((acc, aluno) => {
-        acc[aluno.status] = (acc[aluno.status] || 0) + 1;
-        return acc;
-      }, {});
-      if (chart) chart.destroy();
-      chart = new Chart(document.getElementById('graficoPresenca'), {
-        type: 'bar',
-        data: {
-          labels: ['Presente', 'Ausente'],
-          datasets: [{
-            label: 'Contagem de Presença',
-            data: [presencas.presente || 0, presencas.ausente || 0],
-            backgroundColor: ['#28a745', '#dc3545'],
-            borderColor: ['#28a745', '#dc3545'],
-            borderWidth: 1
-          }]
-        },
-        options: {
-          responsive: true,
-          plugins: {
-            legend: {
-              position: 'top'
-            },
-            tooltip: {
-              callbacks: {
-                label: function(tooltipItem) {
-                  return `${tooltipItem.label}: ${tooltipItem.raw}`;
-                }
+    atualizarGraficoPresencas();
+      const historicoChamadas = JSON.parse(localStorage.getItem('historicoChamadas')) || [];
+  
+      const presencasPorAluno = {};
+  
+      historicoChamadas.forEach(chamada => {
+          chamada.alunos.forEach(aluno => {
+              if (aluno.presente) {
+                  if (!presencasPorAluno[aluno.nome]) {
+                      presencasPorAluno[aluno.nome] = 1;
+                  } else {
+                      presencasPorAluno[aluno.nome]++;
+                  }
               }
-            }
-          }
-        }
+          });
       });
-    }
-
+  
+      const labels = Object.keys(presencasPorAluno);
+      const dados = Object.values(presencasPorAluno);
+  
+      if (window.graficoPresencas) {
+          window.graficoPresencas.data.labels = labels;
+          window.graficoPresencas.data.datasets[0].data = dados;
+          window.graficoPresencas.update();
+      } else {
+          const ctx = document.getElementById('graficoPresencas').getContext('2d');
+          window.graficoPresencas = new Chart(ctx, {
+              type: 'bar',
+              data: {
+                  labels: labels,
+                  datasets: [{
+                      label: 'Presenças registradas',
+                      data: dados,
+                      backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                      borderColor: 'rgba(54, 162, 235, 1)',
+                      borderWidth: 1
+                  }]
+              },
+              options: {
+                  responsive: true,
+                  plugins: {
+                      legend: { display: false },
+                      tooltip: { enabled: true }
+                  },
+                  scales: {
+                      y: {
+                          beginAtZero: true,
+                          precision: 0,
+                          title: {
+                              display: true,
+                              text: 'Total de Presenças'
+                          }
+                      }
+                  }
+              }
+          });
+      }
+  
     function exportarPDF() {
       const doc = new jsPDF();
       const alunosTable = alunos.map(aluno => [aluno.nome, aluno.status]);
