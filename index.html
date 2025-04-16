@@ -1,60 +1,279 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <!-- Chart.js CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Lista de Chamada</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Painel do Professor</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     body {
-      transition: background 0.3s, color 0.3s;
+      background-color: white;
+      color: black;
+      transition: background-color 0.3s, color 0.3s;
     }
-    
-    body.light-mode {
+    .navbar, .card, .btn {
       background-color: #f8f9fa;
-      color: #212529;
+      color: black;
     }
-    
-    body.dark-mode {
+    body.dark-theme {
       background-color: #121212;
-      color: #e0e0e0;
-    }
-    
-    button.toggle-theme {
-      position: fixed;
-      top: 1rem;
-      right: 1rem;
-      padding: 0.5rem 1rem;
-      border: none;
-      background-color: #007bff;
       color: white;
-      border-radius: 5px;
-      cursor: pointer;
-      z-index: 1000;
+    }
+    .dark-theme .card, .dark-theme .btn {
+      background-color: #333;
+      color: white;
+    }
+    #historico table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    #historico th, #historico td {
+      padding: 8px;
+      text-align: left;
+      border: 1px solid #ddd;
+    }
+    #historico th {
+      background-color: #f4f4f4;
+    }
+    @media (max-width: 768px) {
+      .container {
+        padding: 0 15px;
+      }
+      .tabela-alunos, .btn {
+        width: 100% !important;
+        display: block;
+        margin-bottom: 10px;
+      }
     }
   </style>
 </head>
 <body>
-  <h1>Lista de Chamada</h1>
+  <div class="container py-4">
+    <h2 class="text-center mb-4">Painel do Professor</h2>
+    <div class="text-end mb-3">
+      <span class="me-2">Professor logado: <strong id="nomeProfessor">Professor X</strong></span>
+      <button class="btn btn-danger btn-sm" onclick="logout()">Sair</button>
+    </div>
 
-  <button class="toggle-theme" onclick="alternarTema()">🌙</button>
+    <div class="d-flex justify-content-end">
+      <button class="btn btn-secondary" onclick="alternarTema()">Alternar Tema</button>
+    </div>
 
-  <div>
-    <label for="dataChamada">Data da Chamada:</label>
-    <input type="date" id="dataChamada" />
-    <button onclick="registrarChamada()">Registrar Chamada</button>
+    <div id="alert-container"></div>
+
+    <!-- Cadastro -->
+    <div class="card mb-4">
+      <div class="card-header">Cadastrar Aluno</div>
+      <div class="card-body">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <input type="text" class="form-control" id="nomeAluno" placeholder="Nome do aluno">
+          </div>
+          <div class="col-md-6">
+            <button class="btn btn-primary w-100" onclick="adicionarAluno()">Cadastrar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Lista de Alunos -->
+    <div class="card mb-4">
+      <div class="card-header">Lista de Alunos</div>
+      <div class="card-body">
+        <table class="table table-bordered">
+          <thead>
+            <tr>
+              <th>Nome</th>
+              <th>Status</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="tabelaAlunos"></tbody>
+        </table>
+        <div class="text-end">
+          <button class="btn btn-success" onclick="exportarCSV()">Exportar CSV</button>
+          <button class="btn btn-danger" onclick="exportarPDF()">Exportar PDF</button>
+          <button class="btn btn-info" onclick="enviarWhatsApp()">WhatsApp</button>
+          <button class="btn btn-primary" onclick="enviarEmail()">E-mail</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Registro de Presença -->
+    <div class="card mb-4">
+      <div class="card-header">Registro de Presença</div>
+      <div class="card-body">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <input type="text" class="form-control" id="nomeChamada" placeholder="Nome do aluno">
+          </div>
+          <div class="col-md-6">
+            <div class="form-check">
+              <input type="checkbox" id="presente" class="form-check-input">
+              <label class="form-check-label" for="presente">Presente</label>
+            </div>
+          </div>
+          <div class="col-12 mt-2">
+            <button class="btn btn-primary w-100" onclick="registrarChamada()">Registrar Chamada</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Histórico -->
+    <div class="card mb-4">
+      <div class="card-header">Histórico de Chamadas</div>
+      <div class="card-body">
+        <input type="date" id="dataSelecionada" class="form-control mt-3" onchange="exibirHistorico(this.value)">
+        <div id="historico" class="mt-3"></div>
+      </div>
+    </div>
+
+    <!-- Gráfico -->
+    <div class="card mb-4">
+      <div class="card-header">Gráfico de Presença</div>
+      <div class="card-body">
+        <canvas id="graficoPresenca" width="400" height="200"></canvas>
+      </div>
+    </div>
   </div>
 
-  <div id="listaChamada"></div>
-
-  <h2>Histórico de Chamadas</h2>
-  <div id="historicoChamadas"></div>
-
-  <h2>Gráfico de Presenças</h2>
-  <canvas id="graficoPresenca" width="600" height="300"></canvas>
-
-  <script src="script.js"></script>
+  <script>
+    const alunos = JSON.parse(localStorage.getItem('alunos')) || [];
+    const chamadas = JSON.parse(localStorage.getItem('chamadas')) || [];
+    let chart;
+  
+    function logout() {
+      localStorage.removeItem('usuarioLogado');
+      window.location.href = 'index.html';
+    }
+  
+    function alternarTema() {
+      document.body.classList.toggle('dark-theme');
+    }
+  
+    function exibirNotificacao(msg, tipo) {
+      document.getElementById('alert-container').innerHTML = `
+        <div class="alert alert-${tipo} alert-dismissible fade show" role="alert">
+          ${msg}
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>`;
+    }
+  
+    function renderizarTabela() {
+      const tabela = document.getElementById('tabelaAlunos');
+      tabela.innerHTML = '';
+      alunos.forEach((aluno, i) => {
+        tabela.innerHTML += `
+          <tr>
+            <td>${aluno.nome}</td>
+            <td>
+              <select onchange="atualizarStatus(${i}, this.value)" class="form-select">
+                <option value="presente" ${aluno.status === 'presente' ? 'selected' : ''}>✅ Presente</option>
+                <option value="ausente" ${aluno.status === 'ausente' ? 'selected' : ''}>❌ Ausente</option>
+              </select>
+            </td>
+            <td><button class="btn btn-danger btn-sm" onclick="removerAluno(${i})">Remover</button></td>
+          </tr>`;
+      });
+      gerarGraficoPresenca();
+    }
+  
+    function adicionarAluno() {
+      const nome = document.getElementById('nomeAluno').value.trim();
+      if (!nome) return exibirNotificacao('Nome obrigatório.', 'danger');
+      alunos.push({ nome, status: 'presente' });
+      localStorage.setItem('alunos', JSON.stringify(alunos));
+      document.getElementById('nomeAluno').value = '';
+      renderizarTabela();
+      exibirNotificacao(`Aluno ${nome} cadastrado com sucesso.`, 'success');
+    }
+  
+    function atualizarStatus(i, status) {
+      alunos[i].status = status;
+      localStorage.setItem('alunos', JSON.stringify(alunos));
+      gerarGraficoPresenca();
+    }
+  
+    function removerAluno(i) {
+      if (confirm('Remover aluno?')) {
+        alunos.splice(i, 1);
+        localStorage.setItem('alunos', JSON.stringify(alunos));
+        renderizarTabela();
+        exibirNotificacao('Aluno removido.', 'warning');
+      }
+    }
+  
+    function registrarChamada() {
+      const nome = document.getElementById('nomeChamada').value.trim();
+      if (!nome) return exibirNotificacao('Nome obrigatório.', 'danger');
+      
+      const alunoCadastrado = alunos.find(aluno => aluno.nome.toLowerCase() === nome.toLowerCase());
+      if (!alunoCadastrado) return exibirNotificacao('Aluno não cadastrado.', 'danger');
+      
+      const presente = document.getElementById('presente').checked;
+      const data = new Date().toLocaleDateString('pt-BR');
+      chamadas.push({ nome, status: presente ? 'presente' : 'ausente', data });
+      localStorage.setItem('chamadas', JSON.stringify(chamadas));
+      document.getElementById('nomeChamada').value = '';
+      document.getElementById('presente').checked = false;
+      exibirNotificacao(`Chamada registrada para ${nome}.`, 'success');
+    }
+  
+    function exibirHistorico(dataInput) {
+      const dataFormatada = new Date(dataInput).toLocaleDateString('pt-BR');
+      const registros = chamadas.filter(c => c.data === dataFormatada);
+      const container = document.getElementById('historico');
+      if (!registros.length) return container.innerHTML = '<p class="text-muted">Nenhuma chamada nesta data.</p>';
+      let html = '<table><thead><tr><th>Nome</th><th>Status</th><th>Data</th></tr></thead><tbody>';
+      registros.forEach(r => {
+        html += `<tr><td>${r.nome}</td><td>${r.status}</td><td>${r.data}</td></tr>`;
+      });
+      html += '</tbody></table>';
+      container.innerHTML = html;
+    }
+  
+    function gerarGraficoPresenca() {
+      const presencas = {};
+      chamadas.forEach(c => {
+        if (!presencas[c.nome]) presencas[c.nome] = { presente: 0, ausente: 0 };
+        presencas[c.nome][c.status]++;
+      });
+  
+      const nomes = Object.keys(presencas);
+      const presentes = nomes.map(nome => presencas[nome].presente || 0);
+      const ausentes = nomes.map(nome => presencas[nome].ausente || 0);
+  
+      const ctx = document.getElementById('graficoPresenca').getContext('2d');
+      if (chart) chart.destroy();
+      chart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: nomes,
+          datasets: [
+            { label: 'Presente', data: presentes, backgroundColor: 'green' },
+            { label: 'Ausente', data: ausentes, backgroundColor: 'red' }
+          ]
+        },
+        options: {
+          responsive: true,
+          scales: {
+            y: { beginAtZero: true }
+          }
+        }
+      });
+    }
+  
+    // Inicializa a página
+    window.onload = () => {
+      const usuario = JSON.parse(localStorage.getItem('usuarioLogado'));
+      if (usuario) document.getElementById('nomeProfessor').textContent = usuario.nome;
+      renderizarTabela();
+    }
+  </script>
 </body>
 </html>
