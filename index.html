@@ -94,12 +94,6 @@
           </thead>
           <tbody id="tabelaAlunos"></tbody>
         </table>
-        <div class="text-end">
-          <button class="btn btn-success" onclick="exportarCSV()">Exportar CSV</button>
-          <button class="btn btn-danger" onclick="exportarPDF()">Exportar PDF</button>
-          <button class="btn btn-info" onclick="enviarWhatsApp()">WhatsApp</button>
-          <button class="btn btn-primary" onclick="enviarEmail()">E-mail</button>
-        </div>
       </div>
     </div>
 
@@ -145,7 +139,6 @@
   <script>
     const alunos = JSON.parse(localStorage.getItem('alunos')) || [];
     const chamadas = JSON.parse(localStorage.getItem('chamadas')) || [];
-    let chart;
 
     function logout() {
       localStorage.removeItem('usuarioLogado');
@@ -211,11 +204,8 @@
     function registrarChamada() {
       const nome = document.getElementById('nomeChamada').value.trim();
       if (!nome) return exibirNotificacao('Nome obrigatório.', 'danger');
-      
-      // Verifica se o aluno está cadastrado
       const alunoCadastrado = alunos.find(aluno => aluno.nome.toLowerCase() === nome.toLowerCase());
       if (!alunoCadastrado) return exibirNotificacao('Aluno não cadastrado.', 'danger');
-      
       const presente = document.getElementById('presente').checked;
       const data = new Date().toLocaleDateString('pt-BR');
       chamadas.push({ nome, status: presente ? 'presente' : 'ausente', data });
@@ -223,6 +213,7 @@
       document.getElementById('nomeChamada').value = '';
       document.getElementById('presente').checked = false;
       exibirNotificacao(`Chamada registrada para ${nome}.`, 'success');
+      gerarGraficoPresenca();
     }
 
     function exibirHistorico(dataInput) {
@@ -238,91 +229,77 @@
       container.innerHTML = html;
     }
 
-    atualizarGraficoPresencas();
-      const historicoChamadas = JSON.parse(localStorage.getItem('historicoChamadas')) || [];
-  
-      const presencasPorAluno = {};
-  
-      historicoChamadas.forEach(chamada => {
-          chamada.alunos.forEach(aluno => {
-              if (aluno.presente) {
-                  if (!presencasPorAluno[aluno.nome]) {
-                      presencasPorAluno[aluno.nome] = 1;
-                  } else {
-                      presencasPorAluno[aluno.nome]++;
-                  }
-              }
-          });
+    function gerarGraficoPresenca() {
+      const ctx = document.getElementById('graficoPresenca').getContext('2d');
+      const presencas = {};
+      const ausencias = {};
+
+      chamadas.forEach(chamada => {
+        const nome = chamada.nome;
+        if (!presencas[nome]) presencas[nome] = 0;
+        if (!ausencias[nome]) ausencias[nome] = 0;
+        if (chamada.status === 'presente') presencas[nome]++;
+        else ausencias[nome]++;
       });
-  
-      const labels = Object.keys(presencasPorAluno);
-      const dados = Object.values(presencasPorAluno);
-  
-      if (window.graficoPresencas) {
-          window.graficoPresencas.data.labels = labels;
-          window.graficoPresencas.data.datasets[0].data = dados;
-          window.graficoPresencas.update();
-      } else {
-          const ctx = document.getElementById('graficoPresencas').getContext('2d');
-          window.graficoPresencas = new Chart(ctx, {
-              type: 'bar',
-              data: {
-                  labels: labels,
-                  datasets: [{
-                      label: 'Presenças registradas',
-                      data: dados,
-                      backgroundColor: 'rgba(54, 162, 235, 0.6)',
-                      borderColor: 'rgba(54, 162, 235, 1)',
-                      borderWidth: 1
-                  }]
-              },
-              options: {
-                  responsive: true,
-                  plugins: {
-                      legend: { display: false },
-                      tooltip: { enabled: true }
-                  },
-                  scales: {
-                      y: {
-                          beginAtZero: true,
-                          precision: 0,
-                          title: {
-                              display: true,
-                              text: 'Total de Presenças'
-                          }
-                      }
-                  }
+
+      const nomes = [...new Set([...Object.keys(presencas), ...Object.keys(ausencias)])];
+      const dadosPresenca = nomes.map(n => presencas[n] || 0);
+      const dadosAusencia = nomes.map(n => ausencias[n] || 0);
+
+      const total = nomes.map((_, i) => dadosPresenca[i] + dadosAusencia[i]);
+      const porcentagens = nomes.map((_, i) => total[i] > 0 ? ((dadosPresenca[i] / total[i]) * 100).toFixed(1) : 0);
+
+      if (window.graficoPresenca) window.graficoPresenca.destroy();
+      window.graficoPresenca = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: nomes,
+          datasets: [
+            {
+              label: 'Presenças',
+              data: dadosPresenca,
+              backgroundColor: 'rgba(75, 192, 192, 0.6)'
+            },
+            {
+              label: 'Ausências',
+              data: dadosAusencia,
+              backgroundColor: 'rgba(255, 99, 132, 0.6)'
+            },
+            {
+              label: '% Presença',
+              data: porcentagens,
+              type: 'line',
+              yAxisID: 'yPercent',
+              borderColor: '#000',
+              tension: 0.3,
+              fill: false
+            }
+          ]
+        },
+        options: {
+          scales: {
+            y: { beginAtZero: true },
+            yPercent: {
+              beginAtZero: true,
+              max: 100,
+              position: 'right',
+              ticks: {
+                callback: val => `${val}%`
               }
-          });
-      }
-  
-    function exportarPDF() {
-      const doc = new jsPDF();
-      const alunosTable = alunos.map(aluno => [aluno.nome, aluno.status]);
-      doc.autoTable({
-        head: [['Nome', 'Status']],
-        body: alunosTable,
+            }
+          },
+          plugins: {
+            legend: { position: 'top' },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  return context.dataset.label + ': ' + context.raw + (context.dataset.label.includes('%') ? '%' : '');
+                }
+              }
+            }
+          }
+        }
       });
-      doc.save('alunos.pdf');
-    }
-
-    function exportarCSV() {
-      const csvContent = "Nome,Status\n" + alunos.map(aluno => `${aluno.nome},${aluno.status}`).join('\n');
-      const blob = new Blob([csvContent], { type: 'text/csv' });
-      const link = document.createElement('a');
-      link.href = URL.createObjectURL(blob);
-      link.download = 'alunos.csv';
-      link.click();
-    }
-
-    function enviarWhatsApp() {
-      const mensagem = encodeURIComponent(`Lista de presença: ${alunos.map(a => `${a.nome}: ${a.status}`).join(', ')}`);
-      window.open(`https://wa.me/?text=${mensagem}`, '_blank');
-    }
-
-    function enviarEmail() {
-      const mensagem = `Lista de presença: ${alunos.map(a => `${a.nome}: ${a.status}`).join(', ')}`;
-      window.location.href = `mailto:?subject=Lista de Presença&body=${mensagem}`;
     }
 
     renderizarTabela();
