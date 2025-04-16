@@ -187,7 +187,7 @@
             <td><button class="btn btn-danger btn-sm" onclick="removerAluno(${i})">Remover</button></td>
           </tr>`;
       });
-      gerarGraficoPresenca();
+      gerarGraficoPresenca(); // Agora gera o gráfico com base no histórico
     }
 
     function adicionarAluno() {
@@ -223,38 +223,52 @@
       const nome = document.getElementById('nomeChamada').value.trim();
       const presente = document.getElementById('presente').checked;
       const conteudo = document.getElementById('conteudoAula').value.trim();
+
       if (!nome || !conteudo) {
         exibirNotificacao('Por favor, preencha todos os campos.', 'danger');
         return;
       }
-      chamadas.push({ nome, presente, conteudo, data: new Date() });
+
+      const aluno = alunos.find(a => a.nome === nome);
+      if (!aluno) {
+        exibirNotificacao('Aluno não encontrado.', 'danger');
+        return;
+      }
+
+      chamadas.push({
+        aluno: aluno.nome,
+        status: presente ? 'presente' : 'ausente',
+        data: new Date().toISOString(),
+        conteudo
+      });
+
       localStorage.setItem(storageKeyChamadas, JSON.stringify(chamadas));
+      exibirNotificacao('Chamada registrada com sucesso!', 'success');
       exibirHistorico();
+      renderizarTabela(); // Atualiza a tabela com a nova chamada
     }
 
-    function exibirHistorico(dataFiltro) {
-      const historicoFiltrado = chamadas.filter(chamada => {
-        const dataChamada = chamada.data.split('T')[0];
-        return dataFiltro ? dataChamada === dataFiltro : true;
-      });
-      const historico = document.getElementById('historico');
-      historico.innerHTML = `
-        <table class="table">
+    function exibirHistorico(data) {
+      const historicoDiv = document.getElementById('historico');
+      const dataFiltrada = data ? chamadas.filter(chamada => chamada.data.startsWith(data)) : chamadas;
+
+      historicoDiv.innerHTML = `
+        <table class="table table-striped">
           <thead>
             <tr>
-              <th>Aluno</th>
-              <th>Presença</th>
-              <th>Conteúdo</th>
-              <th>Data</th>
+              <th data-i18n="nome">Aluno</th>
+              <th data-i18n="status">Status</th>
+              <th data-i18n="data">Data</th>
+              <th data-i18n="conteudo">Conteúdo</th>
             </tr>
           </thead>
           <tbody>
-            ${historicoFiltrado.map(chamada => `
+            ${dataFiltrada.map(chamada => `
               <tr>
-                <td>${chamada.nome}</td>
-                <td>${chamada.presente ? '✅' : '❌'}</td>
+                <td>${chamada.aluno}</td>
+                <td>${chamada.status === 'presente' ? '✅ Presente' : '❌ Ausente'}</td>
+                <td>${new Date(chamada.data).toLocaleString()}</td>
                 <td>${chamada.conteudo}</td>
-                <td>${new Date(chamada.data).toLocaleDateString()}</td>
               </tr>
             `).join('')}
           </tbody>
@@ -264,40 +278,73 @@
 
     function limparHistorico() {
       localStorage.removeItem(storageKeyChamadas);
+      chamadas.length = 0;
       exibirHistorico();
     }
 
     function gerarGraficoPresenca() {
-      const labels = alunos.map(aluno => aluno.nome);
-      const presencas = alunos.map(aluno => aluno.status === 'presente' ? 1 : 0);
+      const presencas = chamadas.reduce((acc, chamada) => {
+        const data = new Date(chamada.data).toLocaleDateString();
+        if (!acc[data]) {
+          acc[data] = { presente: 0, ausente: 0 };
+        }
+        if (chamada.status === 'presente') {
+          acc[data].presente++;
+        } else {
+          acc[data].ausente++;
+        }
+        return acc;
+      }, {});
 
-      if (chart) {
-        chart.destroy();
-      }
+      const datas = Object.keys(presencas);
+      const presentes = datas.map(data => presencas[data].presente);
+      const ausentes = datas.map(data => presencas[data].ausente);
 
-      chart = new Chart(document.getElementById('graficoPresenca'), {
+      const ctx = document.getElementById('graficoPresenca').getContext('2d');
+      if (chart) chart.destroy(); // Limpa o gráfico anterior
+      chart = new Chart(ctx, {
         type: 'bar',
         data: {
-          labels,
-          datasets: [{
-            label: 'Presença por aluno',
-            data: presencas,
-            backgroundColor: 'rgba(54, 162, 235, 0.2)',
-            borderColor: 'rgba(54, 162, 235, 1)',
-            borderWidth: 1
-          }]
-        },
-        options: {
-          scales: {
-            y: {
-              beginAtZero: true
+          labels: datas,
+          datasets: [
+            {
+              label: 'Presentes',
+              data: presentes,
+              backgroundColor: '#28a745',
+            },
+            {
+              label: 'Ausentes',
+              data: ausentes,
+              backgroundColor: '#dc3545',
             }
-          }
+          ]
         }
       });
     }
 
-    renderizarTabela();
+    function exportarPDF() {
+      const doc = new jsPDF();
+      doc.text('Lista de Alunos', 10, 10);
+      doc.autoTable({
+        head: [['Nome', 'Status']],
+        body: alunos.map(aluno => [aluno.nome, aluno.status === 'presente' ? 'Presente' : 'Ausente']),
+      });
+      doc.save('lista_alunos.pdf');
+    }
+
+    function exportarCSV() {
+      let csvContent = 'Nome,Status\n';
+      alunos.forEach(aluno => {
+        csvContent += `${aluno.nome},${aluno.status}\n`;
+      });
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = 'lista_alunos.csv';
+      link.click();
+    }
+
+    renderizarTabela(); // Inicializa a tabela ao carregar a página
   </script>
 </body>
 </html>
