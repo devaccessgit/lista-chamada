@@ -119,11 +119,9 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <script>
-    // Carrega os alunos e chamadas do localStorage
     const alunos = JSON.parse(localStorage.getItem('alunos')) || [];
     const chamadas = JSON.parse(localStorage.getItem('chamadas')) || [];
 
-    // Exibe a notificação
     function exibirNotificacao(mensagem, tipo) {
       const alertContainer = document.getElementById('alert-container');
       alertContainer.innerHTML = `
@@ -134,7 +132,6 @@
       `;
     }
 
-    // Atualiza a tabela de alunos
     function renderizarTabela() {
       const tabela = document.getElementById('tabelaAlunos');
       tabela.innerHTML = '';
@@ -155,11 +152,9 @@
         `;
       });
 
-      // Atualiza o gráfico de presença
       gerarGraficoPresenca();
     }
 
-    // Adiciona um novo aluno
     function adicionarAluno() {
       const nome = document.getElementById('nomeAluno').value.trim();
       if (!nome) {
@@ -173,13 +168,11 @@
       exibirNotificacao(`Aluno ${nome} cadastrado com sucesso!`, 'success');
     }
 
-    // Atualiza o status do aluno
     function atualizarStatus(index, status) {
       alunos[index].status = status;
       localStorage.setItem('alunos', JSON.stringify(alunos));
     }
 
-    // Remove um aluno
     function removerAluno(index) {
       if (confirm('Tem certeza que deseja remover o aluno?')) {
         alunos.splice(index, 1);
@@ -189,7 +182,6 @@
       }
     }
 
-    // Registra a presença de um aluno
     function registrarChamada() {
       const nome = document.getElementById('nomeChamada').value.trim();
       const presente = document.getElementById('presente').checked;
@@ -221,7 +213,6 @@
       exibirHistorico(data); // Atualizar o histórico imediatamente após o registro
     }
 
-    // Gera o gráfico de presença
     function gerarGraficoPresenca() {
       const presencas = [];
       const ausencias = [];
@@ -248,15 +239,28 @@
           }, {
             label: 'Ausências',
             data: ausencias,
-            backgroundColor: 'rgba(220, 53, 69, 0.5)',
-            borderColor: 'rgba(220, 53, 69, 1)',
+            backgroundColor: 'rgba(255, 0, 0, 0.5)',
+            borderColor: 'rgba(255, 0, 0, 1)',
             borderWidth: 1
           }]
+        },
+        options: {
+          scales: {
+            y: {
+              beginAtZero: true
+            }
+          }
         }
       });
     }
 
-    // Exibe o histórico de chamadas
+    function obterEstatisticasAluno(nomeAluno) {
+      const chamadasAluno = chamadas.filter(chamada => chamada.nome === nomeAluno);
+      const presencas = chamadasAluno.filter(chamada => chamada.status === 'presente').length;
+      const ausencias = chamadasAluno.filter(chamada => chamada.status === 'ausente').length;
+      return { totalPresente: presencas, totalAusente: ausencias };
+    }
+
     function exibirHistorico(dataSelecionada) {
       const historicoFiltrado = chamadas.filter(chamada => chamada.data === dataSelecionada);
       let html = `<table class="table table-bordered"><thead><tr><th>Nome</th><th>Status</th><th>Data</th></tr></thead><tbody>`;
@@ -273,7 +277,6 @@
       document.getElementById('historico').innerHTML = html;
     }
 
-    // Inicializa a renderização inicial da tabela e do gráfico
     renderizarTabela();
   </script>
 </body>
