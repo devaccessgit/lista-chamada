@@ -210,9 +210,14 @@
 
     function registrarChamada() {
       const nome = document.getElementById('nomeChamada').value.trim();
+      if (!nome) return exibirNotificacao('Nome obrigatório.', 'danger');
+      
+      // Verifica se o aluno está cadastrado
+      const alunoCadastrado = alunos.find(aluno => aluno.nome.toLowerCase() === nome.toLowerCase());
+      if (!alunoCadastrado) return exibirNotificacao('Aluno não cadastrado.', 'danger');
+      
       const presente = document.getElementById('presente').checked;
       const data = new Date().toLocaleDateString('pt-BR');
-      if (!nome) return exibirNotificacao('Nome obrigatório.', 'danger');
       chamadas.push({ nome, status: presente ? 'presente' : 'ausente', data });
       localStorage.setItem('chamadas', JSON.stringify(chamadas));
       document.getElementById('nomeChamada').value = '';
@@ -226,56 +231,76 @@
       const container = document.getElementById('historico');
       if (!registros.length) return container.innerHTML = '<p class="text-muted">Nenhuma chamada nesta data.</p>';
       let html = '<table><thead><tr><th>Nome</th><th>Status</th><th>Data</th></tr></thead><tbody>';
-      registros.forEach(r => html += `<tr><td>${r.nome}</td><td>${r.status}</td><td>${r.data}</td></tr>`);
+      registros.forEach(r => {
+        html += `<tr><td>${r.nome}</td><td>${r.status}</td><td>${r.data}</td></tr>`;
+      });
       html += '</tbody></table>';
       container.innerHTML = html;
     }
 
     function gerarGraficoPresenca() {
-      const presentes = alunos.filter(a => a.status === 'presente').length;
-      const ausentes = alunos.length - presentes;
-      const ctx = document.getElementById('graficoPresenca').getContext('2d');
+      const presencas = alunos.reduce((acc, aluno) => {
+        acc[aluno.status] = (acc[aluno.status] || 0) + 1;
+        return acc;
+      }, {});
       if (chart) chart.destroy();
-      chart = new Chart(ctx, {
-        type: 'pie',
+      chart = new Chart(document.getElementById('graficoPresenca'), {
+        type: 'bar',
         data: {
           labels: ['Presente', 'Ausente'],
           datasets: [{
-            data: [presentes, ausentes],
-            backgroundColor: ['#36a2eb', '#ff6384']
+            label: 'Contagem de Presença',
+            data: [presencas.presente || 0, presencas.ausente || 0],
+            backgroundColor: ['#28a745', '#dc3545'],
+            borderColor: ['#28a745', '#dc3545'],
+            borderWidth: 1
           }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: {
+              position: 'top'
+            },
+            tooltip: {
+              callbacks: {
+                label: function(tooltipItem) {
+                  return `${tooltipItem.label}: ${tooltipItem.raw}`;
+                }
+              }
+            }
+          }
         }
       });
     }
 
+    function exportarPDF() {
+      const doc = new jsPDF();
+      const alunosTable = alunos.map(aluno => [aluno.nome, aluno.status]);
+      doc.autoTable({
+        head: [['Nome', 'Status']],
+        body: alunosTable,
+      });
+      doc.save('alunos.pdf');
+    }
+
     function exportarCSV() {
-      const csv = alunos.map(a => `${a.nome},${a.status}`).join("\n");
-      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.setAttribute("href", url);
-      link.setAttribute("download", "alunos.csv");
+      const csvContent = "Nome,Status\n" + alunos.map(aluno => `${aluno.nome},${aluno.status}`).join('\n');
+      const blob = new Blob([csvContent], { type: 'text/csv' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = 'alunos.csv';
       link.click();
     }
 
-    function exportarPDF() {
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF();
-      doc.autoTable({ head: [['Nome', 'Status']], body: alunos.map(a => [a.nome, a.status]) });
-      doc.save("alunos.pdf");
-    }
-
     function enviarWhatsApp() {
-      const texto = alunos.map(a => `${a.nome}: ${a.status}`).join('\n');
-      const link = `https://wa.me/?text=${encodeURIComponent(texto)}`;
-      window.open(link, '_blank');
+      const mensagem = encodeURIComponent(`Lista de presença: ${alunos.map(a => `${a.nome}: ${a.status}`).join(', ')}`);
+      window.open(`https://wa.me/?text=${mensagem}`, '_blank');
     }
 
     function enviarEmail() {
-      const assunto = "Lista de Alunos e Presenças";
-      const corpo = alunos.map(a => `${a.nome}: ${a.status}`).join('\n');
-      const link = `mailto:?subject=${encodeURIComponent(assunto)}&body=${encodeURIComponent(corpo)}`;
-      window.open(link);
+      const mensagem = `Lista de presença: ${alunos.map(a => `${a.nome}: ${a.status}`).join(', ')}`;
+      window.location.href = `mailto:?subject=Lista de Presença&body=${mensagem}`;
     }
 
     renderizarTabela();
