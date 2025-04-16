@@ -268,18 +268,23 @@ body.dark-theme {
           labels: ['Presente', 'Ausente'],
           datasets: [{
             data: [presencas, ausencias],
-            backgroundColor: ['#36A2EB', '#FF6384'],
+            backgroundColor: ['#36a2eb', '#ff6384']
           }]
         }
       });
     }
 
+    function alternarTema() {
+      document.body.classList.toggle('dark-theme');
+      localStorage.setItem('tema', document.body.classList.contains('dark-theme') ? 'dark' : 'light');
+    }
+
     function exportarCSV() {
-      let csvContent = 'Nome,Status\n';
-      alunos.forEach(aluno => {
-        csvContent += `${aluno.nome},${aluno.status}\n`;
+      let csv = 'Nome,Status\n';
+      alunos.forEach(a => {
+        csv += `${a.nome},${a.status}\n`;
       });
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const blob = new Blob([csv], { type: 'text/csv' });
       const link = document.createElement('a');
       link.href = URL.createObjectURL(blob);
       link.download = 'alunos.csv';
@@ -294,16 +299,22 @@ body.dark-theme {
     }
 
     function enviarWhatsApp() {
-      const url = 'https://api.whatsapp.com/send?text=' + encodeURIComponent('Aqui está a lista de alunos!');
-      window.open(url, '_blank');
+      const alunosPresentes = alunos.filter(a => a.status === 'presente').map(a => a.nome).join(', ');
+      window.open(`https://wa.me/?text=Alunos%20presentes%20na%20aula:%20${encodeURIComponent(alunosPresentes)}`, '_blank');
     }
 
     function enviarEmail() {
-      const url = 'mailto:?subject=Lista de Alunos&body=' + encodeURIComponent('Aqui está a lista de alunos!');
-      window.open(url, '_blank');
+      const alunosPresentes = alunos.filter(a => a.status === 'presente').map(a => a.nome).join(', ');
+      window.open(`mailto:?subject=Lista%20de%20presenças&body=Alunos%20presentes%20na%20aula:%20${encodeURIComponent(alunosPresentes)}`, '_blank');
     }
 
-    renderizarTabela(); // Inicializa a tabela ao carregar
+    document.addEventListener('DOMContentLoaded', () => {
+      renderizarTabela();
+      gerarGraficoPresenca();
+      if (localStorage.getItem('tema') === 'dark') {
+        document.body.classList.add('dark-theme');
+      }
+    });
   </script>
 </body>
 </html>
