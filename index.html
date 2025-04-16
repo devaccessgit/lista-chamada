@@ -215,35 +215,79 @@
     }
 
     function adicionarAluno() {
-      // lógica de adicionar aluno
+      const nomeAluno = document.getElementById('nomeAluno').value;
+      if (!nomeAluno) {
+        alert('Por favor, insira o nome do aluno.');
+        return;
+      }
+      alunos.push({ nome: nomeAluno, status: 'Presente' });
+      localStorage.setItem('alunos', JSON.stringify(alunos));
+      exibirAlunos();
+      document.getElementById('nomeAluno').value = ''; // Limpar o campo
+    }
+
+    function exibirAlunos() {
+      const tabelaAlunos = document.getElementById('tabelaAlunos');
+      tabelaAlunos.innerHTML = '';
+      alunos.forEach((aluno, index) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${aluno.nome}</td>
+          <td>${aluno.status}</td>
+          <td><button class="btn btn-danger btn-sm" onclick="removerAluno(${index})">Remover</button></td>
+        `;
+        tabelaAlunos.appendChild(tr);
+      });
+    }
+
+    function removerAluno(index) {
+      alunos.splice(index, 1);
+      localStorage.setItem('alunos', JSON.stringify(alunos));
+      exibirAlunos();
     }
 
     function exportarCSV() {
-      // lógica para exportar CSV
+      // Implementar exportação de CSV aqui
+      alert('Função exportar CSV não implementada.');
     }
 
     function exportarPDF() {
-      // lógica para exportar PDF
+      // Implementar exportação de PDF aqui
+      alert('Função exportar PDF não implementada.');
+    }
+
+    function enviarWhatsApp() {
+      alert('Função Enviar por WhatsApp não implementada.');
+    }
+
+    function enviarEmail() {
+      alert('Função Enviar por E-mail não implementada.');
     }
 
     function registrarChamada() {
-      // lógica para registrar chamada
+      const nomeChamada = document.getElementById('nomeChamada').value;
+      const presente = document.getElementById('presente').checked;
+      if (!nomeChamada) {
+        alert('Por favor, insira o nome do aluno.');
+        return;
+      }
+      chamadas.push({ nome: nomeChamada, presente });
+      localStorage.setItem('chamadas', JSON.stringify(chamadas));
+      document.getElementById('nomeChamada').value = ''; // Limpar o campo
+      document.getElementById('presente').checked = false; // Limpar o checkbox
     }
 
-    function removerAluno() {
-      // lógica para remover aluno (admin)
-    }
-
-    function adicionarProfessor() {
-      // lógica para adicionar professor (admin)
-    }
-
-    function removerProfessor() {
-      // lógica para remover professor (admin)
+    function exibirHistorico(data) {
+      const historicoFiltrado = chamadas.filter(chamada => {
+        const dataChamada = new Date(chamada.data).toISOString().split('T')[0];
+        return dataChamada === data;
+      });
+      const historicoContainer = document.getElementById('historico');
+      historicoContainer.innerHTML = `<pre>${JSON.stringify(historicoFiltrado, null, 2)}</pre>`;
     }
 
     document.addEventListener('DOMContentLoaded', () => {
-      // Inicialização
+      exibirAlunos(); // Exibir alunos no carregamento da página
     });
   </script>
 </body>
