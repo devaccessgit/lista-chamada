@@ -203,7 +203,7 @@ function alternarTema() {
       ]],
       body: chamadas.map(c => [
         c.aluno,
-        c.status === 'presente' ? 'Sim' : 'Não',
+        c.status === 'presente' ? 'Presente' : 'Ausente',
         new Date(c.data).toLocaleString(),
         c.conteudo
       ])
@@ -228,7 +228,7 @@ function alternarTema() {
     arr.forEach(c => {
       csv += [
         c.aluno,
-        c.status === 'presente' ? '✅' : '❌',
+        c.status === 'presente' ? 'Presente' : 'Ausente',
         new Date(c.data).toLocaleString(),
         c.conteudo
       ].join(',') + '\n';
