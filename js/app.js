@@ -211,48 +211,49 @@ function alternarTema() {
     doc.save("historico_chamadas.pdf");
   }
   
-  function exportarCSV() {
-    const historico = JSON.parse(localStorage.getItem("historicoChamada")) || [];
-    const dataSelecionada = document.getElementById("dataFiltro").value;
-    const nomeFiltro = document.getElementById("filtroNome").value.toLowerCase();
+/// Exporta histórico de chamadas em CSV, separado por colunas e escapando conteúdo
+function exportarCSV() {
+    const date = document.getElementById('dataSelecionada').value;
+    const nomeFilter = document.getElementById('filtroNomeAluno').value.trim().toLowerCase();
   
-    const historicoFiltrado = historico.filter((registro) => {
-      const dataMatch = !dataSelecionada || registro.data.startsWith(dataSelecionada);
-      const nomeMatch = !nomeFiltro || registro.nome.toLowerCase().includes(nomeFiltro);
-      return dataMatch && nomeMatch;
+    // Filtra chamadas por data e nome
+    let arr = chamadas.filter(c => !date || c.data.startsWith(date));
+    arr = arr.filter(c => c.aluno.toLowerCase().includes(nomeFilter));
+  
+    // Cabeçalho de acordo com idioma
+    const cabecalho = savedLang === 'en'
+      ? ['Name', 'Status', 'Date', 'Content']
+      : ['Nome', 'Status', 'Data', 'Conteúdo'];
+  
+    // Inicia CSV com cabeçalho
+    let csv = cabecalho.map(h => `"${h}"`).join(',') + "\r\n";
+  
+    // Linhas do CSV
+    arr.forEach(c => {
+      const statusText = savedLang === 'en'
+        ? (c.status === 'presente' ? 'Present' : 'Absent')
+        : (c.status === 'presente' ? 'Presente' : 'Ausente');
+  
+      const row = [
+        c.aluno.replace(/"/g, '""'),
+        statusText,
+        new Date(c.data).toLocaleString(),
+        c.conteudo.replace(/"/g, '""')
+      ].map(field => `"${field}"`);
+  
+      csv += row.join(',') + "\r\n";
     });
   
-    if (historicoFiltrado.length === 0) {
-      alert("Nenhum dado encontrado para exportar.");
-      return;
-    }
-  
-    // Monta as linhas do CSV com colunas separadas
-    const csvLinhas = [["Nome", "Status", "Data", "Conteúdo"]];
-    historicoFiltrado.forEach((registro) => {
-      csvLinhas.push([
-        registro.nome || "",
-        registro.status || "",
-        registro.data || "",
-        registro.conteudo || ""
-      ]);
-    });
-  
-    // Criação da string CSV
-    const csvString = csvLinhas.map(linha =>
-      linha.map(coluna => `"${String(coluna).replace(/"/g, '""')}"`).join(",")
-    ).join("\n");
-  
-    const blob = new Blob([csvString], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-  
-    const link = document.createElement("a");
-    link.setAttribute("href", url);
-    link.setAttribute("download", "historico_chamada.csv");
+    // Gera o CSV e dispara download
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = savedLang === 'en' ? 'attendance_history.csv' : 'historico_chamadas.csv';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
   }
+  
 
   // Gera gráfico de presença por aluno com filtros
 function gerarGraficoPresenca() {
