@@ -151,8 +151,8 @@
 
   <script>
     const usuario = JSON.parse(localStorage.getItem('usuarioLogado')) || { nome: 'Professor' };
-    const storageKeyAlunos = alunos_${usuario.nome};
-    const storageKeyChamadas = chamadas_${usuario.nome};
+    const storageKeyAlunos = `alunos_${usuario.nome}`;
+    const storageKeyChamadas = `chamadas_${usuario.nome}`;
     const alunos = JSON.parse(localStorage.getItem(storageKeyAlunos)) || [];
     const chamadas = JSON.parse(localStorage.getItem(storageKeyChamadas)) || [];
     let chart = null;
@@ -185,24 +185,42 @@
                 <option value="ausente" ${aluno.status === 'ausente' ? 'selected' : ''}>❌ Ausente</option>
               </select>
             </td>
-            <td><button class="btn btn-danger btn-sm" onclick="removerAluno(${i})">Remover</button></td>
+            <td>
+              <button class="btn btn-danger" onclick="removerAluno(${i})">Excluir</button>
+            </td>
           </tr>`;
       });
-      gerarGraficoPresenca();
+    }
+
+    function renderizarGrafico() {
+      if (chart) {
+        chart.destroy();
+      }
+
+      const presencas = chamadas.filter(chamada => chamada.presente === 'presente').length;
+      const ausencias = chamadas.length - presencas;
+      
+      chart = new Chart(document.getElementById('graficoPresenca'), {
+        type: 'pie',
+        data: {
+          labels: ['Presente', 'Ausente'],
+          datasets: [{
+            data: [presencas, ausencias],
+            backgroundColor: ['#28a745', '#dc3545']
+          }]
+        }
+      });
     }
 
     function adicionarAluno() {
-      const nome = document.getElementById('nomeAluno').value.trim();
-      if (!nome) {
-        exibirNotificacao('Por favor, informe o nome do aluno.', 'danger');
+      const nomeAluno = document.getElementById('nomeAluno').value.trim();
+      if (!nomeAluno) {
+        exibirNotificacao('Digite o nome do aluno!', 'danger');
         return;
       }
-      if (alunos.some(aluno => aluno.nome === nome)) {
-        exibirNotificacao('Este aluno já está cadastrado.', 'danger');
-        return;
-      }
-      alunos.push({ nome, status: 'ausente' });
+      alunos.push({ nome: nomeAluno, status: 'presente' });
       localStorage.setItem(storageKeyAlunos, JSON.stringify(alunos));
+      document.getElementById('nomeAluno').value = '';
       renderizarTabela();
     }
 
@@ -215,80 +233,55 @@
     function atualizarStatus(index, status) {
       alunos[index].status = status;
       localStorage.setItem(storageKeyAlunos, JSON.stringify(alunos));
-      renderizarTabela();
     }
 
     function registrarChamada() {
-      const nome = document.getElementById('nomeChamada').value.trim();
+      const nomeChamada = document.getElementById('nomeChamada').value.trim();
       const presente = document.getElementById('presente').checked;
-      const conteudoAula = document.getElementById('conteudoAula').value.trim();
-      if (!nome || !conteudoAula) {
-        exibirNotificacao('Preencha todos os campos.', 'danger');
+      const conteudo = document.getElementById('conteudoAula').value.trim();
+
+      if (!nomeChamada || !conteudo) {
+        exibirNotificacao('Complete todos os campos!', 'danger');
         return;
       }
-      chamadas.push({ nome, presente, conteudoAula, data: new Date().toLocaleString() });
+
+      chamadas.push({ nome: nomeChamada, presente: presente ? 'presente' : 'ausente', conteudo });
       localStorage.setItem(storageKeyChamadas, JSON.stringify(chamadas));
-      exibirNotificacao('Chamada registrada com sucesso!', 'success');
+
+      renderizarGrafico();
+      exibirNotificacao('Chamada registrada!', 'success');
     }
 
-    function exibirHistorico(data) {
-      let historicoFiltrado = chamadas;
-      if (data) historicoFiltrado = chamadas.filter(chamada => chamada.data.includes(data));
-      if (document.getElementById('filtroNomeAluno').value) {
-        historicoFiltrado = historicoFiltrado.filter(chamada =>
-          chamada.nome.toLowerCase().includes(document.getElementById('filtroNomeAluno').value.toLowerCase())
-        );
+    function exibirHistorico(data = '') {
+      let historico = chamadas;
+      if (data) {
+        historico = chamadas.filter(chamada => chamada.data === data);
       }
-      const historicoDiv = document.getElementById('historico');
-      historicoDiv.innerHTML = '';
-      historicoFiltrado.forEach(chamada => {
-        historicoDiv.innerHTML += `
-          <div>
-            <strong>${chamada.nome}</strong> - ${chamada.presente ? '✅ Presente' : '❌ Ausente'} <br>
-            <small>${chamada.data}</small><br>
-            <p>${chamada.conteudoAula}</p>
-          </div>`;
+      let tabelaHistorico = '<table><tr><th>Aluno</th><th>Status</th><th>Conteúdo</th></tr>';
+      historico.forEach(chamada => {
+        tabelaHistorico += `<tr>
+          <td>${chamada.nome}</td>
+          <td>${chamada.presente === 'presente' ? '✅ Presente' : '❌ Ausente'}</td>
+          <td>${chamada.conteudo}</td>
+        </tr>`;
       });
+      tabelaHistorico += '</table>';
+      document.getElementById('historico').innerHTML = tabelaHistorico;
     }
 
     function limparHistorico() {
       chamadas.length = 0;
       localStorage.setItem(storageKeyChamadas, JSON.stringify(chamadas));
-      exibirHistorico();
-    }
-
-    function gerarGraficoPresenca() {
-      const dados = alunos.reduce((acc, aluno) => {
-        acc[aluno.status] = (acc[aluno.status] || 0) + 1;
-        return acc;
-      }, {});
-
-      const ctx = document.getElementById('graficoPresenca').getContext('2d');
-      if (chart) chart.destroy();
-      chart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels: ['Presente', 'Ausente'],
-          datasets: [{
-            label: 'Quantidade de Alunos',
-            data: [dados.presente || 0, dados.ausente || 0],
-            backgroundColor: ['#4caf50', '#f44336'],
-            borderColor: ['#388e3c', '#d32f2f'],
-            borderWidth: 1
-          }]
-        },
-        options: {
-          responsive: true,
-          scales: {
-            y: { beginAtZero: true }
-          }
-        }
-      });
+      renderizarGrafico();
+      exibirNotificacao('Histórico limpo!', 'success');
     }
 
     function exportarPDF() {
       const doc = new jsPDF();
-      doc.autoTable({ html: '#tabelaAlunos' });
+      doc.text('Lista de Alunos', 10, 10);
+      alunos.forEach((aluno, index) => {
+        doc.text(`${index + 1}. ${aluno.nome} - ${aluno.status}`, 10, 20 + index * 10);
+      });
       doc.save('alunos.pdf');
     }
 
@@ -297,51 +290,53 @@
       alunos.forEach(aluno => {
         csv += `${aluno.nome},${aluno.status}\n`;
       });
+      const blob = new Blob([csv], { type: 'text/csv' });
       const link = document.createElement('a');
-      link.href = 'data:text/csv;charset=utf-8,' + encodeURI(csv);
-      link.target = '_blank';
+      link.href = URL.createObjectURL(blob);
       link.download = 'alunos.csv';
       link.click();
     }
 
     function alterarIdioma(idioma) {
-      const traducoes = {
-        "pt-BR": {
-          cadastroAluno: "Cadastrar Aluno",
-          listaAlunos: "Lista de Alunos",
-          nome: "Nome",
-          status: "Status",
-          acoes: "Ações",
-          registroPresenca: "Registro de Presença",
-          presente: "Presente",
-          historicoChamadas: "Histórico de Chamadas",
-          limparHistorico: "Limpar Histórico",
-          graficoPresenca: "Gráfico de Presença"
+      const traduzir = {
+        'pt-BR': {
+          cadastroAluno: 'Cadastrar Aluno',
+          listaAlunos: 'Lista de Alunos',
+          status: 'Status',
+          nome: 'Nome',
+          acoes: 'Ações',
+          registroPresenca: 'Registro de Presença',
+          presente: 'Presente',
+          limparHistorico: 'Limpar Histórico',
+          historicoChamadas: 'Histórico de Chamadas',
+          graficoPresenca: 'Gráfico de Presença'
         },
-        "en": {
-          cadastroAluno: "Register Student",
-          listaAlunos: "Student List",
-          nome: "Name",
-          status: "Status",
-          acoes: "Actions",
-          registroPresenca: "Attendance Registration",
-          presente: "Present",
-          historicoChamadas: "Attendance History",
-          limparHistorico: "Clear History",
-          graficoPresenca: "Attendance Chart"
+        'en': {
+          cadastroAluno: 'Register Student',
+          listaAlunos: 'Student List',
+          status: 'Status',
+          nome: 'Name',
+          acoes: 'Actions',
+          registroPresenca: 'Attendance Register',
+          presente: 'Present',
+          limparHistorico: 'Clear History',
+          historicoChamadas: 'Attendance History',
+          graficoPresenca: 'Attendance Chart'
         }
       };
-
-      const traducoesSelecionadas = traducoes[idioma];
-      Object.keys(traducoesSelecionadas).forEach(key => {
-        document.querySelector(`[data-i18n=${key}]`).innerText = traducoesSelecionadas[key];
+      
+      const traducao = traduzir[idioma];
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        el.textContent = traducao[key] || el.textContent;
       });
     }
 
-    window.onload = function() {
+    document.addEventListener('DOMContentLoaded', () => {
       renderizarTabela();
-      exibirHistorico();
-    }
+      renderizarGrafico();
+      alterarIdioma('pt-BR');
+    });
   </script>
 </body>
 </html>
