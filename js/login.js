@@ -1,19 +1,16 @@
-// Dados de login fictícios (deve ser ajustado para banco de dados ou back-end futuramente)
-const adminCredentials = {
-    username: "admin",
-    password: "admin123"
-  };
-  
-  document.getElementById("loginForm").addEventListener("submit", function(event) {
+document.getElementById("loginForm").addEventListener("submit", function(event) {
     event.preventDefault();
   
-    const username = document.getElementById("username").value;
+    const username = document.getElementById("username").value.trim();
     const password = document.getElementById("password").value;
   
-    if (username === adminCredentials.username && password === adminCredentials.password) {
+    const validUser = "admin";
+    const validPass = "1234";
+  
+    if (username === validUser && password === validPass) {
       localStorage.setItem("isAdminLoggedIn", "true");
       window.location.href = "admin.html";
     } else {
-      document.getElementById("errorMessage").style.display = "block";
+      document.getElementById("errorMessage").classList.remove("d-none");
     }
   });
