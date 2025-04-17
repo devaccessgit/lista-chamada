@@ -4,10 +4,17 @@ document.getElementById('loginForm').addEventListener('submit', function (e) {
     const email = document.getElementById('emailLogin').value.trim();
     const senha = document.getElementById('senhaLogin').value.trim();
 
-    const usuarios = JSON.parse(localStorage.getItem('usuarios')) || [];
+    // Exemplo de cadastro do usuário admin no localStorage
+const usuarios = JSON.parse(localStorage.getItem('usuarios')) || [];
 
-    const usuario = usuarios.find(u => u.email === email && u.senha === senha);
-
+if (!usuarios.find(u => u.email === 'admin@admin.com')) {
+    usuarios.push({
+        email: 'admin@admin.com',
+        senha: 'admin123',
+        tipo: 'admin'
+    });
+    localStorage.setItem('usuarios', JSON.stringify(usuarios));
+}
     if (usuario) {
         localStorage.setItem('usuarioLogado', JSON.stringify(usuario));
 
