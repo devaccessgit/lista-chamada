@@ -227,19 +227,20 @@ function alternarTema() {
       return;
     }
   
-    // Constrói CSV com separação correta por colunas
+    // Monta as linhas do CSV com colunas separadas
     const csvLinhas = [["Nome", "Status", "Data", "Conteúdo"]];
     historicoFiltrado.forEach((registro) => {
       csvLinhas.push([
-        registro.nome,
-        registro.status,
-        registro.data,
+        registro.nome || "",
+        registro.status || "",
+        registro.data || "",
         registro.conteudo || ""
       ]);
     });
   
+    // Criação da string CSV
     const csvString = csvLinhas.map(linha =>
-      linha.map(coluna => `"${coluna}"`).join(",")
+      linha.map(coluna => `"${String(coluna).replace(/"/g, '""')}"`).join(",")
     ).join("\n");
   
     const blob = new Blob([csvString], { type: "text/csv;charset=utf-8;" });
