@@ -1,53 +1,37 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Bem-vindo</title>
-  <link rel="stylesheet" href="css/boasvindas.css" />
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <title>Bem-vindo ao Sistema</title>
+  <link rel="stylesheet" href="css/styles.css" />
 </head>
+
 <body class="light-theme">
-  <button id="alternarTema" class="tema-btn">🌙</button>
-
-  <div class="boasvindas-container fade-in">
+  <div class="boas-vindas-container fade-in">
+    <!-- Logo -->
     <img src="imagens/logo.png" alt="Logo" class="logo" />
-    <h1>Bem-vindo ao Sistema</h1>
-    <p>Escolha seu perfil de acesso para continuar:</p>
 
-    <div class="botoes">
-      <a href="login.html" class="btn">Sou Professor</a>
-      <a href="admin.html" class="btn">Sou Administrador</a>
-    </div>
+    <!-- Título de Boas-Vindas -->
+    <h2>Bem-vindo ao [Nome do Sistema]</h2>
+
+    <!-- Explicação breve do sistema -->
+    <p class="descricao">
+      Este sistema foi desenvolvido para facilitar a organização de agendamentos e chamadas, seja para consultas, aulas ou outros serviços. Com ele, você pode:
+    </p>
+    <ul class="descricao-lista">
+      <li>Agendar suas consultas ou compromissos facilmente.</li>
+      <li>Acompanhar o histórico de seus agendamentos.</li>
+      <li>Personalizar suas preferências de visualização.</li>
+      <li>Receber notificações importantes diretamente no seu dispositivo.</li>
+    </ul>
+
+    <!-- Botão para Login -->
+    <button class="btn-entrar" onclick="window.location.href='login.html'">Acessar sua conta</button>
   </div>
 
-  <script>
-    const botaoTema = document.getElementById('alternarTema');
-    const body = document.body;
-
-    function aplicarTema() {
-      const tema = localStorage.getItem('tema') || 'claro';
-      if (tema === 'escuro') {
-        body.classList.add('dark-theme');
-        body.classList.remove('light-theme');
-        botaoTema.textContent = '☀️';
-      } else {
-        body.classList.add('light-theme');
-        body.classList.remove('dark-theme');
-        botaoTema.textContent = '🌙';
-      }
-    }
-
-    botaoTema.addEventListener('click', () => {
-      const temaAtual = body.classList.contains('dark-theme') ? 'escuro' : 'claro';
-      const novoTema = temaAtual === 'escuro' ? 'claro' : 'escuro';
-      localStorage.setItem('tema', novoTema);
-      aplicarTema();
-    });
-
-    aplicarTema();
-  </script>
+  <script src="js/boasvindas.js"></script>
 </body>
+
 </html>

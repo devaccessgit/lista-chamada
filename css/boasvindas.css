@@ -1,0 +1,107 @@
+/* Boas-vindas */
+body.light-theme {
+    background-color: #f0f8ff;
+    color: #333;
+    font-family: 'Poppins', sans-serif;
+    margin: 0;
+    padding: 0;
+  }
+  
+  body.dark-theme {
+    background-color: #2f2f2f;
+    color: #f4f4f4;
+  }
+  
+  /* Container de Boas-vindas */
+  .boas-vindas-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    padding: 20px;
+    text-align: center;
+    transition: all 0.3s ease;
+  }
+  
+  /* Logo */
+  .logo {
+    width: 120px;
+    margin-bottom: 30px;
+  }
+  
+  /* Título */
+  h2 {
+    font-size: 28px;
+    margin-bottom: 20px;
+    font-weight: bold;
+  }
+  
+  /* Descrição */
+  .descricao {
+    font-size: 16px;
+    margin-bottom: 20px;
+    color: #555;
+    max-width: 500px;
+  }
+  
+  .descricao-lista {
+    list-style-type: none;
+    padding: 0;
+  }
+  
+  .descricao-lista li {
+    margin: 10px 0;
+    font-size: 16px;
+    color: #555;
+  }
+  
+  /* Botão de login */
+  .btn-entrar {
+    background-color: #4CAF50;
+    color: #fff;
+    padding: 12px 30px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+  }
+  
+  .btn-entrar:hover {
+    background-color: #45a049;
+  }
+  
+  /* Efeito de transição suave */
+  .fade-in {
+    animation: fadeIn 1s ease-in;
+  }
+  
+  @keyframes fadeIn {
+    0% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 1;
+    }
+  }
+  
+  /* Responsividade */
+  @media (max-width: 480px) {
+    .boas-vindas-container {
+      padding: 20px;
+    }
+  
+    h2 {
+      font-size: 24px;
+    }
+  
+    .btn-entrar {
+      font-size: 14px;
+      padding: 10px 20px;
+    }
+  
+    .logo {
+      width: 100px;
+    }
+  }
