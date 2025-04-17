@@ -92,6 +92,7 @@
   </style>
 </head>
 <body>
+  <button id="alternarTema" style="position: absolute; top: 20px; right: 20px;">🌙</button>
   <button id="toggleTema">Alternar Tema Claro/Escuro</button>
 
   <div class="painel">
@@ -116,6 +117,30 @@
       body.classList.add(`tema-${novoTema}`);
       localStorage.setItem('tema', novoTema);
     });
+  </script>
+  <script>
+    const botaoTema = document.getElementById('alternarTema');
+    const body = document.body;
+  
+    function aplicarTema() {
+      const tema = localStorage.getItem('tema') || 'claro';
+      if (tema === 'escuro') {
+        body.classList.add('tema-escuro');
+        botaoTema.textContent = '☀️';
+      } else {
+        body.classList.remove('tema-escuro');
+        botaoTema.textContent = '🌙';
+      }
+    }
+  
+    botaoTema.addEventListener('click', () => {
+      const temaAtual = body.classList.contains('tema-escuro') ? 'escuro' : 'claro';
+      const novoTema = temaAtual === 'escuro' ? 'claro' : 'escuro';
+      localStorage.setItem('tema', novoTema);
+      aplicarTema();
+    });
+  
+    aplicarTema();
   </script>
 </body>
 </html>

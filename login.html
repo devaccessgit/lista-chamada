@@ -3,32 +3,77 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Login do Administrador</title>
-  <link rel="stylesheet" href="css/login.css" />
+  <title>Login</title>
+  <link rel="stylesheet" href="assets/css/login.css" />
 </head>
-<body>
-  <div class="login-container">
-    <h2>Login do Administrador</h2>
-    
-    <form id="loginForm">
-      <div class="input-group">
-        <label for="usuarioLogin">Nome de Usuário</label>
-        <input type="text" id="usuarioLogin" placeholder="Nome de Usuário" required />
-      </div>
-      
-      <div class="input-group">
-        <label for="senhaLogin">Senha</label>
-        <input type="password" id="senhaLogin" placeholder="Senha" required />
-      </div>
-      
-      <button type="submit">Entrar</button>
-    </form>
-    
-    <div id="login-error" class="error-message" style="display:none;">
-      <p>Usuário ou senha inválidos!</p>
+<body class="light-theme">
+  <button id="alternarTema" style="position: absolute; top: 20px; right: 20px;">🌙</button>
+  <div class="login-container fade-in">
+    <!-- LOGO (opcional) -->
+    <img src="assets/img/logo.png" alt="Logo" class="logo" />
+
+    <h2>Entrar no Sistema</h2>
+
+    <div class="input-group">
+      <label for="usuarioLogin">Usuário</label>
+      <input type="text" id="usuarioLogin" placeholder="Digite seu nome de usuário" required />
+    </div>
+
+    <div class="input-group">
+      <label for="senhaLogin">Senha</label>
+      <input type="password" id="senhaLogin" placeholder="Digite sua senha" required />
+    </div>
+
+    <button id="loginBtn" onclick="loginUsuario()">
+      <span id="btnText">Entrar</span>
+      <span id="btnSpinner" class="spinner" style="display: none;"></span>
+    </button>
+
+    <div id="mensagemErro" class="error-message" style="display: none;"></div>
+
+    <!-- Botão de alternância de tema -->
+    <div class="theme-toggle">
+      <label class="switch">
+        <input type="checkbox" id="themeSwitcher" />
+        <span class="slider"></span>
+      </label>
+      <span id="themeLabel">Tema Claro</span>
     </div>
   </div>
 
-  <script src="login.js"></script>
+  <script src="js/login.js"></script>
+  <script>
+    const toggle = document.getElementById('themeSwitcher');
+    const themeLabel = document.getElementById('themeLabel');
+    toggle.addEventListener('change', () => {
+      document.body.classList.toggle('dark-theme');
+      document.body.classList.toggle('light-theme');
+      themeLabel.textContent = document.body.classList.contains('dark-theme') ? 'Tema Escuro' : 'Tema Claro';
+    });
+  </script>
+  <script>
+    const botaoTema = document.getElementById('alternarTema');
+    const body = document.body;
+  
+    function aplicarTema() {
+      const tema = localStorage.getItem('tema') || 'claro';
+      if (tema === 'escuro') {
+        body.classList.add('tema-escuro');
+        botaoTema.textContent = '☀️';
+      } else {
+        body.classList.remove('tema-escuro');
+        botaoTema.textContent = '🌙';
+      }
+    }
+  
+    botaoTema.addEventListener('click', () => {
+      const temaAtual = body.classList.contains('tema-escuro') ? 'escuro' : 'claro';
+      const novoTema = temaAtual === 'escuro' ? 'claro' : 'escuro';
+      localStorage.setItem('tema', novoTema);
+      aplicarTema();
+    });
+  
+    aplicarTema();
+  </script>
 </body>
 </html>

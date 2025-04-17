@@ -1,46 +1,40 @@
-document.getElementById('loginForm').addEventListener('submit', function (e) {
-    e.preventDefault();
-
-    const usuario = document.getElementById('usuarioLogin').value.trim();
+function loginUsuario() {
+    const nome = document.getElementById('usuarioLogin').value.trim();
     const senha = document.getElementById('senhaLogin').value.trim();
-
-    // Verificar se o campo de nome de usuário ou senha está vazio
-    if (!usuario || !senha) {
-        alert('Por favor, preencha todos os campos!');
-        return;
-    }
-
-    // Exemplo de cadastro do usuário admin no localStorage
-    const usuarios = JSON.parse(localStorage.getItem('usuarios')) || [];
-
-    // Cadastrar usuário admin caso não exista
-    if (!usuarios.find(u => u.usuario === 'admin')) {
-        usuarios.push({
-            usuario: 'admin',
-            senha: btoa('admin123'), // Senha encriptada
-            tipo: 'admin'
-        });
+    const mensagemErro = document.getElementById('mensagemErro');
+  
+    const loginBtn = document.getElementById('loginBtn');
+    const btnText = document.getElementById('btnText');
+    const btnSpinner = document.getElementById('btnSpinner');
+  
+    // Ativa o carregamento
+    btnText.textContent = 'Entrando...';
+    btnSpinner.style.display = 'inline-block';
+    loginBtn.disabled = true;
+  
+    // Simula processamento
+    setTimeout(() => {
+      const usuarios = JSON.parse(localStorage.getItem('usuarios')) || [];
+  
+      // Cria admin se ainda não existir
+      if (!usuarios.find(u => u.nome === 'admin')) {
+        usuarios.push({ nome: 'admin', senha: 'admin123', tipo: 'admin' });
         localStorage.setItem('usuarios', JSON.stringify(usuarios));
-    }
-
-    // Buscar usuário com base no nome de usuário e senha fornecidos
-    const usuarioLogado = usuarios.find(u => u.usuario === usuario && u.senha === btoa(senha)); // Comparar a senha encriptada
-
-    const errorMessageDiv = document.getElementById('login-error');
-
-    if (usuarioLogado) {
-        localStorage.setItem('usuarioLogado', JSON.stringify(usuarioLogado));
-
-        // Redirecionar conforme o tipo de usuário
-        if (usuarioLogado.tipo === 'admin') {
-            window.location.href = 'admin.html';
-        } else if (usuarioLogado.tipo === 'professor') {
-            window.location.href = 'professor.html';
-        } else {
-            alert('Tipo de usuário desconhecido!');
-        }
-    } else {
-        // Exibir mensagem de erro
-        errorMessageDiv.style.display = 'block';
-    }
-});
+      }
+  
+      const usuario = usuarios.find(u => u.nome === nome && u.senha === senha);
+  
+      if (usuario) {
+        localStorage.setItem('usuarioLogado', JSON.stringify(usuario));
+        window.location.href = 'boasvindas.html';
+      } else {
+        mensagemErro.textContent = 'Usuário ou senha inválidos!';
+        mensagemErro.style.display = 'block';
+  
+        // Reseta o botão
+        btnText.textContent = 'Entrar';
+        btnSpinner.style.display = 'none';
+        loginBtn.disabled = false;
+      }
+    }, 1000); // 1 segundo de simulação
+  }

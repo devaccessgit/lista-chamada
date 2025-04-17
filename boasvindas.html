@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Bem-vindo!</title>
+  <link rel="stylesheet" href="login.css" />
+  <style>
+    .boas-vindas {
+      text-align: center;
+      padding: 40px;
+      animation: fadeIn 1.5s ease-in-out;
+    }
+
+    .boas-vindas h1 {
+      font-size: 32px;
+      color: #4CAF50;
+      margin-bottom: 20px;
+    }
+
+    .boas-vindas p {
+      font-size: 18px;
+      color: #555;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .redirect {
+      margin-top: 30px;
+      font-size: 16px;
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+    <button id="alternarTema" style="position: absolute; top: 20px; right: 20px;">🌙</button>
+  <div class="login-container boas-vindas">
+    <h1>Olá, <span id="nomeUsuario"></span>!</h1>
+    <p>Seja bem-vindo(a) ao sistema!</p>
+    <p class="redirect">Você será redirecionado automaticamente...</p>
+  </div>
+
+  <script>
+    const usuarioLogado = JSON.parse(localStorage.getItem('usuarioLogado'));
+
+    if (!usuarioLogado) {
+      window.location.href = "index.html"; // volta ao login se não estiver logado
+    }
+
+    document.getElementById('nomeUsuario').textContent = usuarioLogado.nome;
+
+    // Redireciona após 3 segundos
+    setTimeout(() => {
+      window.location.href = usuarioLogado.tipo === 'admin' ? 'admin.html' : 'professor.html';
+    }, 3000);   
+  </script>
+  <script>
+    const botaoTema = document.getElementById('alternarTema');
+    const body = document.body;
+  
+    function aplicarTema() {
+      const tema = localStorage.getItem('tema') || 'claro';
+      if (tema === 'escuro') {
+        body.classList.add('tema-escuro');
+        botaoTema.textContent = '☀️';
+      } else {
+        body.classList.remove('tema-escuro');
+        botaoTema.textContent = '🌙';
+      }
+    }
+  
+    botaoTema.addEventListener('click', () => {
+      const temaAtual = body.classList.contains('tema-escuro') ? 'escuro' : 'claro';
+      const novoTema = temaAtual === 'escuro' ? 'claro' : 'escuro';
+      localStorage.setItem('tema', novoTema);
+      aplicarTema();
+    });
+  
+    aplicarTema();
+  </script>
+</body>
+</html>
