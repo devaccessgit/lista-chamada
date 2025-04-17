@@ -8,21 +8,18 @@ const alunos = JSON.parse(localStorage.getItem(storageKeyAlunos)) || [];
 const chamadas = JSON.parse(localStorage.getItem(storageKeyChamadas)) || [];
 let chart = null;
 
-// Exibe nome
+// Exibe nome do professor
 document.getElementById("nomeProfessor").textContent = usuario.nome;
 
-// Lembra idioma
+// Lembra idioma anterior
 const savedLang = localStorage.getItem('lang') || 'pt-BR';
-document.getElementById('lang').value = savedLang;
-
-// Traduções
-const dict = {
+\// Traduções\ const dict = {
   'pt-BR': {
     painel: "Painel do Professor",
     textoProfessor: "Professor logado:",
     sair: "Sair",
     cadastroAluno: "Cadastrar Aluno",
-    listar: "Lista de Alunos",
+    listaAlunos: "Lista de Alunos",
     registroPresenca: "Registro de Presença",
     historicoChamadas: "Histórico de Chamadas",
     limparHistorico: "Limpar Histórico",
@@ -78,8 +75,7 @@ function alterarIdioma(lang) {
 }
 alterarIdioma(savedLang);
 
-// Tema
-function alternarTema() {
+// Alterna tema\ nfunction alternarTema() {
   document.body.classList.toggle('dark-theme');
 }
 
@@ -96,11 +92,11 @@ function logout() {
   window.location.href = 'index.html';
 }
 
-// Alunos
+// Exibe tabela de alunos
 function renderizarTabela() {
   const tabela = document.getElementById('tabelaAlunos');
   tabela.innerHTML = '';
-  alunos.forEach((a,i) => {
+  alunos.forEach((a, i) => {
     tabela.innerHTML += `
       <tr>
         <td>${a.nome}</td>
@@ -110,59 +106,65 @@ function renderizarTabela() {
             <option value="ausente" ${a.status==='ausente'?'selected':''}>❌ ${dict[savedLang].status}</option>
           </select>
         </td>
-        <td>
-          <button class="btn btn-danger btn-sm" onclick="removerAluno(${i})">${dict[savedLang].acoes}</button>
-        </td>
+        <td><button class="btn btn-danger btn-sm" onclick="removerAluno(${i})">${dict[savedLang].acoes}</button></td>
       </tr>`;
   });
   gerarGraficoPresenca();
 }
 
+// Adiciona aluno
 function adicionarAluno() {
   const nome = document.getElementById('nomeAluno').value.trim();
-  if(!nome) return exibirNotificacao('Informe o nome.', 'danger');
-  if(alunos.some(a=>a.nome===nome)) return exibirNotificacao('Já cadastrado.', 'danger');
-  alunos.push({nome, status:'presente'});
+  if (!nome) return exibirNotificacao('Informe o nome.', 'danger');
+  if (alunos.some(a => a.nome === nome)) return exibirNotificacao('Já cadastrado.', 'danger');
+  alunos.push({ nome, status: 'presente' });
   localStorage.setItem(storageKeyAlunos, JSON.stringify(alunos));
-  document.getElementById('nomeAluno').value='';
+  document.getElementById('nomeAluno').value = '';
   renderizarTabela();
 }
 
-function atualizarStatus(i,status) {
+// Atualiza status
+function atualizarStatus(i, status) {
   alunos[i].status = status;
   localStorage.setItem(storageKeyAlunos, JSON.stringify(alunos));
 }
 
+// Remove aluno
 function removerAluno(i) {
-  alunos.splice(i,1);
+  alunos.splice(i, 1);
   localStorage.setItem(storageKeyAlunos, JSON.stringify(alunos));
   renderizarTabela();
 }
 
-// Histórico
+// Registra chamada (agora impedindo alunos não cadastrados)
 function registrarChamada() {
   const nome = document.getElementById('nomeChamada').value.trim();
   const pres = document.getElementById('presente').checked;
   const cont = document.getElementById('conteudoAula').value.trim();
-  if(!nome||!cont) return exibirNotificacao('Preencha todos os campos.', 'danger');
-  chamadas.push({ aluno: nome, status: pres?'presente':'ausente', conteudo:cont, data: new Date().toISOString() });
+  if (!nome || !cont) return exibirNotificacao('Preencha todos os campos.', 'danger');
+  if (!alunos.some(a => a.nome === nome)) return exibirNotificacao('Aluno não encontrado.', 'danger');
+  chamadas.push({ aluno: nome, status: pres ? 'presente' : 'ausente', conteudo: cont, data: new Date().toISOString() });
   localStorage.setItem(storageKeyChamadas, JSON.stringify(chamadas));
-  exibirNotificacao('Registrado!', 'success');
-  exibirHistorico();
+  exibirNotificacao('Registrado com sucesso!', 'success');
+  exibirHistorico(document.getElementById('dataSelecionada').value);
 }
 
-function exibirHistorico(date='') {
+// Exibe histórico com filtros
+function exibirHistorico(data = '') {
   const div = document.getElementById('historico');
-  const filtro = document.getElementById('filtroNomeAluno').value.toLowerCase();
-  let arr = chamadas.filter(c => !date||c.data.startsWith(date));
+  const filtro = document.getElementById('filtroNomeAluno').value.trim().toLowerCase();
+  let arr = chamadas.filter(c => !data || c.data.startsWith(data));
   arr = arr.filter(c => c.aluno.toLowerCase().includes(filtro));
-  if(!arr.length) {
+  if (!arr.length) {
     div.innerHTML = `<p>${dict[savedLang].historicoChamadas} vazio.</p>`;
     return;
   }
-  let html = `<table class="table table-striped"><thead>
-    <tr><th>${dict[savedLang].nome}</th><th>${dict[savedLang].status}</th><th>${dict[savedLang].data}</th><th>${dict[savedLang].conteudo}</th></tr>
-  </thead><tbody>`;
+  let html = `<table class="table table-striped"><thead><tr>
+    <th>${dict[savedLang].nome}</th>
+    <th>${dict[savedLang].status}</th>
+    <th>${dict[savedLang].data}</th>
+    <th>${dict[savedLang].conteudo}</th>
+  </tr></thead><tbody>`;
   arr.forEach(c => {
     html += `<tr>
       <td>${c.aluno}</td>
@@ -175,16 +177,17 @@ function exibirHistorico(date='') {
   div.innerHTML = html;
 }
 
+// Limpa histórico
 function limparHistorico() {
-  if(confirm('Confirma limpar histórico?')) {
-    chamadas.length=0;
+  if (confirm('Confirma limpar histórico?')) {
+    chamadas.length = 0;
     localStorage.removeItem(storageKeyChamadas);
-    exibirHistorico();
+    exibirHistorico(document.getElementById('dataSelecionada').value);
     gerarGraficoPresenca();
   }
 }
 
-// Exportação
+// Exporta histórico em PDF
 function exportarPDF() {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
@@ -206,21 +209,22 @@ function exportarPDF() {
   doc.save("historico_chamadas.pdf");
 }
 
+// Exporta lista de alunos em CSV
 function exportarCSV() {
   let csv = `${dict[savedLang].nome},${dict[savedLang].status}\n`;
   alunos.forEach(a=> csv+=`${a.nome},${a.status}\n`);
-  const blob = new Blob([csv],{type:"text/csv"});
-  const link = document.createElement("a");
-  link.href=URL.createObjectURL(blob);
-  link.download="lista_alunos.csv";
+  const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = 'lista_alunos.csv';
   link.click();
 }
 
-// Gráfico
+// Gera gráfico de presença por aluno
 function gerarGraficoPresenca() {
   const stats = {};
   chamadas.forEach(c=>{
-    stats[c.aluno]=stats[c.aluno]||{presente:0,ausente:0};
+    stats[c.aluno] = stats[c.aluno]||{presente:0,ausente:0};
     stats[c.aluno][c.status]++;
   });
   const labels = Object.keys(stats);
@@ -228,18 +232,16 @@ function gerarGraficoPresenca() {
   const dataA = labels.map(l=>stats[l].ausente);
   const ctx = document.getElementById('graficoPresenca').getContext('2d');
   if(chart) chart.destroy();
-  chart = new Chart(ctx,{
-    type:'bar',
-    data:{
-      labels,
-      datasets:[
-        {label:'Presente',data:dataP,backgroundColor:'#28a745'},
-        {label:'Ausente',data:dataA,backgroundColor:'#dc3545'}
-      ]
-    }
-  });
+  chart = new Chart(ctx,{ type:'bar', data:{ labels, datasets:[
+    { label: dict[savedLang].presente, data: dataP, backgroundColor:'#28a745' },
+    { label: dict[savedLang].status,  data: dataA, backgroundColor:'#dc3545' }
+  ] }});
 }
 
-// inicializações
+// Eventos de filtro
+document.getElementById('dataSelecionada').addEventListener('change', e => exibirHistorico(e.target.value));
+document.getElementById('filtroNomeAluno').addEventListener('input', () => exibirHistorico(document.getElementById('dataSelecionada').value));
+
+// Inicializa
 renderizarTabela();
-exibirHistorico();
+exibirHistorico(document.getElementById('dataSelecionada').value);
