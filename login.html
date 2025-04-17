@@ -4,14 +4,13 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Login</title>
-  <link rel="stylesheet" href="assets/css/login.css" />
+  <link rel="stylesheet" href="css/login.css" />
 </head>
 <body class="light-theme">
-  <button id="alternarTema" style="position: absolute; top: 20px; right: 20px;">🌙</button>
-  <div class="login-container fade-in">
-    <!-- LOGO (opcional) -->
-    <img src="assets/img/logo.png" alt="Logo" class="logo" />
+  <button id="alternarTema" class="tema-btn">🌙</button>
 
+  <div class="login-container fade-in">
+    <img src="assets/img/logo.png" alt="Logo" class="logo" />
     <h2>Entrar no Sistema</h2>
 
     <div class="input-group">
@@ -31,7 +30,6 @@
 
     <div id="mensagemErro" class="error-message" style="display: none;"></div>
 
-    <!-- Botão de alternância de tema -->
     <div class="theme-toggle">
       <label class="switch">
         <input type="checkbox" id="themeSwitcher" />
@@ -43,6 +41,7 @@
 
   <script src="js/login.js"></script>
   <script>
+    // Alternância do botão deslizante
     const toggle = document.getElementById('themeSwitcher');
     const themeLabel = document.getElementById('themeLabel');
     toggle.addEventListener('change', () => {
@@ -50,29 +49,31 @@
       document.body.classList.toggle('light-theme');
       themeLabel.textContent = document.body.classList.contains('dark-theme') ? 'Tema Escuro' : 'Tema Claro';
     });
-  </script>
-  <script>
+
+    // Botão flutuante ☀️ / 🌙
     const botaoTema = document.getElementById('alternarTema');
     const body = document.body;
-  
+
     function aplicarTema() {
       const tema = localStorage.getItem('tema') || 'claro';
       if (tema === 'escuro') {
-        body.classList.add('tema-escuro');
+        body.classList.add('dark-theme');
+        body.classList.remove('light-theme');
         botaoTema.textContent = '☀️';
       } else {
-        body.classList.remove('tema-escuro');
+        body.classList.remove('dark-theme');
+        body.classList.add('light-theme');
         botaoTema.textContent = '🌙';
       }
     }
-  
+
     botaoTema.addEventListener('click', () => {
-      const temaAtual = body.classList.contains('tema-escuro') ? 'escuro' : 'claro';
+      const temaAtual = body.classList.contains('dark-theme') ? 'escuro' : 'claro';
       const novoTema = temaAtual === 'escuro' ? 'claro' : 'escuro';
       localStorage.setItem('tema', novoTema);
       aplicarTema();
     });
-  
+
     aplicarTema();
   </script>
 </body>
