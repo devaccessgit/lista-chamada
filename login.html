@@ -38,6 +38,31 @@
     </div>
   </div>
 
-  <script src="login.js"></script>
+  <script>
+    // Lógica de login embutida
+    document.getElementById('loginForm').addEventListener('submit', function (e) {
+      e.preventDefault();
+
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value.trim();
+      const errorMessage = document.getElementById('errorMessage');
+
+      // Aqui você pode definir as credenciais fixas ou comparar com dados do localStorage
+      const usuariosValidos = [
+        { usuario: 'admin', senha: '1234' },
+        { usuario: 'professor', senha: 'abcd' }
+      ];
+
+      const usuarioValido = usuariosValidos.find(u => u.usuario === username && u.senha === password);
+
+      if (usuarioValido) {
+        localStorage.setItem("isProfessorLoggedIn", true);
+        localStorage.setItem("nomeProfessor", username);
+        window.location.href = "painel.html";
+      } else {
+        errorMessage.classList.remove('d-none');
+      }
+    });
+  </script>
 </body>
 </html>
