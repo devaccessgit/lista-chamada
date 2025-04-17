@@ -1,24 +1,30 @@
-document.getElementById("loginForm").addEventListener("submit", function(event) {
-    event.preventDefault();
-
-    const username = document.getElementById("username").value.trim();
-    const password = document.getElementById("password").value;
-
-    const validAdminUser = "admin";
-    const validAdminPass = "1234";
-    const validProfessorUser = "professor";
-    const validProfessorPass = "abcd"; // Exemplo de senha para o professor, altere conforme necessário
-
-    // Verificar se o login é de admin
-    if (username === validAdminUser && password === validAdminPass) {
-        localStorage.setItem("isAdminLoggedIn", "true");
-        window.location.href = "admin.html";
-    }
-    // Verificar se o login é de professor
-    else if (username === validProfessorUser && password === validProfessorPass) {
-        localStorage.setItem("isProfessorLoggedIn", "true");
-        window.location.href = "professor.html";
+// Função chamada ao submeter o login
+function loginAdmin() {
+    const email = document.getElementById('emailLogin').value;
+    const senha = document.getElementById('senhaLogin').value;
+  
+    // Verifique as credenciais (aqui estou usando um exemplo simples)
+    const usuarioValido = email === 'admin@dominio.com' && senha === 'senhaadmin';
+  
+    if (usuarioValido) {
+      // Salvar informações do admin no localStorage
+      localStorage.setItem('adminLoggedIn', 'true');
+      localStorage.setItem('nomeAdmin', 'Administrador');  // Exemplo de nome do admin
+  
+      // Redirecionar para a página do painel do administrador
+      window.location.href = 'admin.html';
     } else {
-        document.getElementById("errorMessage").classList.remove("d-none");
+      // Exibe uma mensagem de erro se as credenciais estiverem erradas
+      alert('Credenciais inválidas');
     }
-});
+  }
+  
+  // Função para verificar se o usuário está logado
+  window.onload = function() {
+    const loggedIn = localStorage.getItem('adminLoggedIn');
+    
+    // Se o admin estiver logado, redireciona diretamente para o painel do admin
+    if (loggedIn) {
+      window.location.href = 'admin.html';
+    }
+  };
