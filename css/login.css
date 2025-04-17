@@ -1,32 +1,16 @@
-/* Fonte global */
-body {
-  font-family: 'Poppins', sans-serif;
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-/* Temas */
+/* Tema claro */
 body.light-theme {
   background-color: #f4f4f4;
   color: #333;
 }
 
+/* Tema escuro */
 body.dark-theme {
   background-color: #1e1e1e;
   color: #f4f4f4;
 }
 
-/* Centralização vertical responsiva */
-body.light-theme,
-body.dark-theme {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-}
-
-/* Botão flutuante de tema */
+/* Botão flutuante para tema */
 .tema-btn {
   position: absolute;
   top: 20px;
@@ -35,28 +19,38 @@ body.dark-theme {
   background: transparent;
   border: none;
   cursor: pointer;
-  color: inherit;
 }
 
-/* Container de login */
+/* Estilo do login container */
 .login-container {
   background-color: #ffffff;
   padding: 40px 30px;
   border-radius: 16px;
-  width: 100%;
   max-width: 400px;
+  width: 100%;
+  margin: 100px auto;
   text-align: center;
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
+  animation: fadeInUp 0.8s ease-out;
+  opacity: 0;
+  animation-fill-mode: forwards;
 }
 
 body.dark-theme .login-container {
   background-color: #2c2c2c;
 }
 
-.login-container h2 {
-  margin-bottom: 20px;
-  font-weight: 600;
+/* Animação de entrada */
+@keyframes fadeInUp {
+  0% {
+    transform: translateY(30px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
 /* Logo */
@@ -65,7 +59,7 @@ body.dark-theme .login-container {
   margin-bottom: 20px;
 }
 
-/* Grupo de input com ícone */
+/* Input com ícones */
 .input-group {
   position: relative;
   margin-bottom: 20px;
@@ -84,7 +78,6 @@ body.dark-theme .login-container {
   border-radius: 6px;
   border: 1px solid #ccc;
   font-size: 16px;
-  transition: 0.3s;
 }
 
 .input-group i {
@@ -118,7 +111,7 @@ button#loginBtn:hover {
   background-color: #45a049;
 }
 
-/* Spinner de carregamento */
+/* Spinner */
 .spinner {
   display: inline-block;
   width: 20px;
@@ -140,7 +133,6 @@ button#loginBtn:hover {
   color: red;
   margin-top: 20px;
   font-size: 14px;
-  text-align: center;
 }
 
 /* Alternância de tema */
@@ -150,7 +142,7 @@ button#loginBtn:hover {
   font-size: 14px;
 }
 
-/* Switch estilizado */
+/* Switch */
 .switch {
   position: relative;
   display: inline-block;
@@ -195,7 +187,23 @@ input:checked + .slider:before {
   transform: translateX(18px);
 }
 
-/* Responsividade */
+/* Fonte global e centralização */
+body {
+  font-family: 'Poppins', sans-serif;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body.light-theme,
+body.dark-theme {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+/* Responsivo */
 @media (max-width: 480px) {
   .login-container {
     margin: 0 10px;
