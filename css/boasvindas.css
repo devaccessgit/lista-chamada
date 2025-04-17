@@ -1,107 +1,68 @@
-/* Boas-vindas */
-body.light-theme {
-    background-color: #f0f8ff;
-    color: #333;
-    font-family: 'Poppins', sans-serif;
-    margin: 0;
-    padding: 0;
-  }
-  
-  body.dark-theme {
-    background-color: #2f2f2f;
-    color: #f4f4f4;
-  }
-  
-  /* Container de Boas-vindas */
-  .boas-vindas-container {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    padding: 20px;
-    text-align: center;
-    transition: all 0.3s ease;
-  }
-  
-  /* Logo */
-  .logo {
-    width: 120px;
-    margin-bottom: 30px;
-  }
-  
-  /* Título */
-  h2 {
-    font-size: 28px;
-    margin-bottom: 20px;
-    font-weight: bold;
-  }
-  
-  /* Descrição */
-  .descricao {
-    font-size: 16px;
-    margin-bottom: 20px;
-    color: #555;
-    max-width: 500px;
-  }
-  
-  .descricao-lista {
-    list-style-type: none;
-    padding: 0;
-  }
-  
-  .descricao-lista li {
-    margin: 10px 0;
-    font-size: 16px;
-    color: #555;
-  }
-  
-  /* Botão de login */
-  .btn-entrar {
-    background-color: #4CAF50;
-    color: #fff;
-    padding: 12px 30px;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 16px;
-    transition: background-color 0.3s ease;
-  }
-  
-  .btn-entrar:hover {
-    background-color: #45a049;
-  }
-  
-  /* Efeito de transição suave */
-  .fade-in {
-    animation: fadeIn 1s ease-in;
-  }
-  
-  @keyframes fadeIn {
-    0% {
-      opacity: 0;
-    }
-    100% {
-      opacity: 1;
-    }
-  }
-  
-  /* Responsividade */
-  @media (max-width: 480px) {
-    .boas-vindas-container {
-      padding: 20px;
-    }
-  
-    h2 {
-      font-size: 24px;
-    }
-  
-    .btn-entrar {
-      font-size: 14px;
-      padding: 10px 20px;
-    }
-  
-    .logo {
-      width: 100px;
-    }
-  }
+body {
+  margin: 0;
+  font-family: 'Raleway', sans-serif;
+  background: linear-gradient(120deg, #4a90e2, #50c9c3);
+  color: #fff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.container {
+  text-align: center;
+  padding: 2rem;
+}
+
+.card {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  padding: 2rem;
+  max-width: 500px;
+  margin: auto;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+}
+
+.logo {
+  width: 80px;
+  margin-bottom: 1rem;
+}
+
+h1 {
+  font-size: 1.8rem;
+  margin-bottom: 1rem;
+}
+
+p {
+  font-size: 1rem;
+  margin-bottom: 1rem;
+}
+
+ul {
+  list-style: none;
+  padding: 0;
+  margin: 1rem 0;
+  text-align: left;
+}
+
+ul li {
+  margin: 0.5rem 0;
+  font-size: 0.95rem;
+}
+
+.btn-acessar {
+  background: #ffffff;
+  color: #4a90e2;
+  padding: 0.75rem 1.5rem;
+  text-decoration: none;
+  border-radius: 8px;
+  font-weight: bold;
+  transition: background 0.3s ease;
+  display: inline-block;
+  margin-top: 1rem;
+}
+
+.btn-acessar:hover {
+  background: #e3f2fd;
+}

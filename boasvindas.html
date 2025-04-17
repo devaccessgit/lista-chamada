@@ -1,37 +1,27 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Bem-vindo ao Sistema</title>
-  <link rel="stylesheet" href="css/styles.css" />
+  <title>Bem-vindo(a) - Sistema de Chamada</title>
+  <link rel="stylesheet" href="css/boasvindas.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;600&display=swap" rel="stylesheet">
 </head>
-
-<body class="light-theme">
-  <div class="boas-vindas-container fade-in">
-    <!-- Logo -->
-    <img src="imagens/logo.png" alt="Logo" class="logo" />
-
-    <!-- Título de Boas-Vindas -->
-    <h2>Bem-vindo ao [Nome do Sistema]</h2>
-
-    <!-- Explicação breve do sistema -->
-    <p class="descricao">
-      Este sistema foi desenvolvido para facilitar a organização de agendamentos e chamadas, seja para consultas, aulas ou outros serviços. Com ele, você pode:
-    </p>
-    <ul class="descricao-lista">
-      <li>Agendar suas consultas ou compromissos facilmente.</li>
-      <li>Acompanhar o histórico de seus agendamentos.</li>
-      <li>Personalizar suas preferências de visualização.</li>
-      <li>Receber notificações importantes diretamente no seu dispositivo.</li>
-    </ul>
-
-    <!-- Botão para Login -->
-    <button class="btn-entrar" onclick="window.location.href='login.html'">Acessar sua conta</button>
+<body>
+  <div class="container">
+    <div class="card">
+      <img src="css/imagens/logo.png" alt="Logo do sistema" class="logo" />
+      <h1>Bem-vindo(a) ao Sistema de Chamada</h1>
+      <p>Este sistema foi desenvolvido para facilitar o registro de presença em aulas de inglês.</p>
+      <ul>
+        <li>✅ Cadastro de professores e alunos</li>
+        <li>✅ Registro de chamadas por data</li>
+        <li>✅ Histórico e exportação em PDF/CSV</li>
+        <li>✅ Acesso diferenciado para administradores e professores</li>
+      </ul>
+      <a href="login.html" class="btn-acessar">Acessar sua conta</a>
+    </div>
   </div>
-
-  <script src="js/boasvindas.js"></script>
 </body>
-
 </html>
