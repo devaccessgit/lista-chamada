@@ -78,11 +78,11 @@ function alterarIdioma(lang) {
   }
   alterarIdioma(savedLang);
   
-  // Alterna tema\ 
-  function alternarTema() {
+  // Alterna tema
+function alternarTema() {
     document.body.classList.toggle('dark-theme');
   }
-
+  
   // Notificação
   function exibirNotificacao(msg, tipo) {
     const c = document.getElementById('alert-container');
@@ -106,14 +106,13 @@ function alterarIdioma(lang) {
           <td>${a.nome}</td>
           <td>
             <select onchange="atualizarStatus(${i}, this.value)" class="form-select">
-              <option value="presente" ${a.status==='presente'?'selected':''}>✅ ${dict[savedLang].presente}</option>
-              <option value="ausente" ${a.status==='ausente'?'selected':''}>❌ ${dict[savedLang].status}</option>
+              <option value="presente" ${a.status === 'presente' ? 'selected' : ''}>✅ ${dict[savedLang].presente}</option>
+              <option value="ausente" ${a.status === 'ausente' ? 'selected' : ''}>❌ ${dict[savedLang].status}</option>
             </select>
           </td>
           <td><button class="btn btn-danger btn-sm" onclick="removerAluno(${i})">${dict[savedLang].acoes}</button></td>
         </tr>`;
     });
-    gerarGraficoPresenca();
   }
   
   // Adiciona aluno
@@ -140,7 +139,7 @@ function alterarIdioma(lang) {
     renderizarTabela();
   }
   
-  // Registra chamada (agora impedindo alunos não cadastrados)
+  // Registra chamada (impede não cadastrados)
   function registrarChamada() {
     const nome = document.getElementById('nomeChamada').value.trim();
     const pres = document.getElementById('presente').checked;
@@ -150,35 +149,35 @@ function alterarIdioma(lang) {
     chamadas.push({ aluno: nome, status: pres ? 'presente' : 'ausente', conteudo: cont, data: new Date().toISOString() });
     localStorage.setItem(storageKeyChamadas, JSON.stringify(chamadas));
     exibirNotificacao('Registrado com sucesso!', 'success');
-    exibirHistorico(document.getElementById('dataSelecionada').value);
+    atualizarExibicoes();
   }
   
   // Exibe histórico com filtros
-  function exibirHistorico(data = '') {
+  function exibirHistorico(date = '') {
+    const filtroNome = document.getElementById('filtroNomeAluno').value.trim().toLowerCase();
+    let arr = chamadas.filter(c => !date || c.data.startsWith(date));
+    arr = arr.filter(c => c.aluno.toLowerCase().includes(filtroNome));
     const div = document.getElementById('historico');
-    const filtro = document.getElementById('filtroNomeAluno').value.trim().toLowerCase();
-    let arr = chamadas.filter(c => !data || c.data.startsWith(data));
-    arr = arr.filter(c => c.aluno.toLowerCase().includes(filtro));
     if (!arr.length) {
-      div.innerHTML = `<p>${dict[savedLang].historicoChamadas} vazio.</p>`;
-      return;
+      div.innerHTML = `<p>Nenhum registro encontrado.</p>`;
+    } else {
+      let html = `<table class="table table-striped"><thead><tr>
+        <th>${dict[savedLang].nome}</th>
+        <th>${dict[savedLang].status}</th>
+        <th>${dict[savedLang].data}</th>
+        <th>${dict[savedLang].conteudo}</th>
+      </tr></thead><tbody>`;
+      arr.forEach(c => {
+        html += `<tr>
+          <td>${c.aluno}</td>
+          <td>${c.status === 'presente' ? '✅' : '❌'}</td>
+          <td>${new Date(c.data).toLocaleString()}</td>
+          <td>${c.conteudo}</td>
+        </tr>`;
+      });
+      html += `</tbody></table>`;
+      div.innerHTML = html;
     }
-    let html = `<table class="table table-striped"><thead><tr>
-      <th>${dict[savedLang].nome}</th>
-      <th>${dict[savedLang].status}</th>
-      <th>${dict[savedLang].data}</th>
-      <th>${dict[savedLang].conteudo}</th>
-    </tr></thead><tbody>`;
-    arr.forEach(c => {
-      html += `<tr>
-        <td>${c.aluno}</td>
-        <td>${c.status==='presente'?'✅':'❌'}</td>
-        <td>${new Date(c.data).toLocaleString()}</td>
-        <td>${c.conteudo}</td>
-      </tr>`;
-    });
-    html += `</tbody></table>`;
-    div.innerHTML = html;
   }
   
   // Limpa histórico
@@ -186,8 +185,7 @@ function alterarIdioma(lang) {
     if (confirm('Confirma limpar histórico?')) {
       chamadas.length = 0;
       localStorage.removeItem(storageKeyChamadas);
-      exibirHistorico(document.getElementById('dataSelecionada').value);
-      gerarGraficoPresenca();
+      atualizarExibicoes();
     }
   }
   
@@ -197,15 +195,15 @@ function alterarIdioma(lang) {
     const doc = new jsPDF();
     doc.text(dict[savedLang].historicoChamadas, 10, 10);
     doc.autoTable({
-      head:[[
+      head: [[
         dict[savedLang].nome,
         dict[savedLang].status,
         dict[savedLang].data,
         dict[savedLang].conteudo
       ]],
-      body: chamadas.map(c=>[
+      body: chamadas.map(c => [
         c.aluno,
-        c.status==='presente'?'✅':'❌',
+        c.status === 'presente' ? '✅' : '❌',
         new Date(c.data).toLocaleString(),
         c.conteudo
       ])
@@ -213,41 +211,62 @@ function alterarIdioma(lang) {
     doc.save("historico_chamadas.pdf");
   }
   
-  // Exporta lista de alunos em CSV
+  // Exporta histórico de chamadas em CSV
   function exportarCSV() {
-    doc.text(dict[savedLang].historicoChamadas, 10, 10);
     let csv = `${dict[savedLang].nome},${dict[savedLang].status},${dict[savedLang].data},${dict[savedLang].conteudo}\n`;
-    alunos.forEach(a=> csv+=`${a.nome},${b.status},${c.data},${d.conteudo}\n`);
-    const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
-    const link = document.createElement('a' , 'b' , 'c' , 'd');
+    chamadas.forEach(c => {
+      csv += `${c.aluno},${c.status === 'presente' ? '✅' : '❌'},${new Date(c.data).toLocaleString()},${c.conteudo}\n`;
+    });
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
-    link.download = 'lista_alunos.csv';
+    link.download = 'historico_chamadas.csv';
     link.click();
   }
   
-  // Gera gráfico de presença por aluno
+  // Gera gráfico de presença por aluno com filtro
   function gerarGraficoPresenca() {
+    const date = document.getElementById('dataSelecionada').value;
+    const filtroNome = document.getElementById('filtroNomeAluno').value.trim().toLowerCase();
+    let arr = chamadas.filter(c => !date || c.data.startsWith(date));
+    arr = arr.filter(c => c.aluno.toLowerCase().includes(filtroNome));
+    if (!arr.length) {
+      if (chart) chart.destroy();
+      return;
+    }
     const stats = {};
-    chamadas.forEach(c=>{
-      stats[c.aluno] = stats[c.aluno]||{presente:0,ausente:0};
+    arr.forEach(c => {
+      stats[c.aluno] = stats[c.aluno] || { presente: 0, ausente: 0 };
       stats[c.aluno][c.status]++;
     });
     const labels = Object.keys(stats);
-    const dataP = labels.map(l=>stats[l].presente);
-    const dataA = labels.map(l=>stats[l].ausente);
+    const dataP = labels.map(l => stats[l].presente);
+    const dataA = labels.map(l => stats[l].ausente);
     const ctx = document.getElementById('graficoPresenca').getContext('2d');
-    if(chart) chart.destroy();
-    chart = new Chart(ctx,{ type:'bar', data:{ labels, datasets:[
-      { label: dict[savedLang].presente, data: dataP, backgroundColor:'#28a745' },
-      { label: dict[savedLang].status,  data: dataA, backgroundColor:'#dc3545' }
-    ] }});
+    if (chart) chart.destroy();
+    chart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [
+          { label: dict[savedLang].presente, data: dataP, backgroundColor: '#28a745' },
+          { label: dict[savedLang].status, data: dataA, backgroundColor: '#dc3545' }
+        ]
+      }
+    });
+  }
+  
+  // Atualiza histórico e gráfico
+  function atualizarExibicoes() {
+    const date = document.getElementById('dataSelecionada').value;
+    exibirHistorico(date);
+    gerarGraficoPresenca();
   }
   
   // Eventos de filtro
-  document.getElementById('dataSelecionada').addEventListener('change', e => exibirHistorico(e.target.value));
-  document.getElementById('filtroNomeAluno').addEventListener('input', () => exibirHistorico(document.getElementById('dataSelecionada').value));
+  document.getElementById('dataSelecionada').addEventListener('change', e => atualizarExibicoes());
+  document.getElementById('filtroNomeAluno').addEventListener('input', () => atualizarExibicoes());
   
   // Inicializa
   renderizarTabela();
-  exibirHistorico(document.getElementById('dataSelecionada').value);
-  
+  atualizarExibicoes();
