@@ -2,192 +2,35 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Painel do Administrador</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
-  <link rel="stylesheet" href="css/admin.css">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js"></script>
+  <link rel="stylesheet" href="style.css" />
 </head>
-<body>
+<body onload="protegerAdmin()">
+  <div class="sidebar">
+    <h3>Admin</h3>
+    <ul>
+      <li>Dashboard</li>
+      <li>Professores</li>
+      <li>Alunos</li>
+      <li>Chamadas</li>
+      <li>Gráficos</li>
+      <li><a href="#" onclick="logout()">Sair</a></li>
+    </ul>
+  </div>
+
+  <div class="main">
+    <h2>Painel do Administrador</h2>
+    <p>Bem-vindo, <span id="nomeAdmin"></span>!</p>
+    <!-- Conteúdo adicional -->
+  </div>
+
+  <script src="login.js"></script>
   <script>
-    // Verificar se o admin está logado
-    if (!localStorage.getItem("isAdminLoggedIn")) {
-      window.location.href = "login.html"; // Redireciona para o login se não for admin
+    function logout() {
+      localStorage.removeItem('adminLoggedIn');
+      localStorage.removeItem('nomeAdmin');
+      window.location.href = 'login.html';
     }
   </script>
-
-  <div class="d-flex">
-    <!-- Idioma -->
-    <div class="container text-end mb-3">
-      <select id="selectIdioma" class="form-select" style="max-width: 200px;">
-        <option value="pt">Português</option>
-        <option value="en">English</option>
-      </select>
-    </div>
-
-    <!-- Sidebar -->
-    <div class="sidebar p-3">
-      <h4 class="mb-4">Admin</h4>
-      <a href="#" onclick="showSection('dashboard')">📊 Dashboard</a>
-      <a href="#" onclick="showSection('professores')">👨‍🏫 Professores</a>
-      <a href="#" onclick="showSection('alunos')">👨‍🎓 Alunos</a>
-      <a href="#" onclick="showSection('chamadas')">📅 Chamadas</a>
-      <a href="#" onclick="showSection('graficos')">📈 Gráficos</a>
-      <hr>
-      <a href="#" onclick="logout()">🚪 Sair</a>
-    </div>
-
-    <!-- Conteúdo principal -->
-    <div class="content flex-grow-1">
-      <h2 id="admin-title">Painel do Administrador</h2>
-      <p>Bem-vindo, <span id="admin-nome"></span>!</p>
-
-      <div id="dashboard" class="admin-section">
-        <h4>Visão Geral</h4>
-        <p>Selecione uma opção no menu ao lado.</p>
-      </div>
-
-      <div id="professores" class="admin-section" style="display:none;">
-        <h4>Gestão de Professores</h4>
-      
-        <form id="formProfessor" class="mb-4">
-          <div class="row g-2">
-            <div class="col-md-4">
-              <input type="text" id="nomeProfessor" class="form-control" placeholder="Nome do Professor" required>
-            </div>
-            <div class="col-md-4">
-              <input type="email" id="emailProfessor" class="form-control" placeholder="E-mail" required>
-            </div>
-            <div class="col-md-2">
-              <input type="password" id="senhaProfessor" class="form-control" placeholder="Senha" required>
-            </div>
-            <div class="col-md-2 d-grid">
-              <button type="submit" class="btn btn-primary">Salvar</button>
-            </div>
-          </div>
-          <input type="hidden" id="indiceEdicao">
-        </form>
-      
-        <table class="table table-bordered table-striped">
-          <thead>
-            <tr>
-              <th>Nome</th>
-              <th>E-mail</th>
-              <th>Ações</th>
-            </tr>
-          </thead>
-          <tbody id="listaProfessores"></tbody>
-        </table>
-      </div>
-
-      <div id="alunos" class="admin-section" style="display:none;">
-        <h4>Gestão de Alunos</h4>
-      
-        <form id="formAluno" class="mb-4">
-          <div class="row g-2">
-            <div class="col-md-3">
-              <input type="text" id="nomeAluno" class="form-control" placeholder="Nome do Aluno" required>
-            </div>
-            <div class="col-md-3">
-              <input type="email" id="emailAluno" class="form-control" placeholder="E-mail do Aluno" required>
-            </div>
-            <div class="col-md-3">
-              <select id="professorAluno" class="form-select" required>
-                <option value="">Selecione um professor</option>
-              </select>
-            </div>
-            <div class="col-md-3 d-grid">
-              <button type="submit" class="btn btn-success">Salvar</button>
-            </div>
-          </div>
-          <input type="hidden" id="indiceAlunoEdicao">
-        </form>
-      
-        <table class="table table-striped table-bordered">
-          <thead>
-            <tr>
-              <th>Nome</th>
-              <th>E-mail</th>
-              <th>Professor Responsável</th>
-              <th>Ações</th>
-            </tr>
-          </thead>
-          <tbody id="listaAlunos"></tbody>
-        </table>
-      </div>
-
-      <div class="container">
-        <label for="filtroData" class="form-label">Filtrar por Data</label>
-        <input type="date" id="filtroData" class="form-control" onchange="filtrarPorData()">
-      </div>
-
-      <div id="chamadas" class="admin-section" style="display:none;">
-        <h4>Histórico de Chamadas</h4>
-        <!-- Listagem de chamadas com filtros -->
-      </div>
-
-      <div id="graficos" class="admin-section" style="display:none;">
-        <h4>Gráficos e Estatísticas</h4>
-        <!-- Gráficos com dados de presença -->
-      </div>
-    </div>
-  </div>
-  <div id="historico" class="admin-section" style="display:none;">
-    <h4>Histórico de Chamadas</h4>
-  
-    <div class="row g-2 mb-3">
-      <div class="col-md-3">
-        <input type="date" id="filtroData" class="form-control">
-      </div>
-      <div class="col-md-3">
-        <select id="filtroProfessor" class="form-select">
-          <option value="">Todos os Professores</option>
-        </select>
-      </div>
-      <div class="col-md-3">
-        <input type="text" id="filtroAluno" class="form-control" placeholder="Nome do Aluno">
-      </div>
-      <div class="col-md-3 d-grid">
-        <button class="btn btn-primary" onclick="filtrarHistorico()">Filtrar</button>
-      </div>
-    </div>
-  
-    <div id="grafico" class="admin-section" style="display:none;">
-      <h4>Gráfico de Presença por Aluno</h4>
-    
-      <div class="row g-2 mb-3">
-        <div class="col-md-4">
-          <select id="filtroProfessorGrafico" class="form-select">
-            <option value="">Todos os Professores</option>
-          </select>
-        </div>
-        <div class="col-md-4 d-grid">
-          <button class="btn btn-primary" onclick="gerarGrafico()">Gerar Gráfico</button>
-        </div>
-      </div>
-    
-      <canvas id="graficoPresencas" height="100"></canvas>
-    </div>
-    
-    <div class="mb-3 d-flex gap-2">
-      <button class="btn btn-outline-success" onclick="exportarHistoricoCSV()">Exportar CSV</button>
-      <button class="btn btn-outline-danger" onclick="exportarHistoricoPDF()">Exportar PDF</button>
-    </div>
-
-    <table class="table table-bordered table-striped">
-      <thead>
-        <tr>
-          <th>Data</th>
-          <th>Professor</th>
-          <th>Aluno</th>
-          <th>Status</th>
-        </tr>
-      </thead>
-      <tbody id="tabelaHistorico"></tbody>
-    </table>
-  </div>
-
-  <script src="js/admin.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </body>
 </html>
