@@ -211,41 +211,41 @@ function alternarTema() {
     doc.save("historico_chamadas.pdf");
   }
   
-  // Exporta histórico de chamadas em CSV
-  function exportarCSV() {
-    // Obtém filtros atuais
+  // Exporta histórico de chamadas em CSV, separado por colunas e escapando conteúdo
+function exportarCSV() {
     const date = document.getElementById('dataSelecionada').value;
-    const filtroNome = document.getElementById('filtroNomeAluno').value.trim().toLowerCase();
-  
-    // Filtra o histórico como na exibição
+    const nomeFilter = document.getElementById('filtroNomeAluno').value.trim().toLowerCase();
     let arr = chamadas.filter(c => !date || c.data.startsWith(date));
-    arr = arr.filter(c => c.aluno.toLowerCase().includes(filtroNome));
+    arr = arr.filter(c => c.aluno.toLowerCase().includes(nomeFilter));
   
-    // Cabeçalho do CSV
-    let csv = `${dict[savedLang].nome},${dict[savedLang].status},${dict[savedLang].data},${dict[savedLang].conteudo}\n`;
+    const headers = [
+      dict[savedLang].nome,
+      dict[savedLang].status,
+      dict[savedLang].data,
+      dict[savedLang].conteudo
+    ];
+    let csv = headers.map(h => `"${h}"`).join(',') + "\r\n";
   
-    // Linhas do CSV
     arr.forEach(c => {
-      csv += [
-        c.aluno,
+      const row = [
+        c.aluno.replace(/"/g, '""'),
         c.status === 'presente' ? 'Presente' : 'Ausente',
         new Date(c.data).toLocaleString(),
-        c.conteudo
-      ].join(',') + '\n';
+        c.conteudo.replace(/"/g, '""')
+      ].map(field => `"${field}"`);
+      csv += row.join(',') + "\r\n";
     });
   
-    // Cria o blob e o link de download
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
-    link.download = 'historico_chamadas.csv';
     link.style.display = 'none';
-  
-    // Anexa, clica e remove
+    link.download = 'historico_chamadas.csv';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
   }
+ 
   
   // Gera gráfico de presença por aluno com filtros
 function gerarGraficoPresenca() {
