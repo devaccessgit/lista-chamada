@@ -134,6 +134,7 @@
       <div class="card-header" data-i18n="historicoChamadas">Histórico de Chamadas</div>
       <div class="card-body">
         <input type="date" id="dataSelecionada" class="form-control mt-3" onchange="exibirHistorico(this.value)">
+        <input type="text" id="filtroNomeAluno" class="form-control mt-2" placeholder="Filtrar por nome do aluno" oninput="exibirHistorico()">
         <div id="historico" class="mt-3"></div>
         <button class="btn btn-danger mt-3" onclick="limparHistorico()" data-i18n="limparHistorico">Limpar Histórico</button>
       </div>
@@ -187,7 +188,7 @@
             <td><button class="btn btn-danger btn-sm" onclick="removerAluno(${i})">Remover</button></td>
           </tr>`;
       });
-      gerarGraficoPresenca(); // Agora gera o gráfico com base no histórico
+      gerarGraficoPresenca();
     }
 
     function adicionarAluno() {
@@ -196,12 +197,10 @@
         exibirNotificacao('Por favor, informe o nome do aluno.', 'danger');
         return;
       }
-
       if (alunos.some(aluno => aluno.nome === nome)) {
         exibirNotificacao('Este aluno já está cadastrado.', 'danger');
         return;
       }
-
       alunos.push({ nome, status: 'presente' });
       localStorage.setItem(storageKeyAlunos, JSON.stringify(alunos));
       document.getElementById('nomeAluno').value = '';
@@ -245,30 +244,44 @@
       localStorage.setItem(storageKeyChamadas, JSON.stringify(chamadas));
       exibirNotificacao('Chamada registrada com sucesso!', 'success');
       exibirHistorico();
-      renderizarTabela(); // Atualiza a tabela com a nova chamada
+      renderizarTabela();
     }
 
-    function exibirHistorico(data) {
+    function exibirHistorico(dataSelecionada = '') {
+      const filtroNome = document.getElementById('filtroNomeAluno').value.trim().toLowerCase();
       const historicoDiv = document.getElementById('historico');
-      const dataFiltrada = data ? chamadas.filter(chamada => chamada.data.startsWith(data)) : chamadas;
+      let chamadasFiltradas = chamadas;
+
+      if (dataSelecionada) {
+        chamadasFiltradas = chamadasFiltradas.filter(c => c.data.startsWith(dataSelecionada));
+      }
+
+      if (filtroNome) {
+        chamadasFiltradas = chamadasFiltradas.filter(c => c.aluno.toLowerCase().includes(filtroNome));
+      }
+
+      if (chamadasFiltradas.length === 0) {
+        historicoDiv.innerHTML = "<p>Nenhum registro encontrado.</p>";
+        return;
+      }
 
       historicoDiv.innerHTML = `
-        <table class="table table-striped">
+        <table>
           <thead>
             <tr>
-              <th data-i18n="nome">Aluno</th>
-              <th data-i18n="status">Status</th>
-              <th data-i18n="data">Data</th>
-              <th data-i18n="conteudo">Conteúdo</th>
+              <th>Data</th>
+              <th>Aluno</th>
+              <th>Status</th>
+              <th>Conteúdo</th>
             </tr>
           </thead>
           <tbody>
-            ${dataFiltrada.map(chamada => `
+            ${chamadasFiltradas.map(c => `
               <tr>
-                <td>${chamada.aluno}</td>
-                <td>${chamada.status === 'presente' ? '✅ Presente' : '❌ Ausente'}</td>
-                <td>${new Date(chamada.data).toLocaleString()}</td>
-                <td>${chamada.conteudo}</td>
+                <td>${new Date(c.data).toLocaleDateString()}</td>
+                <td>${c.aluno}</td>
+                <td>${c.status}</td>
+                <td>${c.conteudo}</td>
               </tr>
             `).join('')}
           </tbody>
@@ -277,118 +290,65 @@
     }
 
     function limparHistorico() {
-      if (confirm('Tem certeza que deseja limpar todo o histórico?')) {
+      if (confirm("Deseja realmente apagar todo o histórico?")) {
         localStorage.removeItem(storageKeyChamadas);
-        chamadas.length = 0;
-        exibirHistorico();
-        gerarGraficoPresenca();
+        location.reload();
       }
     }
 
     function exportarPDF() {
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF();
-      doc.text("Lista de Alunos", 10, 10);
-      doc.autoTable({
-        head: [['Nome', 'Status']],
-        body: alunos.map(a => [a.nome, a.status]),
-      });
-      doc.save("lista_alunos.pdf");
+      doc.autoTable({ html: '#tabelaAlunos' });
+      doc.save('alunos.pdf');
     }
 
     function exportarCSV() {
-      let csv = "Nome,Status\n";
+      let csv = 'Nome,Status\n';
       alunos.forEach(aluno => {
         csv += `${aluno.nome},${aluno.status}\n`;
       });
       const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-      const link = document.createElement("a");
-      link.setAttribute("href", URL.createObjectURL(blob));
-      link.setAttribute("download", "lista_alunos.csv");
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "alunos.csv";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
     }
 
     function gerarGraficoPresenca() {
-      const presencas = chamadas.reduce((acc, chamada) => {
-        const data = new Date(chamada.data).toLocaleDateString();
-        if (!acc[data]) {
-          acc[data] = { presente: 0, ausente: 0 };
-        }
-        if (chamada.status === 'presente') {
-          acc[data].presente++;
-        } else {
-          acc[data].ausente++;
-        }
-        return acc;
-      }, {});
-
-      const datas = Object.keys(presencas);
-      const presentes = datas.map(data => presencas[data].presente);
-      const ausentes = datas.map(data => presencas[data].ausente);
+      const totais = { presente: 0, ausente: 0 };
+      chamadas.forEach(c => {
+        if (c.status === 'presente') totais.presente++;
+        else totais.ausente++;
+      });
 
       const ctx = document.getElementById('graficoPresenca').getContext('2d');
-      if (chart) chart.destroy(); // Limpa o gráfico anterior
+      if (chart) chart.destroy();
       chart = new Chart(ctx, {
-        type: 'bar',
+        type: 'doughnut',
         data: {
-          labels: datas,
-          datasets: [
-            {
-              label: 'Presentes',
-              data: presentes,
-              backgroundColor: '#28a745',
-            },
-            {
-              label: 'Ausentes',
-              data: ausentes,
-              backgroundColor: '#dc3545',
-            }
-          ]
-        }
-      });
-    }
-
-    function alterarIdioma(lang) {
-      const traducoes = {
-        'pt-BR': {
-          cadastroAluno: 'Cadastrar Aluno',
-          listaAlunos: 'Lista de Alunos',
-          nome: 'Nome',
-          status: 'Status',
-          acoes: 'Ações',
-          registroPresenca: 'Registro de Presença',
-          presente: 'Presente',
-          historicoChamadas: 'Histórico de Chamadas',
-          limparHistorico: 'Limpar Histórico',
-          graficoPresenca: 'Gráfico de Presença',
-          data: 'Data',
-          conteudo: 'Conteúdo'
+          labels: ['Presente', 'Ausente'],
+          datasets: [{
+            data: [totais.presente, totais.ausente],
+            backgroundColor: ['#28a745', '#dc3545']
+          }]
         },
-        'en': {
-          cadastroAluno: 'Register Student',
-          listaAlunos: 'Student List',
-          nome: 'Name',
-          status: 'Status',
-          acoes: 'Actions',
-          registroPresenca: 'Attendance Record',
-          presente: 'Present',
-          historicoChamadas: 'Attendance History',
-          limparHistorico: 'Clear History',
-          graficoPresenca: 'Attendance Chart',
-          data: 'Date',
-          conteudo: 'Content'
+        options: {
+          responsive: true,
+          plugins: {
+            legend: {
+              position: 'bottom'
+            }
+          }
         }
-      };
-
-      const textos = traducoes[lang];
-      document.querySelectorAll('[data-i18n]').forEach(el => {
-        const key = el.getAttribute('data-i18n');
-        if (textos[key]) el.textContent = textos[key];
       });
     }
-    renderizarTabela(); // Inicializa a tabela ao carregar a página
+
+    renderizarTabela();
+    exibirHistorico();
   </script>
 </body>
 </html>
