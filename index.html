@@ -151,8 +151,8 @@
 
   <script>
     const usuario = JSON.parse(localStorage.getItem('usuarioLogado')) || { nome: 'Professor' };
-    const storageKeyAlunos = `alunos_${usuario.nome}`;
-    const storageKeyChamadas = `chamadas_${usuario.nome}`;
+    const storageKeyAlunos = alunos_${usuario.nome};
+    const storageKeyChamadas = chamadas_${usuario.nome};
     const alunos = JSON.parse(localStorage.getItem(storageKeyAlunos)) || [];
     const chamadas = JSON.parse(localStorage.getItem(storageKeyChamadas)) || [];
     let chart = null;
@@ -176,8 +176,8 @@
       const tabela = document.getElementById('tabelaAlunos');
       tabela.innerHTML = '';
       alunos.forEach((aluno, i) => {
-        tabela.innerHTML += `
-          <tr>
+        tabela.innerHTML += 
+          `<tr>
             <td>${aluno.nome}</td>
             <td>
               <select onchange="atualizarStatus(${i}, this.value)" class="form-select">
@@ -186,8 +186,7 @@
               </select>
             </td>
             <td><button class="btn btn-danger btn-sm" onclick="removerAluno(${i})">Remover</button></td>
-          </tr>
-        `;
+          </tr>`;
       });
       gerarGraficoPresenca();
     }
@@ -202,18 +201,15 @@
         exibirNotificacao('Este aluno já está cadastrado.', 'danger');
         return;
       }
-      alunos.push({ nome, status: 'presente' });
+      alunos.push({ nome, status: 'ausente' });
       localStorage.setItem(storageKeyAlunos, JSON.stringify(alunos));
       renderizarTabela();
-      document.getElementById('nomeAluno').value = '';
-      exibirNotificacao(`Aluno ${nome} adicionado com sucesso.`, 'success');
     }
 
     function removerAluno(index) {
       alunos.splice(index, 1);
       localStorage.setItem(storageKeyAlunos, JSON.stringify(alunos));
       renderizarTabela();
-      exibirNotificacao('Aluno removido com sucesso.', 'success');
     }
 
     function atualizarStatus(index, status) {
@@ -222,118 +218,130 @@
       renderizarTabela();
     }
 
-    function gerarGraficoPresenca() {
-      const presencas = alunos.filter(aluno => aluno.status === 'presente').length;
-      const ausencias = alunos.length - presencas;
-      const ctx = document.getElementById('graficoPresenca').getContext('2d');
-      if (chart) {
-        chart.destroy();
+    function registrarChamada() {
+      const nome = document.getElementById('nomeChamada').value.trim();
+      const presente = document.getElementById('presente').checked;
+      const conteudoAula = document.getElementById('conteudoAula').value.trim();
+      if (!nome || !conteudoAula) {
+        exibirNotificacao('Preencha todos os campos.', 'danger');
+        return;
       }
+      chamadas.push({ nome, presente, conteudoAula, data: new Date().toLocaleString() });
+      localStorage.setItem(storageKeyChamadas, JSON.stringify(chamadas));
+      exibirNotificacao('Chamada registrada com sucesso!', 'success');
+    }
+
+    function exibirHistorico(data) {
+      let historicoFiltrado = chamadas;
+      if (data) historicoFiltrado = chamadas.filter(chamada => chamada.data.includes(data));
+      if (document.getElementById('filtroNomeAluno').value) {
+        historicoFiltrado = historicoFiltrado.filter(chamada =>
+          chamada.nome.toLowerCase().includes(document.getElementById('filtroNomeAluno').value.toLowerCase())
+        );
+      }
+      const historicoDiv = document.getElementById('historico');
+      historicoDiv.innerHTML = '';
+      historicoFiltrado.forEach(chamada => {
+        historicoDiv.innerHTML += `
+          <div>
+            <strong>${chamada.nome}</strong> - ${chamada.presente ? '✅ Presente' : '❌ Ausente'} <br>
+            <small>${chamada.data}</small><br>
+            <p>${chamada.conteudoAula}</p>
+          </div>`;
+      });
+    }
+
+    function limparHistorico() {
+      chamadas.length = 0;
+      localStorage.setItem(storageKeyChamadas, JSON.stringify(chamadas));
+      exibirHistorico();
+    }
+
+    function gerarGraficoPresenca() {
+      const dados = alunos.reduce((acc, aluno) => {
+        acc[aluno.status] = (acc[aluno.status] || 0) + 1;
+        return acc;
+      }, {});
+
+      const ctx = document.getElementById('graficoPresenca').getContext('2d');
+      if (chart) chart.destroy();
       chart = new Chart(ctx, {
         type: 'bar',
         data: {
           labels: ['Presente', 'Ausente'],
           datasets: [{
             label: 'Quantidade de Alunos',
-            data: [presencas, ausencias],
-            backgroundColor: ['#4CAF50', '#FF5722'],
-            borderColor: ['#4CAF50', '#FF5722'],
+            data: [dados.presente || 0, dados.ausente || 0],
+            backgroundColor: ['#4caf50', '#f44336'],
+            borderColor: ['#388e3c', '#d32f2f'],
             borderWidth: 1
           }]
+        },
+        options: {
+          responsive: true,
+          scales: {
+            y: { beginAtZero: true }
+          }
         }
       });
     }
 
     function exportarPDF() {
       const doc = new jsPDF();
-      doc.text('Lista de Alunos', 20, 20);
-      const alunosExportar = alunos.map(aluno => [aluno.nome, aluno.status]);
-      doc.autoTable({
-        head: [['Nome', 'Status']],
-        body: alunosExportar,
-      });
+      doc.autoTable({ html: '#tabelaAlunos' });
       doc.save('alunos.pdf');
     }
 
     function exportarCSV() {
-      const csv = 'Nome,Status\n' + alunos.map(aluno => `${aluno.nome},${aluno.status}`).join('\n');
-      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      let csv = 'Nome,Status\n';
+      alunos.forEach(aluno => {
+        csv += `${aluno.nome},${aluno.status}\n`;
+      });
       const link = document.createElement('a');
-      link.href = URL.createObjectURL(blob);
+      link.href = 'data:text/csv;charset=utf-8,' + encodeURI(csv);
+      link.target = '_blank';
       link.download = 'alunos.csv';
       link.click();
     }
 
     function alterarIdioma(idioma) {
-      const i18n = {
-        'pt-BR': {
-          cadastroAluno: 'Cadastrar Aluno',
-          listaAlunos: 'Lista de Alunos',
-          nome: 'Nome',
-          status: 'Status',
-          acoes: 'Ações',
-          presente: 'Presente',
-          registroPresenca: 'Registro de Presença',
-          historicoChamadas: 'Histórico de Chamadas',
-          limparHistorico: 'Limpar Histórico',
-          graficoPresenca: 'Gráfico de Presença'
+      const traducoes = {
+        "pt-BR": {
+          cadastroAluno: "Cadastrar Aluno",
+          listaAlunos: "Lista de Alunos",
+          nome: "Nome",
+          status: "Status",
+          acoes: "Ações",
+          registroPresenca: "Registro de Presença",
+          presente: "Presente",
+          historicoChamadas: "Histórico de Chamadas",
+          limparHistorico: "Limpar Histórico",
+          graficoPresenca: "Gráfico de Presença"
         },
-        'en': {
-          cadastroAluno: 'Register Student',
-          listaAlunos: 'Student List',
-          nome: 'Name',
-          status: 'Status',
-          acoes: 'Actions',
-          presente: 'Present',
-          registroPresenca: 'Attendance Record',
-          historicoChamadas: 'Attendance History',
-          limparHistorico: 'Clear History',
-          graficoPresenca: 'Attendance Chart'
+        "en": {
+          cadastroAluno: "Register Student",
+          listaAlunos: "Student List",
+          nome: "Name",
+          status: "Status",
+          acoes: "Actions",
+          registroPresenca: "Attendance Registration",
+          presente: "Present",
+          historicoChamadas: "Attendance History",
+          limparHistorico: "Clear History",
+          graficoPresenca: "Attendance Chart"
         }
       };
-      const traducoes = i18n[idioma] || i18n['pt-BR'];
-      Object.keys(traducoes).forEach(id => {
-        document.getElementById(id).textContent = traducoes[id];
+
+      const traducoesSelecionadas = traducoes[idioma];
+      Object.keys(traducoesSelecionadas).forEach(key => {
+        document.querySelector(`[data-i18n=${key}]`).innerText = traducoesSelecionadas[key];
       });
     }
 
-    function exibirHistorico(data) {
-      const filtroNome = document.getElementById('filtroNomeAluno').value.trim().toLowerCase();
-      const chamadasFiltradas = chamadas.filter(chamada => {
-        const dataChamada = new Date(chamada.data);
-        const nomeAluno = chamada.aluno.toLowerCase();
-        const dataMatch = !data || dataChamada.toISOString().split('T')[0] === data;
-        const nomeMatch = !filtroNome || nomeAluno.includes(filtroNome);
-        return dataMatch && nomeMatch;
-      });
-
-      const historicoDiv = document.getElementById('historico');
-      historicoDiv.innerHTML = `
-        <table class="table table-bordered">
-          <thead>
-            <tr>
-              <th data-i18n="nome">Nome</th>
-              <th data-i18n="status">Status</th>
-              <th data-i18n="data">Data</th>
-              <th data-i18n="conteudoAula">Conteúdo da Aula</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${chamadasFiltradas.map(chamada => `
-              <tr>
-                <td>${chamada.aluno}</td>
-                <td>${chamada.status}</td>
-                <td>${new Date(chamada.data).toLocaleDateString()}</td>
-                <td>${chamada.conteudo}</td>
-              </tr>
-            `).join('')}
-          </tbody>
-        </table>
-      `;
+    window.onload = function() {
+      renderizarTabela();
+      exibirHistorico();
     }
-
-    renderizarTabela();
-    alterarIdioma('pt-BR'); // Definir idioma padrão
   </script>
 </body>
 </html>
