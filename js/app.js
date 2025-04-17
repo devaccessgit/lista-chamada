@@ -30,7 +30,7 @@ const dict = {
     presente: "Presente",
     nome: "Nome",
     status: "Status",
-    acoes: "Ações",
+    acoes: "Remover",
     exportPDF: "Exportar PDF",
     exportCSV: "Exportar CSV",
     cadastrar: "Cadastrar",
@@ -52,7 +52,7 @@ const dict = {
     presente: "Present",
     nome: "Name",
     status: "Status",
-    acoes: "Actions",
+    acoes: "Remover",
     exportPDF: "Export PDF",
     exportCSV: "Export CSV",
     cadastrar: "Register",
@@ -82,7 +82,7 @@ function alterarIdioma(lang) {
   function alternarTema() {
     document.body.classList.toggle('dark-theme');
   }
-  
+
   // Notificação
   function exibirNotificacao(msg, tipo) {
     const c = document.getElementById('alert-container');
@@ -215,10 +215,11 @@ function alterarIdioma(lang) {
   
   // Exporta lista de alunos em CSV
   function exportarCSV() {
-    let csv = `${dict[savedLang].nome},${dict[savedLang].status}\n`;
-    alunos.forEach(a=> csv+=`${a.nome},${a.status}\n`);
+    doc.text(dict[savedLang].historicoChamadas, 10, 10);
+    let csv = `${dict[savedLang].nome},${dict[savedLang].status},${dict[savedLang].data},${dict[savedLang].conteudo}\n`;
+    alunos.forEach(a=> csv+=`${a.nome},${b.status},${c.data},${d.conteudo}\n`);
     const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
-    const link = document.createElement('a');
+    const link = document.createElement('a' , 'b' , 'c' , 'd');
     link.href = URL.createObjectURL(blob);
     link.download = 'lista_alunos.csv';
     link.click();
