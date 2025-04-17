@@ -3,25 +3,85 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Bem-vindo(a) - Sistema de Chamada</title>
-  <link rel="stylesheet" href="css/boasvindas.css" />
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;600&display=swap" rel="stylesheet">
+  <title>Bem-vindo!</title>
+  <link rel="stylesheet" href="css/login.css" />
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background: linear-gradient(135deg, #4c6ef5, #d0e1ff);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      color: #fff;
+      text-align: center;
+    }
+
+    .boas-vindas-container {
+      background: rgba(0, 0, 0, 0.2);
+      padding: 30px 40px;
+      border-radius: 20px;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+    }
+
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 10px;
+    }
+
+    p {
+      font-size: 1.1rem;
+      opacity: 0.9;
+    }
+
+    .loader {
+      margin-top: 30px;
+      border: 6px solid #f3f3f3;
+      border-top: 6px solid #ffffff;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
 </head>
 <body>
-  <div class="container">
-    <div class="card">
-      <img src="css/imagens/logo.png" alt="Logo do sistema" class="logo" />
-      <h1>Bem-vindo(a) ao Sistema de Chamada</h1>
-      <p>Este sistema foi desenvolvido para facilitar o registro de presença em aulas de inglês.</p>
-      <ul>
-        <li>✅ Cadastro de professores e alunos</li>
-        <li>✅ Registro de chamadas por data</li>
-        <li>✅ Histórico e exportação em PDF/CSV</li>
-        <li>✅ Acesso diferenciado para administradores e professores</li>
-      </ul>
-      <a href="login.html" class="btn-acessar">Acessar sua conta</a>
-    </div>
+  <div class="boas-vindas-container">
+    <h1 id="mensagem">Carregando...</h1>
+    <p>Você será redirecionado em instantes...</p>
+    <div class="loader"></div>
   </div>
+
+  <script>
+    const usuario = JSON.parse(localStorage.getItem('usuarioLogado'));
+
+    if (!usuario) {
+      // Nenhum usuário logado, volta para login
+      window.location.href = 'login.html';
+    } else {
+      // Mostra mensagem personalizada
+      document.addEventListener("DOMContentLoaded", () => {
+        const nome = usuario.nome;
+        document.getElementById('mensagem').textContent = `Bem-vindo, ${nome}!`;
+      });
+
+      // Redireciona para o painel correto após 3 segundos
+      setTimeout(() => {
+        if (usuario.tipo === 'admin') {
+          window.location.href = 'admin.html';
+        } else {
+          window.location.href = 'index.html'; // professor
+        }
+      }, 3000);
+    }
+  </script>
 </body>
 </html>

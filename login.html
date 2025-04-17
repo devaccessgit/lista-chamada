@@ -13,7 +13,10 @@
       <p class="subtitle">Faça login para acessar</p>
       <input type="text" id="usuario" placeholder="Usuário" />
       <input type="password" id="senha" placeholder="Senha" />
-      <button onclick="login()">Entrar</button>
+      <button id="loginBtn" onclick="loginUsuario()">
+        <span id="btnText">Entrar</span>
+        <span id="btnSpinner" style="display:none;">⏳</span>
+      </button>
       <p class="creditos">Versão 1.0 - Desenvolvido por Você 💙</p>
     </div>
   </div>
