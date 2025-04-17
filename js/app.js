@@ -245,8 +245,7 @@ function exportarCSV() {
     link.click();
     document.body.removeChild(link);
   }
- 
-  
+
   // Gera gráfico de presença por aluno com filtros
 function gerarGraficoPresenca() {
     const date = document.getElementById('dataSelecionada').value;
