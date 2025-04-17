@@ -276,12 +276,17 @@
     function exportarPDF() {
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF();
-      doc.text("Lista de Alunos", 10, 10);
+      doc.text("Histórico de Chamadas", 10, 10);
       doc.autoTable({
-        head: [['Nome', 'Status']],
-        body: alunos.map(a => [a.nome, a.status]),
+        head: [['Aluno', 'Status', 'Data', 'Conteúdo']],
+        body: chamadas.map(chamada => [
+          chamada.aluno,
+          chamada.status === 'presente' ? '✅ Presente' : '❌ Ausente',
+          new Date(chamada.data).toLocaleString(),
+          chamada.conteudo
+        ]),
       });
-      doc.save("lista_alunos.pdf");
+      doc.save("historico_chamadas.pdf");
     }
   
     function exportarCSV() {
@@ -367,6 +372,7 @@
           conteudo: 'Content'
         }
       };
+      
       const textos = traducoes[lang];
       document.querySelectorAll('[data-i18n]').forEach(el => {
         const key = el.getAttribute('data-i18n');
