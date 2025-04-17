@@ -2,15 +2,31 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Login do Administrador</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <div class="login-container">
     <h2>Login do Administrador</h2>
-    <input type="email" id="adminEmail" placeholder="E-mail" required />
-    <input type="password" id="adminSenha" placeholder="Senha" required />
-    <button onclick="loginAdmin()">Entrar</button>
+    
+    <form id="loginForm">
+      <div class="input-group">
+        <label for="emailLogin">E-mail</label>
+        <input type="email" id="emailLogin" placeholder="E-mail" required />
+      </div>
+      
+      <div class="input-group">
+        <label for="senhaLogin">Senha</label>
+        <input type="password" id="senhaLogin" placeholder="Senha" required />
+      </div>
+      
+      <button type="submit">Entrar</button>
+    </form>
+    
+    <div id="login-error" class="error-message" style="display:none;">
+      <p>Usuário ou senha inválidos!</p>
+    </div>
   </div>
 
   <script src="login.js"></script>
