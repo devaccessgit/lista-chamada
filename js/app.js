@@ -220,31 +220,33 @@ function exportarCSV() {
     let arr = chamadas.filter(c => !date || c.data.startsWith(date));
     arr = arr.filter(c => c.aluno.toLowerCase().includes(nomeFilter));
   
-    // Cabeçalho de acordo com idioma
+    // Cabeçalho
     const cabecalho = savedLang === 'en'
       ? ['Name', 'Status', 'Date', 'Content']
       : ['Nome', 'Status', 'Data', 'Conteúdo'];
   
-    // Inicia CSV com cabeçalho
+    // Inicia CSV
     let csv = cabecalho.map(h => `"${h}"`).join(',') + "\r\n";
   
-    // Linhas do CSV
+    // Linhas
     arr.forEach(c => {
       const statusText = savedLang === 'en'
         ? (c.status === 'presente' ? 'Present' : 'Absent')
         : (c.status === 'presente' ? 'Presente' : 'Ausente');
   
-      const row = [
-        c.aluno.replace(/"/g, '""'),
+      const linha = [
+        c.aluno || '',
         statusText,
         new Date(c.data).toLocaleString(),
-        c.conteudo.replace(/"/g, '""')
-      ].map(field => `"${field}"`);
+        c.conteudo || ''
+      ].map(valor =>
+        `"${valor.toString().replace(/"/g, '""')}"`
+      ).join(',');
   
-      csv += row.join(',') + "\r\n";
+      csv += linha + "\r\n";
     });
   
-    // Gera o CSV e dispara download
+    // Download do arquivo
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
