@@ -2,144 +2,61 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Painel do Administrador</title>
-  <style>
-    * {
-      box-sizing: border-box;
-    }
-
-    body {
-      transition: background-color 0.3s, color 0.3s;
-      font-family: Arial, sans-serif;
-      padding: 20px;
-      margin: 0;
-    }
-
-    body.tema-claro {
-      background-color: #ffffff;
-      color: #000000;
-    }
-
-    body.tema-escuro {
-      background-color: #121212;
-      color: #f0f0f0;
-    }
-
-    button {
-      margin-bottom: 20px;
-      padding: 10px 20px;
-      font-size: 16px;
-      border-radius: 6px;
-      border: none;
-      cursor: pointer;
-    }
-
-    .painel {
-      border: 1px solid #ccc;
-      padding: 20px;
-      border-radius: 10px;
-      max-width: 800px;
-      margin: 0 auto;
-    }
-
-    h1 {
-      font-size: 24px;
-      margin-bottom: 10px;
-    }
-
-    p {
-      font-size: 18px;
-    }
-
-    /* Responsividade */
-    @media (max-width: 768px) {
-      .painel {
-        padding: 15px;
-      }
-
-      h1 {
-        font-size: 20px;
-      }
-
-      p {
-        font-size: 16px;
-      }
-
-      button {
-        font-size: 14px;
-        width: 100%;
-      }
-    }
-
-    @media (max-width: 480px) {
-      body {
-        padding: 10px;
-      }
-
-      .painel {
-        padding: 10px;
-      }
-
-      h1 {
-        font-size: 18px;
-      }
-
-      p {
-        font-size: 14px;
-      }
-    }
-  </style>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Administração</title>
+  <link rel="stylesheet" href="css/admin.css" />
+  <link rel="shortcut icon" href="imagens/logo.png" type="image/png">
 </head>
-<body>
-  <button id="alternarTema" style="position: absolute; top: 20px; right: 20px;">🌙</button>
-  <button id="toggleTema">Alternar Tema Claro/Escuro</button>
+<body class="light-theme">
+  <button id="alternarTema" class="tema-btn">🌙</button>
 
-  <div class="painel">
-    <h1>Bem-vindo ao Painel do Administrador</h1>
-    <p>Aqui você pode gerenciar professores, alunos e chamadas.</p>
-    <!-- Adicione seus botões e menus aqui -->
+  <div class="admin-container fade-in">
+    <img src="imagens/logo.png" alt="Logo" class="logo">
+    <h1>Painel Administrativo</h1>
+
+    <div class="card-container">
+      <div class="card">
+        <h3>Usuários</h3>
+        <button onclick="gerenciarUsuarios()">Gerenciar</button>
+      </div>
+
+      <div class="card">
+        <h3>Configurações</h3>
+        <button onclick="abrirConfiguracoes()">Abrir</button>
+      </div>
+
+      <div class="card">
+        <h3>Logout</h3>
+        <button onclick="logout()">Sair</button>
+      </div>
+    </div>
   </div>
 
-  <script>
-    // Aplica o tema salvo ao carregar
-    window.addEventListener('DOMContentLoaded', () => {
-      const temaSalvo = localStorage.getItem('tema') || 'claro';
-      document.body.classList.add(`tema-${temaSalvo}`);
-    });
-
-    // Alternância de tema
-    document.getElementById('toggleTema').addEventListener('click', () => {
-      const body = document.body;
-      const temaAtual = body.classList.contains('tema-claro') ? 'claro' : 'escuro';
-      body.classList.remove(`tema-${temaAtual}`);
-      const novoTema = temaAtual === 'claro' ? 'escuro' : 'claro';
-      body.classList.add(`tema-${novoTema}`);
-      localStorage.setItem('tema', novoTema);
-    });
-  </script>
+  <script src="js/admin.js"></script>
   <script>
     const botaoTema = document.getElementById('alternarTema');
     const body = document.body;
-  
+
     function aplicarTema() {
       const tema = localStorage.getItem('tema') || 'claro';
       if (tema === 'escuro') {
-        body.classList.add('tema-escuro');
+        body.classList.add('dark-theme');
+        body.classList.remove('light-theme');
         botaoTema.textContent = '☀️';
       } else {
-        body.classList.remove('tema-escuro');
+        body.classList.remove('dark-theme');
+        body.classList.add('light-theme');
         botaoTema.textContent = '🌙';
       }
     }
-  
+
     botaoTema.addEventListener('click', () => {
-      const temaAtual = body.classList.contains('tema-escuro') ? 'escuro' : 'claro';
+      const temaAtual = body.classList.contains('dark-theme') ? 'escuro' : 'claro';
       const novoTema = temaAtual === 'escuro' ? 'claro' : 'escuro';
       localStorage.setItem('tema', novoTema);
       aplicarTema();
     });
-  
+
     aplicarTema();
   </script>
 </body>
