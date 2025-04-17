@@ -1,0 +1,45 @@
+/* Reset básico de estilo */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  body {
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+    background-color: #f4f4f4;
+    color: #333;
+  }
+  
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  
+  header h1 {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  
+  /* Estilos de tema claro/escuro */
+  body.dark-theme {
+    background-color: #121212;
+    color: #fff;
+  }
+  
+  body.dark-theme header {
+    background-color: #333;
+  }
+  
+  /* Responsividade */
+  @media (max-width: 768px) {
+    .container {
+      padding: 10px;
+    }
+  
+    header h1 {
+      font-size: 1.5em;
+    }
+  }
