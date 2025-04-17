@@ -374,34 +374,50 @@ function gerarGrafico() {
   const presentes = alunos.map(a => contagem[a].presentes);
   const faltas = alunos.map(a => contagem[a].faltas);
 
-  const ctx = document.getElementById('graficoPresencas').getContext('2d');
-  if (graficoPresenca) graficoPresenca.destroy(); // evita sobreposição
-
-  graficoPresenca = new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels: alunos,
-      datasets: [
-        {
-          label: 'Presenças',
-          backgroundColor: '#28a745',
-          data: presentes
-        },
-        {
-          label: 'Faltas',
-          backgroundColor: '#dc3545',
-          data: faltas
-        }
-      ]
-    },
-    options: {
-      responsive: true,
-      plugins: {
-        legend: { position: 'top' },
-        title: { display: true, text: 'Frequência dos Alunos' }
+  const ctx = document.getElementById('graficoPresenca').getContext('2d');
+let graficoPresenca = new Chart(ctx, {
+  type: 'bar',
+  data: {
+    labels: ['Aluno 1', 'Aluno 2', 'Aluno 3'],  // Nomes dos alunos
+    datasets: [{
+      label: 'Presença',
+      data: [10, 8, 9],  // Número de aulas que cada aluno esteve presente
+      backgroundColor: ['#4CAF50', '#FF9800', '#F44336'],
+      borderColor: ['#388E3C', '#F57C00', '#D32F2F'],
+      borderWidth: 1
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      title: {
+        display: true,
+        text: translations[currentLanguage].graficoPresenca
       }
     }
+  }
+});
+
+function filtrarPorData() {
+  const dataSelecionada = document.getElementById('filtroData').value;
+  const registrosFiltrados = registros.filter(registro => registro.data === dataSelecionada);
+  
+  // Atualizar a exibição com os registros filtrados
+  exibirRegistros(registrosFiltrados);
+}
+
+function exibirRegistros(registros) {
+  let html = '';
+  registros.forEach(registro => {
+    html += `
+      <tr>
+        <td>${registro.aluno}</td>
+        <td>${registro.data}</td>
+        <td>${registro.presenca}</td>
+      </tr>
+    `;
   });
+  document.getElementById('tabelaHistorico').innerHTML = html;
 }
 
 function carregarDropdownGrafico() {
@@ -415,4 +431,5 @@ function carregarDropdownGrafico() {
     opt.textContent = p.nome;
     dropdown.appendChild(opt);
   });
+}
 }
