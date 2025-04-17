@@ -211,36 +211,43 @@ function alternarTema() {
     doc.save("historico_chamadas.pdf");
   }
   
-  // Exporta histórico de chamadas em CSV, separado por colunas e escapando conteúdo
-function exportarCSV() {
-    const date = document.getElementById('dataSelecionada').value;
-    const nomeFilter = document.getElementById('filtroNomeAluno').value.trim().toLowerCase();
-    let arr = chamadas.filter(c => !date || c.data.startsWith(date));
-    arr = arr.filter(c => c.aluno.toLowerCase().includes(nomeFilter));
+  function exportarCSV() {
+    const historico = JSON.parse(localStorage.getItem("historicoChamada")) || [];
+    const dataSelecionada = document.getElementById("dataFiltro").value;
+    const nomeFiltro = document.getElementById("filtroNome").value.toLowerCase();
   
-    const headers = [
-      dict[savedLang].nome,
-      dict[savedLang].status,
-      dict[savedLang].data,
-      dict[savedLang].conteudo
-    ];
-    let csv = headers.map(h => `"${h}"`).join(',') + "\r\n";
-  
-    arr.forEach(c => {
-      const row = [
-        c.aluno.replace(/"/g, '""'),
-        c.status === 'presente' ? 'Presente' : 'Ausente',
-        new Date(c.data).toLocaleString(),
-        c.conteudo.replace(/"/g, '""')
-      ].map(field => `"${field}"`);
-      csv += row.join(',') + "\r\n";
+    // Filtra por data e nome
+    const historicoFiltrado = historico.filter((registro) => {
+      const dataMatch = !dataSelecionada || registro.data.startsWith(dataSelecionada);
+      const nomeMatch = !nomeFiltro || registro.nome.toLowerCase().includes(nomeFiltro);
+      return dataMatch && nomeMatch;
     });
   
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.style.display = 'none';
-    link.download = 'historico_chamadas.csv';
+    if (historicoFiltrado.length === 0) {
+      alert("Nenhum dado encontrado para exportação.");
+      return;
+    }
+  
+    // Cabeçalho fixo
+    const csvContent = [
+      ["Nome", "Status", "Data", "Conteúdo"],
+      ...historicoFiltrado.map((item) => [
+        item.nome,
+        item.status,
+        item.data,
+        item.conteudo || ""
+      ])
+    ]
+      .map((row) => row.map(col => `"${col}"`).join(","))
+      .join("\n");
+  
+    // Cria o arquivo CSV
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+  
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "historico_chamada.csv";
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
