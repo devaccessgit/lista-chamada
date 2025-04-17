@@ -216,7 +216,6 @@ function alternarTema() {
     const dataSelecionada = document.getElementById("dataFiltro").value;
     const nomeFiltro = document.getElementById("filtroNome").value.toLowerCase();
   
-    // Filtra por data e nome
     const historicoFiltrado = historico.filter((registro) => {
       const dataMatch = !dataSelecionada || registro.data.startsWith(dataSelecionada);
       const nomeMatch = !nomeFiltro || registro.nome.toLowerCase().includes(nomeFiltro);
@@ -224,30 +223,31 @@ function alternarTema() {
     });
   
     if (historicoFiltrado.length === 0) {
-      alert("Nenhum dado encontrado para exportação.");
+      alert("Nenhum dado encontrado para exportar.");
       return;
     }
   
-    // Cabeçalho fixo
-    const csvContent = [
-      ["Nome", "Status", "Data", "Conteúdo"],
-      ...historicoFiltrado.map((item) => [
-        item.nome,
-        item.status,
-        item.data,
-        item.conteudo || ""
-      ])
-    ]
-      .map((row) => row.map(col => `"${col}"`).join(","))
-      .join("\n");
+    // Constrói CSV com separação correta por colunas
+    const csvLinhas = [["Nome", "Status", "Data", "Conteúdo"]];
+    historicoFiltrado.forEach((registro) => {
+      csvLinhas.push([
+        registro.nome,
+        registro.status,
+        registro.data,
+        registro.conteudo || ""
+      ]);
+    });
   
-    // Cria o arquivo CSV
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const csvString = csvLinhas.map(linha =>
+      linha.map(coluna => `"${coluna}"`).join(",")
+    ).join("\n");
+  
+    const blob = new Blob([csvString], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
   
     const link = document.createElement("a");
-    link.href = url;
-    link.download = "historico_chamada.csv";
+    link.setAttribute("href", url);
+    link.setAttribute("download", "historico_chamada.csv");
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
