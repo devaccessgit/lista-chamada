@@ -203,7 +203,7 @@ function alternarTema() {
       ]],
       body: chamadas.map(c => [
         c.aluno,
-        c.status === 'presente' ? '✅' : '❌',
+        c.status === 'presente' ? 'Sim' : 'Não',
         new Date(c.data).toLocaleString(),
         c.conteudo
       ])
@@ -213,23 +213,47 @@ function alternarTema() {
   
   // Exporta histórico de chamadas em CSV
   function exportarCSV() {
+    // Obtém filtros atuais
+    const date = document.getElementById('dataSelecionada').value;
+    const filtroNome = document.getElementById('filtroNomeAluno').value.trim().toLowerCase();
+  
+    // Filtra o histórico como na exibição
+    let arr = chamadas.filter(c => !date || c.data.startsWith(date));
+    arr = arr.filter(c => c.aluno.toLowerCase().includes(filtroNome));
+  
+    // Cabeçalho do CSV
     let csv = `${dict[savedLang].nome},${dict[savedLang].status},${dict[savedLang].data},${dict[savedLang].conteudo}\n`;
-    chamadas.forEach(c => {
-      csv += `${c.aluno},${c.status === 'presente' ? '✅' : '❌'},${new Date(c.data).toLocaleString()},${c.conteudo}\n`;
+  
+    // Linhas do CSV
+    arr.forEach(c => {
+      csv += [
+        c.aluno,
+        c.status === 'presente' ? '✅' : '❌',
+        new Date(c.data).toLocaleString(),
+        c.conteudo
+      ].join(',') + '\n';
     });
+  
+    // Cria o blob e o link de download
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
     link.download = 'historico_chamadas.csv';
+    link.style.display = 'none';
+  
+    // Anexa, clica e remove
+    document.body.appendChild(link);
     link.click();
+    document.body.removeChild(link);
   }
   
-  // Gera gráfico de presença por aluno com filtro
-  function gerarGraficoPresenca() {
+  // Gera gráfico de presença por aluno com filtros
+function gerarGraficoPresenca() {
     const date = document.getElementById('dataSelecionada').value;
-    const filtroNome = document.getElementById('filtroNomeAluno').value.trim().toLowerCase();
+    const nomeFilter = document.getElementById('filtroNomeAluno').value.trim().toLowerCase();
     let arr = chamadas.filter(c => !date || c.data.startsWith(date));
-    arr = arr.filter(c => c.aluno.toLowerCase().includes(filtroNome));
+    arr = arr.filter(c => c.aluno.toLowerCase().includes(nomeFilter));
+  
     if (!arr.length) {
       if (chart) chart.destroy();
       return;
@@ -246,27 +270,24 @@ function alternarTema() {
     if (chart) chart.destroy();
     chart = new Chart(ctx, {
       type: 'bar',
-      data: {
-        labels,
-        datasets: [
-          { label: dict[savedLang].presente, data: dataP, backgroundColor: '#28a745' },
-          { label: dict[savedLang].status, data: dataA, backgroundColor: '#dc3545' }
-        ]
-      }
+      data: { labels, datasets: [
+        { label: dict[savedLang].presente, data: dataP, backgroundColor: '#28a745' },
+        { label: dict[savedLang].status, data: dataA, backgroundColor: '#dc3545' }
+      ] }
     });
   }
   
-  // Atualiza histórico e gráfico
+  // Atualiza histórico e gráfico sem recarregar página
   function atualizarExibicoes() {
     const date = document.getElementById('dataSelecionada').value;
     exibirHistorico(date);
     gerarGraficoPresenca();
   }
   
-  // Eventos de filtro
-  document.getElementById('dataSelecionada').addEventListener('change', e => atualizarExibicoes());
-  document.getElementById('filtroNomeAluno').addEventListener('input', () => atualizarExibicoes());
+  // Liga eventos de filtro de data e nome
+  document.getElementById('dataSelecionada').addEventListener('change', atualizarExibicoes);
+  document.getElementById('filtroNomeAluno').addEventListener('input', atualizarExibicoes);
   
-  // Inicializa
+  // Inicialização
   renderizarTabela();
   atualizarExibicoes();
