@@ -2,9 +2,46 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Login - Sistema de Chamada</title>
   <link rel="stylesheet" href="css/login.css" />
+  <style>
+    .spinner {
+      width: 16px;
+      height: 16px;
+      border: 2px solid #fff;
+      border-top: 2px solid transparent;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      display: none;
+      margin-left: 8px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .mensagem-erro {
+      color: red;
+      display: none;
+      margin-top: 10px;
+    }
+
+    .senha-container {
+      position: relative;
+    }
+
+    .toggle-password {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      cursor: pointer;
+      font-size: 14px;
+      color: #007bff;
+    }
+  </style>
 </head>
 <body>
   <div class="login-container">
@@ -13,7 +50,7 @@
       <p class="subtitle">Por favor, insira suas credenciais.</p>
       
       <input type="text" id="usuarioLogin" placeholder="Nome de usuário" />
-      
+
       <div class="senha-container">
         <input type="password" id="senhaLogin" placeholder="Senha" />
         <span class="toggle-password" onclick="toggleSenha()">Mostrar</span>
@@ -33,64 +70,88 @@
         <a href="recuperar.html" class="btn btn-link">Esqueci minha senha</a>
       </p>
 
-      <p id="mensagemErro" class="mensagem-erro">Usuário ou senha inválidos</p>
+      <p id="mensagemErro" class="mensagem-erro">Usuário ou senha inválidos!</p>
     </div>
   </div>
 
   <script>
-    // Função para alternar a exibição da senha
-    function toggleSenha() {
-      const senhaInput = document.getElementById('senhaLogin');
-      const senhaIcon = document.querySelector('.toggle-password');
+    document.addEventListener("DOMContentLoaded", () => {
+      const lembrar = localStorage.getItem("lembrarUsuario");
+      if (lembrar) {
+        const { nome, senha } = JSON.parse(lembrar);
+        document.getElementById("usuarioLogin").value = nome;
+        document.getElementById("senhaLogin").value = senha;
+        document.getElementById("lembrarMe").checked = true;
+      }
+    });
 
+    function toggleSenha() {
+      const senhaInput = document.getElementById("senhaLogin");
+      const toggle = document.querySelector(".toggle-password");
       if (senhaInput.type === "password") {
         senhaInput.type = "text";
-        senhaIcon.textContent = "Esconder";
+        toggle.textContent = "Ocultar";
       } else {
         senhaInput.type = "password";
-        senhaIcon.textContent = "Mostrar";
+        toggle.textContent = "Mostrar";
       }
     }
 
-    // Função de login do usuário
     function loginUsuario() {
-      const usuario = document.getElementById('usuarioLogin').value;
+      const nome = document.getElementById('usuarioLogin').value;
       const senha = document.getElementById('senhaLogin').value;
       const lembrar = document.getElementById('lembrarMe').checked;
       const mensagemErro = document.getElementById('mensagemErro');
+      const btnText = document.getElementById('btnText');
+      const btnSpinner = document.getElementById('btnSpinner');
+      const loginBtn = document.getElementById('loginBtn');
 
-      // Exibe o spinner e desativa o botão enquanto realiza o login
-      document.getElementById('btnSpinner').style.display = 'inline-block';
-      document.getElementById('loginBtn').disabled = true;
+      if (!nome || !senha) {
+        mensagemErro.textContent = "Preencha todos os campos!";
+        mensagemErro.style.display = "block";
+        return;
+      }
 
-      // Simula uma verificação de login
-      setTimeout(function() {
-        const senhaArmazenada = localStorage.getItem(usuario);
-        
-        if (senhaArmazenada && senhaArmazenada === senha) {
-          // Sucesso no login
-          if (lembrar) {
-            localStorage.setItem('lembrado', usuario); // Salva o usuário lembrado
-          }
-          window.location.href = 'home.html'; // Redireciona para a página principal
-        } else {
-          // Falha no login
-          mensagemErro.style.display = 'block';
+      btnText.textContent = "Entrando...";
+      btnSpinner.style.display = "inline-block";
+      loginBtn.disabled = true;
+      mensagemErro.style.display = "none";
+
+      setTimeout(() => {
+        let usuarios = JSON.parse(localStorage.getItem("usuarios")) || [];
+
+        if (!usuarios.find(u => u.nome === "admin")) {
+          usuarios.push({ nome: "admin", senha: "admin123", tipo: "admin" });
+          localStorage.setItem("usuarios", JSON.stringify(usuarios));
         }
 
-        // Finaliza o processo de login
-        document.getElementById('btnSpinner').style.display = 'none';
-        document.getElementById('loginBtn').disabled = false;
-      }, 1000); // Simula um delay de 1 segundo
-    }
+        const usuario = usuarios.find(u => u.nome === nome && u.senha === senha);
 
-    // Verifica se o usuário foi lembrado ao carregar a página
-    window.onload = function() {
-      const usuarioLembrado = localStorage.getItem('lembrado');
-      if (usuarioLembrado) {
-        document.getElementById('usuarioLogin').value = usuarioLembrado;
-        document.getElementById('lembrarMe').checked = true;
-      }
+        if (usuario) {
+          localStorage.setItem("usuarioLogado", JSON.stringify(usuario));
+
+          if (lembrar) {
+            localStorage.setItem("lembrarUsuario", JSON.stringify({ nome, senha }));
+          } else {
+            localStorage.removeItem("lembrarUsuario");
+          }
+
+          if (usuario.tipo === "admin") {
+            window.location.href = "admin.html";
+          } else if (usuario.tipo === "professor") {
+            window.location.href = "professor.html";
+          } else {
+            window.location.href = "boasvindas.html";
+          }
+
+        } else {
+          mensagemErro.textContent = "Usuário ou senha inválidos!";
+          mensagemErro.style.display = "block";
+          btnText.textContent = "Entrar";
+          btnSpinner.style.display = "none";
+          loginBtn.disabled = false;
+        }
+      }, 1000);
     }
   </script>
 </body>
