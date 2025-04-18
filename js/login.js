@@ -21,26 +21,28 @@ function toggleSenha() {
 }
 
 function loginUsuario() {
-  const nome = document.getElementById("usuarioLogin").value.trim();
-  const senha = document.getElementById("senhaLogin").value.trim();
-  const mensagemErro = document.getElementById("mensagemErro");
-
-  const loginBtn = document.getElementById("loginBtn");
-  const btnText = document.getElementById("btnText");
-  const btnSpinner = document.getElementById("btnSpinner");
-  const lembrar = document.getElementById("lembrarMe").checked;
-
+  const nome = document.getElementById('usuarioLogin').value;
+  const senha = document.getElementById('senhaLogin').value;
+  const lembrar = document.getElementById('lembrarMe').checked;
+  const mensagemErro = document.getElementById('mensagemErro');
+  
+  // Exibe o spinner e desativa o botão enquanto realiza o login
+  document.getElementById('btnSpinner').style.display = 'inline-block';
+  document.getElementById('loginBtn').disabled = true;
+  
   // Verificação de campos obrigatórios
   if (!nome || !senha) {
     mensagemErro.textContent = "Preencha todos os campos!";
     mensagemErro.style.display = "block";
+    document.getElementById('btnSpinner').style.display = 'none';
+    document.getElementById('loginBtn').disabled = false;
     return;
   }
 
   // Feedback visual de login
-  btnText.textContent = "Entrando...";
-  btnSpinner.style.display = "inline-block";
-  loginBtn.disabled = true;
+  document.getElementById('btnText').textContent = "Entrando...";
+  document.getElementById('btnSpinner').style.display = "inline-block";
+  document.getElementById('loginBtn').disabled = true;
   mensagemErro.style.display = "none";
 
   // Simula um delay de 1 segundo
@@ -69,15 +71,21 @@ function loginUsuario() {
         localStorage.removeItem("lembrarUsuario");
       }
 
-      // Redireciona para a página de boas-vindas
-      window.location.href = "boasvindas.html";
+      // Redireciona para a página correspondente ao tipo de usuário
+      if (usuario.tipo === "admin") {
+        window.location.href = "admin.html";  // Redireciona para a página de admin
+      } else if (usuario.tipo === "professor") {
+        window.location.href = "professor.html";  // Redireciona para a página de professor
+      } else {
+        window.location.href = "boasvindas.html";  // Caso o tipo de usuário não seja identificado
+      }
     } else {
       // Exibe mensagem de erro caso o login falhe
       mensagemErro.textContent = "Usuário ou senha inválidos!";
       mensagemErro.style.display = "block";
-      btnText.textContent = "Entrar";
-      btnSpinner.style.display = "none";
-      loginBtn.disabled = false;
+      document.getElementById('btnText').textContent = "Entrar";
+      document.getElementById('btnSpinner').style.display = 'none';
+      document.getElementById('loginBtn').disabled = false;
     }
   }, 1000); // Simula o tempo de login
 }
