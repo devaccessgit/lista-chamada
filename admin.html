@@ -11,8 +11,11 @@
   <button id="alternarTema" class="tema-btn">🌙</button>
 
   <div class="admin-container fade-in">
-    <img src="imagens/logo.png" alt="Logo" class="logo">
-    <h1>Painel Administrativo</h1>
+    <!-- Logo ajustado para garantir que a imagem seja carregada -->
+    <img src="imagens/logo.png" alt="Logo" class="logo" id="logoAdmin">
+
+    <!-- Exibição do nome do administrador -->
+    <h1>Bem-vindo, <span id="nomeAdmin">Administrador</span>!</h1>
 
     <div class="card-container">
       <div class="card">
@@ -37,19 +40,21 @@
     const botaoTema = document.getElementById('alternarTema');
     const body = document.body;
 
+    // Função para aplicar o tema de acordo com a preferência do usuário
     function aplicarTema() {
       const tema = localStorage.getItem('tema') || 'claro';
       if (tema === 'escuro') {
         body.classList.add('dark-theme');
         body.classList.remove('light-theme');
-        botaoTema.textContent = '☀️';
+        botaoTema.textContent = '☀️'; // Icone do sol para tema escuro
       } else {
         body.classList.remove('dark-theme');
         body.classList.add('light-theme');
-        botaoTema.textContent = '🌙';
+        botaoTema.textContent = '🌙'; // Icone da lua para tema claro
       }
     }
 
+    // Alterna entre os temas claro e escuro
     botaoTema.addEventListener('click', () => {
       const temaAtual = body.classList.contains('dark-theme') ? 'escuro' : 'claro';
       const novoTema = temaAtual === 'escuro' ? 'claro' : 'escuro';
@@ -57,7 +62,35 @@
       aplicarTema();
     });
 
+    // Aplica o tema ao carregar a página
     aplicarTema();
+
+    // Função para gerenciar usuários (exemplo)
+    function gerenciarUsuarios() {
+      // Aqui pode ser adicionado código para redirecionar ou abrir uma seção de gerenciamento de usuários
+      alert('Gerenciando usuários...');
+    }
+
+    // Função para abrir configurações (exemplo)
+    function abrirConfiguracoes() {
+      // Aqui pode ser adicionado código para abrir a página de configurações
+      alert('Abrindo configurações...');
+    }
+
+    // Função de logout (exemplo)
+    function logout() {
+      // Pode adicionar a lógica de logout, como remover dados do usuário e redirecionar
+      alert('Saindo...');
+      window.location.href = "login.html"; // Redirecionando para a tela de login após o logout
+    }
+
+    // Preenchendo o nome do admin (se for armazenado)
+    window.onload = function() {
+      const usuarioLogado = JSON.parse(localStorage.getItem('usuarioLogado'));
+      if (usuarioLogado && usuarioLogado.nome) {
+        document.getElementById('nomeAdmin').textContent = usuarioLogado.nome;
+      }
+    }
   </script>
 </body>
 </html>

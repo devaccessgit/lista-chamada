@@ -24,8 +24,8 @@ function showSection(id) {
   if (id === 'historico') {
     carregarHistoricoDropdowns();
     carregarHistoricoChamadas();
-  }   
-    
+  }
+
   if (id === 'grafico') {
     carregarDropdownGrafico();
   }
@@ -55,6 +55,7 @@ function mostrarConfirmacao(mensagem, callback) {
 }
 
 // ========== Translation ==========
+
 const translations = {
   pt: {
     "histórico": "Histórico de Chamadas",
@@ -123,6 +124,7 @@ document.getElementById('selectIdioma').addEventListener('change', function() {
 });
 
 // ========== Gestão de Professores ==========
+
 const formProfessor = document.getElementById('formProfessor');
 const listaProfessores = document.getElementById('listaProfessores');
 
@@ -185,6 +187,7 @@ function excluirProfessor(index) {
 }
 
 // ========== Gestão de Alunos ==========
+
 const formAluno = document.getElementById('formAluno');
 const listaAlunos = document.getElementById('listaAlunos');
 
@@ -245,7 +248,6 @@ function carregarAlunos() {
 function editarAluno(index) {
   const alunos = JSON.parse(localStorage.getItem('alunos') || '[]');
   const aluno = alunos[index];
-
   document.getElementById('nomeAluno').value = aluno.nome;
   document.getElementById('emailAluno').value = aluno.email;
   document.getElementById('professorAluno').value = aluno.professor;
@@ -253,7 +255,7 @@ function editarAluno(index) {
 }
 
 function excluirAluno(index) {
-  if (confirm('Deseja mesmo excluir este aluno?')) {
+  if (confirm('Tem certeza que deseja excluir este aluno?')) {
     const alunos = JSON.parse(localStorage.getItem('alunos') || '[]');
     alunos.splice(index, 1);
     localStorage.setItem('alunos', JSON.stringify(alunos));
@@ -261,175 +263,16 @@ function excluirAluno(index) {
   }
 }
 
-function carregarHistoricoDropdowns() {
-  const professores = JSON.parse(localStorage.getItem('professores') || '[]');
-  const filtroProfessor = document.getElementById('filtroProfessor');
-
-  filtroProfessor.innerHTML = '<option value="">Todos os Professores</option>';
-  professores.forEach(p => {
-    const option = document.createElement('option');
-    option.value = p.nome;
-    option.textContent = p.nome;
-    filtroProfessor.appendChild(option);
-  });
-}
-
 function carregarHistoricoChamadas() {
   const chamadas = JSON.parse(localStorage.getItem('chamadas') || '[]');
-  const tabela = document.getElementById('tabelaHistorico');
-  tabela.innerHTML = '';
-
-  chamadas.forEach(ch => {
-    ch.alunos.forEach(aluno => {
-      tabela.innerHTML += `
-        <tr>
-          <td>${ch.data}</td>
-          <td>${ch.professor}</td>
-          <td>${aluno.nome}</td>
-          <td>${aluno.presente ? 'Presente' : 'Faltou'}</td>
-        </tr>
-      `;
-    });
-  });
+  // Implementar carregamento do histórico de chamadas
 }
 
-function filtrarHistorico() {
-  const data = document.getElementById('filtroData').value;
-  const professor = document.getElementById('filtroProfessor').value;
-  const alunoFiltro = document.getElementById('filtroAluno').value.toLowerCase();
-
-  const chamadas = JSON.parse(localStorage.getItem('chamadas') || '[]');
-  const tabela = document.getElementById('tabelaHistorico');
-  tabela.innerHTML = '';
-
-  chamadas.forEach(ch => {
-    if (data && ch.data !== data) return;
-    if (professor && ch.professor !== professor) return;
-
-    ch.alunos.forEach(aluno => {
-      if (alunoFiltro && !aluno.nome.toLowerCase().includes(alunoFiltro)) return;
-
-      tabela.innerHTML += `
-        <tr>
-          <td>${ch.data}</td>
-          <td>${ch.professor}</td>
-          <td>${aluno.nome}</td>
-          <td>${aluno.presente ? 'Presente' : 'Faltou'}</td>
-        </tr>
-      `;
-    });
-  });
-}
-
-function exportarHistoricoCSV() {
-  const linhas = [['Data', 'Professor', 'Aluno', 'Status']];
-  const chamadas = JSON.parse(localStorage.getItem('chamadas') || '[]');
-
-  chamadas.forEach(ch => {
-    ch.alunos.forEach(aluno => {
-      linhas.push([ch.data, ch.professor, aluno.nome, aluno.presente ? 'Presente' : 'Faltou']);
-    });
-  });
-
-  const csv = linhas.map(l => l.join(',')).join('\n');
-  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-  const link = document.createElement('a');
-  link.href = URL.createObjectURL(blob);
-  link.download = 'historico_chamada.csv';
-  link.click();
-}
-
-function exportarHistoricoPDF() {
-  const element = document.getElementById('tabelaHistorico').parentNode;
-  const opt = {
-    margin: 0.5,
-    filename: 'historico_chamada.pdf',
-    image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: { scale: 2 },
-    jsPDF: { unit: 'cm', format: 'a4', orientation: 'portrait' }
-  };
-  html2pdf().from(element).set(opt).save();
-}
-
-let graficoPresenca = null;
-
-function gerarGrafico() {
-  const professorSelecionado = document.getElementById('filtroProfessorGrafico').value;
-  const chamadas = JSON.parse(localStorage.getItem('chamadas') || '[]');
-
-  const contagem = {};
-
-  chamadas.forEach(ch => {
-    if (professorSelecionado && ch.professor !== professorSelecionado) return;
-
-    ch.alunos.forEach(aluno => {
-      if (!contagem[aluno.nome]) {
-        contagem[aluno.nome] = { presentes: 0, faltas: 0 };
-      }
-      aluno.presente ? contagem[aluno.nome].presentes++ : contagem[aluno.nome].faltas++;
-    });
-  });
-
-  const alunos = Object.keys(contagem);
-  const presentes = alunos.map(a => contagem[a].presentes);
-  const faltas = alunos.map(a => contagem[a].faltas);
-
-  const ctx = document.getElementById('graficoPresenca').getContext('2d');
-let graficoPresenca = new Chart(ctx, {
-  type: 'bar',
-  data: {
-    labels: ['Aluno 1', 'Aluno 2', 'Aluno 3'],  // Nomes dos alunos
-    datasets: [{
-      label: 'Presença',
-      data: [10, 8, 9],  // Número de aulas que cada aluno esteve presente
-      backgroundColor: ['#4CAF50', '#FF9800', '#F44336'],
-      borderColor: ['#388E3C', '#F57C00', '#D32F2F'],
-      borderWidth: 1
-    }]
-  },
-  options: {
-    responsive: true,
-    plugins: {
-      title: {
-        display: true,
-        text: translations[currentLanguage].graficoPresenca
-      }
-    }
-  }
-});
-
-function filtrarPorData() {
-  const dataSelecionada = document.getElementById('filtroData').value;
-  const registrosFiltrados = registros.filter(registro => registro.data === dataSelecionada);
-  
-  // Atualizar a exibição com os registros filtrados
-  exibirRegistros(registrosFiltrados);
-}
-
-function exibirRegistros(registros) {
-  let html = '';
-  registros.forEach(registro => {
-    html += `
-      <tr>
-        <td>${registro.aluno}</td>
-        <td>${registro.data}</td>
-        <td>${registro.presenca}</td>
-      </tr>
-    `;
-  });
-  document.getElementById('tabelaHistorico').innerHTML = html;
+function carregarHistoricoDropdowns() {
+  carregarProfessoresDropdown();
+  // Implementar dropdowns para filtros de data e aluno
 }
 
 function carregarDropdownGrafico() {
-  const professores = JSON.parse(localStorage.getItem('professores') || '[]');
-  const dropdown = document.getElementById('filtroProfessorGrafico');
-
-  dropdown.innerHTML = '<option value="">Todos os Professores</option>';
-  professores.forEach(p => {
-    const opt = document.createElement('option');
-    opt.value = p.nome;
-    opt.textContent = p.nome;
-    dropdown.appendChild(opt);
-  });
-}
+  carregarProfessoresDropdown();
 }
