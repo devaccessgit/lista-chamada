@@ -124,12 +124,59 @@
 
     <p style="margin-top: 10px;">
       <!-- Botão Esqueci minha senha -->
-<a href="recuperar.html" class="btn btn-link">Esqueci minha senha</a>
+      <a href="recuperar.html" class="btn btn-link">Esqueci minha senha</a>
     </p>
 
     <p id="mensagemErro" class="mensagem-erro">Usuário ou senha inválidos</p>
   </div>
 
-  <script src="js/login.js"></script>
+  <script>
+    // Função para alternar a exibição da senha
+    function toggleSenha() {
+      const senhaInput = document.getElementById('senhaLogin');
+      const senhaIcon = document.querySelector('.toggle-password');
+
+      if (senhaInput.type === "password") {
+        senhaInput.type = "text";
+        senhaIcon.textContent = "Esconder";
+      } else {
+        senhaInput.type = "password";
+        senhaIcon.textContent = "Mostrar";
+      }
+    }
+
+    // Função de login do usuário
+    function loginUsuario() {
+      const usuario = document.getElementById('usuarioLogin').value;
+      const senha = document.getElementById('senhaLogin').value;
+      const lembrar = document.getElementById('lembrarMe').checked;
+      const mensagemErro = document.getElementById('mensagemErro');
+
+      // Exibe o spinner e desativa o botão enquanto realiza o login
+      document.getElementById('btnSpinner').style.display = 'inline-block';
+      document.getElementById('loginBtn').disabled = true;
+
+      // Simula uma verificação de login
+      setTimeout(function() {
+        const senhaArmazenada = localStorage.getItem(usuario);
+        
+        if (senhaArmazenada && senhaArmazenada === senha) {
+          // Sucesso no login
+          if (lembrar) {
+            localStorage.setItem('lembrado', usuario); // Salva o usuário lembrado
+          }
+          window.location.href = 'home.html'; // Redireciona para a página principal
+        } else {
+          // Falha no login
+          mensagemErro.style.display = 'block';
+        }
+
+        // Finaliza o processo de login
+        document.getElementById('btnSpinner').style.display = 'none';
+        document.getElementById('loginBtn').disabled = false;
+      }, 1000); // Simula um delay de 1 segundo
+    }
+  </script>
+
 </body>
 </html>

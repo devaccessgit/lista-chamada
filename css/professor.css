@@ -1,0 +1,39 @@
+body {
+    background-color: white;
+    color: black;
+    transition: background-color 0.3s, color 0.3s;
+  }
+  .navbar, .card, .btn {
+    background-color: #f8f9fa;
+    color: black;
+  }
+  body.dark-theme {
+    background-color: #121212;
+    color: white;
+  }
+  .dark-theme .card, .dark-theme .btn {
+    background-color: #333;
+    color: white;
+  }
+  #historico table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  #historico th, #historico td {
+    padding: 8px;
+    text-align: left;
+    border: 1px solid #ddd;
+  }
+  #historico th {
+    background-color: #f4f4f4;
+  }
+  @media (max-width: 768px) {
+    .container {
+      padding: 0 15px;
+    }
+    .tabela-alunos, .btn {
+      width: 100% !important;
+      display: block;
+      margin-bottom: 10px;
+    }
+  }
