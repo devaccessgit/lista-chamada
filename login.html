@@ -1,32 +1,151 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login</title>
-  <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login - Sistema de Chamada</title>
+  <link rel="stylesheet" href="css/login.css" />
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(135deg, #6a11cb, #2575fc);
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    .login-container {
+      background: #fff;
+      padding: 40px;
+      border-radius: 15px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.2);
+      width: 100%;
+      max-width: 400px;
+      text-align: center;
+    }
+
+    .login-container h2 {
+      margin-bottom: 20px;
+      color: #333;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+
+    .senha-container {
+      position: relative;
+    }
+
+    .toggle-password {
+      position: absolute;
+      right: 15px;
+      top: 18px;
+      cursor: pointer;
+      font-size: 14px;
+      color: #2575fc;
+      user-select: none;
+    }
+
+    button {
+      background-color: #2575fc;
+      color: white;
+      padding: 12px;
+      width: 100%;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    button:disabled {
+      background-color: #7aa5f7;
+    }
+
+    .spinner {
+      display: none;
+      margin-left: 10px;
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #fff;
+      border-radius: 50%;
+      width: 16px;
+      height: 16px;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .lembrar {
+      text-align: left;
+      margin-top: 10px;
+      font-size: 14px;
+    }
+
+    .mensagem-erro {
+      color: red;
+      margin-top: 10px;
+      display: none;
+    }
+  </style>
 </head>
 <body>
   <div class="login-container">
-    <h1>Login</h1>
-    <form id="loginForm">
-      <label for="usuarioLogin">Usuário</label>
-      <input type="text" id="usuarioLogin" name="usuarioLogin" required>
-      
-      <label for="senhaLogin">Senha</label>
-      <input type="password" id="senhaLogin" name="senhaLogin" required>
-      
-      <label for="lembrarMe">
-        <input type="checkbox" id="lembrarMe"> Lembrar-me
-      </label>
+    <h2>Entrar no Sistema</h2>
+    <input type="text" id="usuarioLogin" placeholder="Nome de usuário" />
+    
+    <div class="senha-container">
+      <input type="password" id="senhaLogin" placeholder="Senha" />
+      <span class="toggle-password" onclick="toggleSenha()">Mostrar</span>
+    </div>
 
-      <button type="button" id="loginBtn" onclick="loginUsuario()">Entrar</button>
-      <span id="mensagemErro" style="color: red; display: none;">Usuário ou senha inválidos.</span>
-      <div id="btnSpinner" style="display: none;">Carregando...</div>
-    </form>
+    <div class="lembrar">
+      <input type="checkbox" id="lembrarMe" />
+      <label for="lembrarMe">Lembrar-me</label>
+    </div>
+
+    <button id="loginBtn" onclick="loginUsuario()">
+      <span id="btnText">Entrar</span>
+      <div id="btnSpinner" class="spinner"></div>
+    </button>
+
+    <p style="margin-top: 10px;">
+      <!-- Botão Esqueci minha senha -->
+      <a href="recuperar.html" class="btn btn-link">Esqueci minha senha</a>
+    </p>
+
+    <p id="mensagemErro" class="mensagem-erro">Usuário ou senha inválidos</p>
   </div>
 
   <script>
+    // Função para alternar a exibição da senha
+    function toggleSenha() {
+      const senhaInput = document.getElementById('senhaLogin');
+      const senhaIcon = document.querySelector('.toggle-password');
+
+      if (senhaInput.type === "password") {
+        senhaInput.type = "text";
+        senhaIcon.textContent = "Esconder";
+      } else {
+        senhaInput.type = "password";
+        senhaIcon.textContent = "Mostrar";
+      }
+    }
+
+    // Função de login do usuário
     function loginUsuario() {
       const usuario = document.getElementById('usuarioLogin').value;
       const senha = document.getElementById('senhaLogin').value;
@@ -38,34 +157,26 @@
       document.getElementById('loginBtn').disabled = true;
 
       // Simula uma verificação de login
-      const usuarios = JSON.parse(localStorage.getItem('usuarios')) || [];
-      const usuarioValido = usuarios.find(u => u.nome === usuario && u.senha === senha);
-
-      // Caso o usuário seja válido
-      if (usuarioValido) {
-        if (lembrar) {
-          localStorage.setItem('usuarioLogado', JSON.stringify(usuarioValido));
-        } else {
-          sessionStorage.setItem('usuarioLogado', JSON.stringify(usuarioValido)); // Usando sessionStorage para login temporário
-        }
+      setTimeout(function() {
+        const senhaArmazenada = localStorage.getItem(usuario);
         
-        // Redireciona para a página correta
-        setTimeout(() => {
-          if (usuarioValido.tipo === 'admin') {
-            window.location.href = 'admin.html'; // Página de admin
-          } else {
-            window.location.href = 'index.html'; // Página de professor/aluno
+        if (senhaArmazenada && senhaArmazenada === senha) {
+          // Sucesso no login
+          if (lembrar) {
+            localStorage.setItem('lembrado', usuario); // Salva o usuário lembrado
           }
-        }, 2000);
-      } else {
-        // Caso o login seja inválido
-        setTimeout(() => {
+          window.location.href = 'home.html'; // Redireciona para a página principal
+        } else {
+          // Falha no login
           mensagemErro.style.display = 'block';
-          document.getElementById('btnSpinner').style.display = 'none';
-          document.getElementById('loginBtn').disabled = false;
-        }, 2000);
-      }
+        }
+
+        // Finaliza o processo de login
+        document.getElementById('btnSpinner').style.display = 'none';
+        document.getElementById('loginBtn').disabled = false;
+      }, 1000); // Simula um delay de 1 segundo
     }
   </script>
+
 </body>
 </html>

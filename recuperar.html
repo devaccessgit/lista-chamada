@@ -1,63 +1,126 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Recuperação de Senha</title>
-  <link rel="stylesheet" href="styles.css">
+  <title>Recuperar Senha</title>
+  <link rel="stylesheet" href="css/login.css">
+  <style>
+    .recovery-container {
+      max-width: 400px;
+      margin: 80px auto;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+      background-color: #fff;
+      text-align: center;
+    }
+    .recovery-container h2 {
+      margin-bottom: 20px;
+      color: #333;
+    }
+    input[type="text"], input[type="password"] {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 15px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+    button {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      background-color: #2575fc;
+      color: #fff;
+      cursor: pointer;
+    }
+    #senhaAtual, #novaSenhaSecao, #mensagemSenha {
+      display: none;
+      margin-top: 10px;
+    }
+    .back-link {
+      display: block;
+      margin-top: 20px;
+      color: #2575fc;
+      text-decoration: underline;
+    }
+  </style>
 </head>
 <body>
-  <div class="recuperar-container">
-    <h1>Recuperar Senha</h1>
-    <form id="recuperarForm">
-      <label for="usuarioRecuperar">Usuário</label>
-      <input type="text" id="usuarioRecuperar" name="usuarioRecuperar" required>
+  <div class="recovery-container">
+    <h2>Recuperar Senha</h2>
+    <input type="text" id="usuarioRecuperar" placeholder="Digite seu nome de usuário">
+    <button onclick="mostrarSenha()">Recuperar Senha</button>
 
-      <button type="button" onclick="recuperarSenha()">Recuperar</button>
-      
-      <div id="senhaAtual" style="display: none;"></div>
-      <div id="novaSenhaSecao" style="display: none;">
-        <label for="novaSenha">Nova Senha</label>
-        <input type="password" id="novaSenha" name="novaSenha">
-        <button type="button" onclick="salvarNovaSenha()">Salvar Nova Senha</button>
-      </div>
+    <div id="senhaAtual"></div>
 
-      <span id="mensagemSenha" style="display: none; color: red;"></span>
-    </form>
+    <div id="novaSenhaSecao">
+      <input type="password" id="novaSenha" placeholder="Nova senha">
+      <button onclick="alterarSenha()">Alterar Senha</button>
+    </div>
+
+    <p id="mensagemSenha"></p>
+    <a href="login.html" class="back-link">Voltar ao Login</a>
   </div>
 
   <script>
-    function recuperarSenha() {
-      const usuario = document.getElementById('usuarioRecuperar').value;
+    function mostrarSenha() {
+      const nome = document.getElementById('usuarioRecuperar').value.trim();
+      const senhaAtual = document.getElementById('senhaAtual');
+      const novaSenhaSecao = document.getElementById('novaSenhaSecao');
+      const mensagem = document.getElementById('mensagemSenha');
+
       const usuarios = JSON.parse(localStorage.getItem('usuarios')) || [];
-      const usuarioEncontrado = usuarios.find(u => u.nome === usuario);
-      
-      if (usuarioEncontrado) {
-        document.getElementById('senhaAtual').innerHTML = `Sua senha atual é: <strong>${usuarioEncontrado.senha}</strong>`;
-        document.getElementById('senhaAtual').style.display = 'block';
-        document.getElementById('novaSenhaSecao').style.display = 'block';
+      const usuario = usuarios.find(u => u.nome === nome);
+
+      if (usuario) {
+        senhaAtual.innerHTML = <p>Sua senha atual é: <strong>${usuario.senha}</strong></p>;
+        senhaAtual.style.display = 'block';
+        novaSenhaSecao.style.display = 'block';
+        mensagem.style.display = 'none';
       } else {
-        document.getElementById('mensagemSenha').textContent = 'Usuário não encontrado!';
-        document.getElementById('mensagemSenha').style.color = 'red';
-        document.getElementById('mensagemSenha').style.display = 'block';
+        senhaAtual.style.display = 'none';
+        novaSenhaSecao.style.display = 'none';
+        mensagem.textContent = 'Usuário não encontrado!';
+        mensagem.style.color = 'red';
+        mensagem.style.display = 'block';
       }
     }
 
-    function salvarNovaSenha() {
-      const usuario = document.getElementById('usuarioRecuperar').value;
-      const novaSenha = document.getElementById('novaSenha').value;
-      const usuarios = JSON.parse(localStorage.getItem('usuarios')) || [];
-      const usuarioEncontrado = usuarios.find(u => u.nome === usuario);
-      
-      if (usuarioEncontrado) {
-        usuarioEncontrado.senha = novaSenha;
+    function alterarSenha() {
+      const nome = document.getElementById('usuarioRecuperar').value.trim();
+      const novaSenha = document.getElementById('novaSenha').value.trim();
+      const mensagem = document.getElementById('mensagemSenha');
+
+      let usuarios = JSON.parse(localStorage.getItem('usuarios')) || [];
+      const usuarioIndex = usuarios.findIndex(u => u.nome === nome);
+
+      if (usuarioIndex !== -1) {
+        usuarios[usuarioIndex].senha = novaSenha;
         localStorage.setItem('usuarios', JSON.stringify(usuarios));
-        alert('Senha alterada com sucesso!');
-        window.location.href = 'login.html'; // Redireciona para login
-      } else {
-        alert('Erro ao alterar senha. Tente novamente.');
+
+        mensagem.textContent = 'Senha atualizada com sucesso!';
+        mensagem.style.color = 'green';
+        mensagem.style.display = 'block';
       }
     }
+    window.onload = function() {
+      // Quando a página carregar, o campo de nome de usuário será preenchido com o valor armazenado, se existir.
+      const usuarioInput = document.getElementById('usuario');
+      
+      // Se o nome de usuário for fornecido diretamente ou o campo estiver em branco, podemos seguir com a lógica
+      if(usuarioInput && usuarioInput.value) {
+          const usuario = usuarioInput.value;
+          
+          // Verificando se a senha do usuário existe no localStorage
+          if(localStorage.getItem(usuario)) {
+              // Exibindo a senha atual no campo de senha (para referência, com segurança ajustável)
+              document.getElementById('senhaAtual').value = localStorage.getItem(usuario);
+          } else {
+              alert('Usuário não encontrado!');
+          }
+      }
+  };
   </script>
 </body>
 </html>
