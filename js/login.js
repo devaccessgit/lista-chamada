@@ -48,6 +48,7 @@ function loginUsuario() {
     // Adiciona usuário admin se não existir
     if (!usuarios.find(u => u.nome === "admin")) {
       usuarios.push({ nome: "admin", senha: "admin123", tipo: "admin" });
+      usuarios.push({ nome: "professor", senha: "12345", tipo: "professor" });
       localStorage.setItem("usuarios", JSON.stringify(usuarios));
     }
 
