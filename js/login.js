@@ -50,6 +50,9 @@ function loginUsuario() {
     // Recupera os usuários armazenados no localStorage
     const usuarios = JSON.parse(localStorage.getItem("usuarios")) || [];
 
+    // Verifica o conteúdo de usuarios no localStorage
+    console.log("Usuários no localStorage:", usuarios);
+
     // Criação do usuário admin se não existir
     if (!usuarios.find(u => u.nome === "admin")) {
       usuarios.push({ nome: "admin", senha: "admin123", tipo: "admin" });
