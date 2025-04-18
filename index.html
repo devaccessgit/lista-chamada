@@ -92,26 +92,27 @@
   </div>
 
   <script>
-    // Recupera o usuário logado do localStorage
+    // Verifica se o usuário está logado
     const usuario = JSON.parse(localStorage.getItem('usuarioLogado'));
 
+    // Se não tiver usuário logado, redireciona para a tela de login
     if (!usuario) {
-      // Caso o usuário não esteja logado, redireciona para a tela de login
       window.location.href = 'login.html';
     } else {
+      // Caso tenha usuário logado, exibe uma mensagem personalizada
       document.addEventListener("DOMContentLoaded", () => {
         const nome = usuario.nome;
         document.getElementById('mensagem').textContent = `Bem-vindo, ${nome}!`;
       });
 
-      // Redireciona após 4 segundos, verificando o tipo de usuário
+      // Redireciona após um tempo para a página correta
       setTimeout(() => {
         if (usuario.tipo === 'admin') {
-          window.location.href = 'admin.html'; // Página do administrador
+          window.location.href = 'admin.html'; // Redireciona para a página de admin
         } else {
-          window.location.href = 'home.html'; // Página do professor
+          window.location.href = 'index.html'; // Caso contrário, redireciona para a página de professor/aluno
         }
-      }, 4000);
+      }, 4000); // Espera 4 segundos antes de redirecionar
     }
   </script>
 </body>
