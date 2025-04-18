@@ -74,7 +74,7 @@
       const usuario = usuarios.find(u => u.nome === nome);
 
       if (usuario) {
-        senhaAtual.innerHTML = <p>Sua senha atual é: <strong>${usuario.senha}</strong></p>;
+        senhaAtual.innerHTML = `Sua senha atual é: <strong>${usuario.senha}</strong>`;
         senhaAtual.style.display = 'block';
         novaSenhaSecao.style.display = 'block';
         mensagem.style.display = 'none';
@@ -102,25 +102,12 @@
         mensagem.textContent = 'Senha atualizada com sucesso!';
         mensagem.style.color = 'green';
         mensagem.style.display = 'block';
+      } else {
+        mensagem.textContent = 'Erro ao atualizar senha. Usuário não encontrado!';
+        mensagem.style.color = 'red';
+        mensagem.style.display = 'block';
       }
     }
-    window.onload = function() {
-      // Quando a página carregar, o campo de nome de usuário será preenchido com o valor armazenado, se existir.
-      const usuarioInput = document.getElementById('usuario');
-      
-      // Se o nome de usuário for fornecido diretamente ou o campo estiver em branco, podemos seguir com a lógica
-      if(usuarioInput && usuarioInput.value) {
-          const usuario = usuarioInput.value;
-          
-          // Verificando se a senha do usuário existe no localStorage
-          if(localStorage.getItem(usuario)) {
-              // Exibindo a senha atual no campo de senha (para referência, com segurança ajustável)
-              document.getElementById('senhaAtual').value = localStorage.getItem(usuario);
-          } else {
-              alert('Usuário não encontrado!');
-          }
-      }
-  };
   </script>
 </body>
 </html>

@@ -35,8 +35,8 @@ function showSection(id) {
 
 // Logout
 function logout() {
-  localStorage.removeItem('usuarioLogado');
-  window.location.href = 'index.html';
+  localStorage.removeItem('lembrado'); // Remove o usuário lembrado
+  window.location.href = 'login.html'; // Redireciona para a tela de login
 }
 
 function mostrarSucesso(mensagem) {

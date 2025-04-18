@@ -102,7 +102,7 @@
       // Caso tenha usuário logado, exibe uma mensagem personalizada
       document.addEventListener("DOMContentLoaded", () => {
         const nome = usuario.nome;
-        document.getElementById('mensagem').textContent = Bem-vindo, ${nome}!;
+        document.getElementById('mensagem').textContent = `Bem-vindo, ${nome}!`;  // Corrigido o erro de interpolação
       });
 
       // Redireciona após um tempo para a página correta

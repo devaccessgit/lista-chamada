@@ -123,7 +123,6 @@
     </button>
 
     <p style="margin-top: 10px;">
-      <!-- Botão Esqueci minha senha -->
       <a href="recuperar.html" class="btn btn-link">Esqueci minha senha</a>
     </p>
 
@@ -175,6 +174,15 @@
         document.getElementById('btnSpinner').style.display = 'none';
         document.getElementById('loginBtn').disabled = false;
       }, 1000); // Simula um delay de 1 segundo
+    }
+
+    // Verifica se o usuário foi lembrado ao carregar a página
+    window.onload = function() {
+      const usuarioLembrado = localStorage.getItem('lembrado');
+      if (usuarioLembrado) {
+        document.getElementById('usuarioLogin').value = usuarioLembrado;
+        document.getElementById('lembrarMe').checked = true;
+      }
     }
   </script>
 
