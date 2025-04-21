@@ -1,31 +1,26 @@
-document.addEventListener('DOMContentLoaded', () => {
-  const loginForm = document.getElementById('loginForm');
+document.getElementById('form-login').addEventListener('submit', function(e) {
+  e.preventDefault();
 
-  loginForm.addEventListener('submit', (e) => {
-    e.preventDefault();
-    
-    const usuario = document.getElementById('usuario').value;
-    const senha = document.getElementById('senha').value;
-    
-    // Senha padrão (por exemplo)
-    const senhaPadrao = '12345';
-    
-    // Verificar se a senha está correta
-    if (senha !== senhaPadrao) {
-      alert('Senha incorreta!');
-      return;
-    }
-    
-    // Verificar se é o primeiro login
-    const isFirstLogin = localStorage.getItem(`firstLogin-${usuario}`) === null;
-    
-    if (isFirstLogin) {
-      // Se for o primeiro login, redireciona para a página de alteração de senha
-      localStorage.setItem(`firstLogin-${usuario}`, 'true');
-      window.location.href = 'alterar-senha.html'; // Página para alteração de senha
+  const usuario = document.getElementById('usuario').value;
+  const senha = document.getElementById('senha').value;
+  
+  // Buscar o professor no localStorage (ou banco de dados)
+  const professor = JSON.parse(localStorage.getItem(usuario));
+
+  if (professor) {
+    // Verificar se a senha é a senha padrão
+    if (professor.senha === senha) {
+      if (!professor.alterouSenha) {
+        // Se a senha for padrão, redireciona para a página de alteração de senha
+        window.location.href = 'alterar-senha.html?usuario=' + usuario;
+      } else {
+        // Se a senha já foi alterada, redireciona para o dashboard do professor
+        window.location.href = 'professor.html';
+      }
     } else {
-      // Caso contrário, redireciona para o dashboard
-      window.location.href = 'dashboard.html';
+      alert('Senha incorreta!');
     }
-  });
+  } else {
+    alert('Usuário não encontrado!');
+  }
 });

@@ -4,15 +4,15 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Login - Sistema de Chamada</title>
-  <link rel="stylesheet" href="css/login.css"> <!-- Referência ao CSS de login -->
+  <link rel="stylesheet" href="css/login.css">
 </head>
 <body>
   <div class="login-container">
     <h2>Login no Sistema</h2>
-    <form action="dashboard.html" method="POST">
+    <form id="form-login">
       <div class="form-group">
-        <label for="usuario">Usuário</label>
-        <input type="text" id="usuario" name="usuario" required>
+        <label for="usuario">Usuário (E-mail)</label>
+        <input type="email" id="usuario" name="usuario" required>
       </div>
       <div class="form-group">
         <label for="senha">Senha</label>
@@ -20,8 +20,8 @@
       </div>
       <button type="submit" class="btn-login">Entrar</button>
     </form>
-    <a href="recuperar.html" class="back-link">Esqueci minha senha</a> <!-- Link para recuperação de senha -->
+    <a href="recuperar.html" class="back-link">Esqueci minha senha</a>
   </div>
-  <script src="js/login.js"></script> <!-- Referência ao JS de login -->
+  <script src="js/login.js"></script>
 </body>
 </html>
