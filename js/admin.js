@@ -5,6 +5,7 @@ document.getElementById('form-cadastrar-professor').addEventListener('submit', f
   const email = document.getElementById('email').value.trim().toLowerCase();
   const senhaPadrao = 'prof123';
 
+  // Validação dos campos
   if (!nome || !email) {
     alert('Preencha todos os campos.');
     return;
@@ -16,27 +17,30 @@ document.getElementById('form-cadastrar-professor').addEventListener('submit', f
   // Recupera os professores já cadastrados
   let usuarios = JSON.parse(localStorage.getItem('usuarios')) || [];
 
-  // Verifica se o e-mail já existe
-  if (localStorage.getItem(email)) {
+  // Verifica se o e-mail já está cadastrado
+  if (usuarios.find(usuario => usuario.email === email)) {
     alert('Esse e-mail já está cadastrado!');
     return;
   }
 
+  // Novo professor
   const novoProfessor = {
     nome: nome,
     email: email,
-    login: login,           // para fazer login
-    senha: senhaPadrao,     // senha padrão
+    login: login,           // Para fazer login
+    senha: senhaPadrao,     // Senha padrão
     tipo: 'professor',
-    primeiroAcesso: true
+    primeiroAcesso: true    // Indica que é o primeiro acesso
   };
 
+  // Adicionar professor à lista
   usuarios.push(novoProfessor);
 
+  // Salvar lista de usuários no localStorage
   localStorage.setItem('usuarios', JSON.stringify(usuarios));
 
   alert(`Professor cadastrado com sucesso!\n\nLogin: ${login}\nSenha: ${senhaPadrao}`);
   
-  // Limpar formulário após cadastro
+  // Limpar o formulário após o cadastro
   document.getElementById('form-cadastrar-professor').reset();
 });
