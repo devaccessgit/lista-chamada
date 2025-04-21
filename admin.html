@@ -2,34 +2,28 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Área do Administrador</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Painel do Administrador</title>
   <link rel="stylesheet" href="css/admin.css" />
 </head>
 <body>
-  <div class="admin-container">
-    <h1>Área do Administrador</h1>
+  <h1>Painel do Administrador</h1>
+
+  <form id="form-cadastrar-professor">
     <h2>Cadastrar Novo Professor</h2>
-    <form id="form-cadastrar-professor">
-      <div class="form-group">
-        <label for="nome">Nome do Professor</label>
-        <input type="text" id="nome" name="nome" required />
-      </div>
-      <div class="form-group">
-        <label for="email">E-mail (Login do Professor)</label>
-        <input type="email" id="email" name="email" required />
-      </div>
-      <button type="submit" class="btn-cadastrar">Cadastrar</button>
-    </form>
-    <br />
-    <button onclick="logout()" class="btn-sair">Sair</button>
-  </div>
+    <label for="nome">Nome:</label>
+    <input type="text" id="nome" required />
+
+    <label for="email">E-mail:</label>
+    <input type="email" id="email" required />
+
+    <button type="submit">Cadastrar Professor</button>
+  </form>
+
+  <br/>
+  <button onclick="window.location.href='alterar-senha.html'">Alterar minha senha</button>
+  <button onclick="window.location.href='index.html'">Sair</button>
 
   <script src="js/admin.js"></script>
-  <script>
-    function logout() {
-      window.location.href = 'login.html';
-    }
-  </script>
 </body>
 </html>

@@ -10,11 +10,10 @@ document.getElementById('form-login').addEventListener('submit', function (e) {
   // Verificar credenciais do admin
   if (usuario === admin.login && senha === admin.senha) {
     if (!admin.alterouCredenciais) {
-      window.location.href = 'alterar-credenciais.html'; // Redireciona para a alteração de credenciais
+      window.location.href = 'alterar-credenciais.html';
     } else {
-      window.location.href = 'admin.html'; // Redireciona para o painel do admin
+      window.location.href = 'admin.html';
     }
-    return;
   }
 
   // Recuperar lista de usuários (professores)

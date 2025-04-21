@@ -1,17 +1,6 @@
-// Pega o admin atual do localStorage
-const admin = JSON.parse(localStorage.getItem('admin'));
-
-// Verifica se admin existe
-if (!admin) {
-  alert('Admin não encontrado!');
-  window.location.href = 'login.html';
-}
-
-// Ao submeter o formulário
-document.getElementById('form-alterar-credenciais').addEventListener('submit', function(e) {
+document.getElementById('form-alterar-credenciais').addEventListener('submit', function (e) {
   e.preventDefault();
 
-  const novoLogin = document.getElementById('novo-login').value;
   const novaSenha = document.getElementById('nova-senha').value;
   const confirmarSenha = document.getElementById('confirmar-senha').value;
 
@@ -20,13 +9,17 @@ document.getElementById('form-alterar-credenciais').addEventListener('submit', f
     return;
   }
 
-  const novoAdmin = {
-    login: novoLogin,
-    senha: novaSenha,
-    alterouCredenciais: true
-  };
+  let admin = JSON.parse(localStorage.getItem('admin'));
 
-  localStorage.setItem('admin', JSON.stringify(novoAdmin));
-  alert('Credenciais atualizadas com sucesso!');
-  window.location.href = 'admin.html';
+  if (admin) {
+    admin.senha = novaSenha;
+    admin.alterouCredenciais = true;
+
+    localStorage.setItem('admin', JSON.stringify(admin));
+
+    alert('Senha alterada com sucesso! Redirecionando para o painel do admin...');
+    window.location.href = 'admin.html';
+  } else {
+    alert('Erro: Admin não encontrado.');
+  }
 });
