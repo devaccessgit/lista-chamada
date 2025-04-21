@@ -1,26 +1,36 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Login - Sistema de Chamada</title>
-  <link rel="stylesheet" href="css/login.css">
+  <link rel="stylesheet" href="css/login.css" />
 </head>
 <body>
   <div class="login-container">
     <h2>Login no Sistema</h2>
-    <form id="form-login">
+
+    <!-- Formulário de Login -->
+    <form id="form-login" autocomplete="off">
       <div class="form-group">
         <label for="usuario">Usuário (E-mail ou Login)</label>
-        <input type="text" id="usuario" name="usuario" required>
+        <input type="text" id="usuario" name="usuario" required />
       </div>
+
       <div class="form-group">
         <label for="senha">Senha</label>
-        <input type="password" id="senha" name="senha" required>
+        <input type="password" id="senha" name="senha" required />
       </div>
+
       <button type="submit" class="btn-login">Entrar</button>
+
+      <!-- Link para recuperação de senha -->
+      <p class="link-recuperar">
+        <a href="recuperar.html">Esqueceu sua senha?</a>
+      </p>
     </form>
   </div>
-  <script src="js/login.js"></script>
+
+  <script src="js/login.js" defer></script>
 </body>
 </html>
