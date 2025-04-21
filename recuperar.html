@@ -1,113 +1,34 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Recuperar Senha</title>
-  <link rel="stylesheet" href="css/login.css">
-  <style>
-    .recovery-container {
-      max-width: 400px;
-      margin: 80px auto;
-      padding: 30px;
-      border-radius: 10px;
-      box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
-      background-color: #fff;
-      text-align: center;
-    }
-    .recovery-container h2 {
-      margin-bottom: 20px;
-      color: #333;
-    }
-    input[type="text"], input[type="password"] {
-      width: 100%;
-      padding: 10px;
-      margin-bottom: 15px;
-      border-radius: 5px;
-      border: 1px solid #ccc;
-    }
-    button {
-      padding: 10px 20px;
-      border: none;
-      border-radius: 5px;
-      background-color: #2575fc;
-      color: #fff;
-      cursor: pointer;
-    }
-    #senhaAtual, #novaSenhaSecao, #mensagemSenha {
-      display: none;
-      margin-top: 10px;
-    }
-    .back-link {
-      display: block;
-      margin-top: 20px;
-      color: #2575fc;
-      text-decoration: underline;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recuperação de Senha</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/recuperar.css">
 </head>
 <body>
-  <div class="recovery-container">
-    <h2>Recuperar Senha</h2>
-    <input type="text" id="usuarioRecuperar" placeholder="Digite seu nome de usuário">
-    <button onclick="mostrarSenha()">Recuperar Senha</button>
-
-    <div id="senhaAtual"></div>
-
-    <div id="novaSenhaSecao">
-      <input type="password" id="novaSenha" placeholder="Nova senha">
-      <button onclick="alterarSenha()">Alterar Senha</button>
+    <div class="container d-flex justify-content-center align-items-center min-vh-100">
+        <div class="card" style="max-width: 400px; width: 100%;">
+            <div class="card-header text-center">
+                <h4>Recuperação de Senha</h4>
+            </div>
+            <div class="card-body">
+                <form id="recuperacaoForm">
+                    <div class="mb-3">
+                        <label for="email" class="form-label">E-mail</label>
+                        <input type="email" class="form-control" id="email" placeholder="Digite seu e-mail" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Enviar Link de Recuperação</button>
+                </form>
+                <div class="text-center mt-3">
+                    <a href="login.html">Voltar para o login</a>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <p id="mensagemSenha"></p>
-    <a href="login.html" class="back-link">Voltar ao Login</a>
-  </div>
-
-  <script>
-    function mostrarSenha() {
-      const nome = document.getElementById('usuarioRecuperar').value.trim();
-      const senhaAtual = document.getElementById('senhaAtual');
-      const novaSenhaSecao = document.getElementById('novaSenhaSecao');
-      const mensagem = document.getElementById('mensagemSenha');
-
-      const usuarios = JSON.parse(localStorage.getItem('usuarios')) || [];
-      const usuario = usuarios.find(u => u.nome === nome);
-
-      if (usuario) {
-        senhaAtual.innerHTML = `Sua senha atual é: <strong>${usuario.senha}</strong>`;
-        senhaAtual.style.display = 'block';
-        novaSenhaSecao.style.display = 'block';
-        mensagem.style.display = 'none';
-      } else {
-        senhaAtual.style.display = 'none';
-        novaSenhaSecao.style.display = 'none';
-        mensagem.textContent = 'Usuário não encontrado!';
-        mensagem.style.color = 'red';
-        mensagem.style.display = 'block';
-      }
-    }
-
-    function alterarSenha() {
-      const nome = document.getElementById('usuarioRecuperar').value.trim();
-      const novaSenha = document.getElementById('novaSenha').value.trim();
-      const mensagem = document.getElementById('mensagemSenha');
-
-      let usuarios = JSON.parse(localStorage.getItem('usuarios')) || [];
-      const usuarioIndex = usuarios.findIndex(u => u.nome === nome);
-
-      if (usuarioIndex !== -1) {
-        usuarios[usuarioIndex].senha = novaSenha;
-        localStorage.setItem('usuarios', JSON.stringify(usuarios));
-
-        mensagem.textContent = 'Senha atualizada com sucesso!';
-        mensagem.style.color = 'green';
-        mensagem.style.display = 'block';
-      } else {
-        mensagem.textContent = 'Erro ao atualizar senha. Usuário não encontrado!';
-        mensagem.style.color = 'red';
-        mensagem.style.display = 'block';
-      }
-    }
-  </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
