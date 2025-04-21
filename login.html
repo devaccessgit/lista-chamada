@@ -1,158 +1,100 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Login - Sistema de Chamada</title>
-  <link rel="stylesheet" href="css/login.css" />
+  <link rel="stylesheet" href="css/styles.css">
   <style>
-    .spinner {
-      width: 16px;
-      height: 16px;
-      border: 2px solid #fff;
-      border-top: 2px solid transparent;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-      display: none;
-      margin-left: 8px;
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(120deg, #6c63ff, #3f3d56);
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
     }
 
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
+    .login-container {
+      background-color: rgba(0, 0, 0, 0.6);
+      padding: 40px;
+      border-radius: 15px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.3);
+      width: 100%;
+      max-width: 400px;
+      text-align: center;
     }
 
-    .mensagem-erro {
-      color: red;
-      display: none;
-      margin-top: 10px;
+    .login-container h2 {
+      margin-bottom: 20px;
     }
 
-    .senha-container {
-      position: relative;
+    .form-group {
+      margin-bottom: 20px;
+      text-align: left;
     }
 
-    .toggle-password {
-      position: absolute;
-      right: 10px;
-      top: 50%;
-      transform: translateY(-50%);
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 10px;
+      border-radius: 8px;
+      border: none;
+      outline: none;
+    }
+
+    .btn-login {
+      background-color: #00c9a7;
+      color: white;
+      border: none;
+      padding: 12px;
+      width: 100%;
+      border-radius: 25px;
+      font-weight: bold;
       cursor: pointer;
-      font-size: 14px;
-      color: #007bff;
+      transition: background-color 0.3s ease;
+    }
+
+    .btn-login:hover {
+      background-color: #00a389;
+    }
+
+    .back-link {
+      margin-top: 20px;
+      display: block;
+      color: #00c9a7;
+      text-decoration: none;
+    }
+
+    @media (max-width: 600px) {
+      .login-container {
+        padding: 20px;
+      }
     }
   </style>
 </head>
 <body>
   <div class="login-container">
-    <div class="login-card">
-      <h1>Entrar no Sistema</h1>
-      <p class="subtitle">Por favor, insira suas credenciais.</p>
-      
-      <input type="text" id="usuarioLogin" placeholder="Nome de usuário" />
-
-      <div class="senha-container">
-        <input type="password" id="senhaLogin" placeholder="Senha" />
-        <span class="toggle-password" onclick="toggleSenha()">Mostrar</span>
+    <h2>Login no Sistema</h2>
+    <form action="dashboard.html" method="POST">
+      <div class="form-group">
+        <label for="usuario">Usuário</label>
+        <input type="text" id="usuario" name="usuario" required>
       </div>
-
-      <div class="lembrar">
-        <input type="checkbox" id="lembrarMe" />
-        <label for="lembrarMe">Lembrar-me</label>
+      <div class="form-group">
+        <label for="senha">Senha</label>
+        <input type="password" id="senha" name="senha" required>
       </div>
-
-      <button id="loginBtn" onclick="loginUsuario()">
-        <span id="btnText">Entrar</span>
-        <div id="btnSpinner" class="spinner"></div>
-      </button>
-
-      <p class="creditos">
-        <a href="recuperar.html" class="btn btn-link">Esqueci minha senha</a>
-      </p>
-
-      <p id="mensagemErro" class="mensagem-erro">Usuário ou senha inválidos!</p>
-    </div>
+      <button type="submit" class="btn-login">Entrar</button>
+    </form>
+    <a href="index.html" class="back-link">← Voltar à página inicial</a>
   </div>
-
-  <script>
-    document.addEventListener("DOMContentLoaded", () => {
-      const lembrar = localStorage.getItem("lembrarUsuario");
-      if (lembrar) {
-        const { nome, senha } = JSON.parse(lembrar);
-        document.getElementById("usuarioLogin").value = nome;
-        document.getElementById("senhaLogin").value = senha;
-        document.getElementById("lembrarMe").checked = true;
-      }
-    });
-
-    function toggleSenha() {
-      const senhaInput = document.getElementById("senhaLogin");
-      const toggle = document.querySelector(".toggle-password");
-      if (senhaInput.type === "password") {
-        senhaInput.type = "text";
-        toggle.textContent = "Ocultar";
-      } else {
-        senhaInput.type = "password";
-        toggle.textContent = "Mostrar";
-      }
-    }
-
-    function loginUsuario() {
-      const nome = document.getElementById('usuarioLogin').value;
-      const senha = document.getElementById('senhaLogin').value;
-      const lembrar = document.getElementById('lembrarMe').checked;
-      const mensagemErro = document.getElementById('mensagemErro');
-      const btnText = document.getElementById('btnText');
-      const btnSpinner = document.getElementById('btnSpinner');
-      const loginBtn = document.getElementById('loginBtn');
-
-      if (!nome || !senha) {
-        mensagemErro.textContent = "Preencha todos os campos!";
-        mensagemErro.style.display = "block";
-        return;
-      }
-
-      btnText.textContent = "Entrando...";
-      btnSpinner.style.display = "inline-block";
-      loginBtn.disabled = true;
-      mensagemErro.style.display = "none";
-
-      setTimeout(() => {
-        let usuarios = JSON.parse(localStorage.getItem("usuarios")) || [];
-
-        if (!usuarios.find(u => u.nome === "admin")) {
-          usuarios.push({ nome: "admin", senha: "admin123", tipo: "admin" });
-          localStorage.setItem("usuarios", JSON.stringify(usuarios));
-        }
-
-        const usuario = usuarios.find(u => u.nome === nome && u.senha === senha);
-
-        if (usuario) {
-          localStorage.setItem("usuarioLogado", JSON.stringify(usuario));
-
-          if (lembrar) {
-            localStorage.setItem("lembrarUsuario", JSON.stringify({ nome, senha }));
-          } else {
-            localStorage.removeItem("lembrarUsuario");
-          }
-
-          if (usuario.tipo === "admin") {
-            window.location.href = "admin.html";
-          } else if (usuario.tipo === "professor") {
-            window.location.href = "professor.html";
-          } else {
-            window.location.href = "boasvindas.html";
-          }
-
-        } else {
-          mensagemErro.textContent = "Usuário ou senha inválidos!";
-          mensagemErro.style.display = "block";
-          btnText.textContent = "Entrar";
-          btnSpinner.style.display = "none";
-          loginBtn.disabled = false;
-        }
-      }, 1000);
-    }
-  </script>
 </body>
 </html>

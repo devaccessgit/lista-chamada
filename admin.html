@@ -1,96 +1,40 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Administração</title>
-  <link rel="stylesheet" href="css/admin.css" />
-  <link rel="shortcut icon" href="imagens/logo.png" type="image/png">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
 </head>
-<body class="light-theme">
-  <button id="alternarTema" class="tema-btn">🌙</button>
+<body>
+    <!-- Sidebar -->
+    <div class="d-flex" id="wrapper">
+        <div class="bg-dark text-white" id="sidebar">
+            <div class="sidebar-header p-4">
+                <h4>Bem-vindo, <span id="username"></span></h4>
+            </div>
+            <div class="list-group list-group-flush">
+                <a href="lista_chamada.html" class="list-group-item list-group-item-action text-white">Lista de Chamada</a>
+                <a href="alunos.html" class="list-group-item list-group-item-action text-white">Alunos</a>
+                <a href="historico.html" class="list-group-item list-group-item-action text-white">Histórico</a>
+                <a href="configuracoes.html" class="list-group-item list-group-item-action text-white">Configurações</a>
+                <a href="logout.html" class="list-group-item list-group-item-action text-white">Logout</a>
+            </div>
+        </div>
 
-  <div class="admin-container fade-in">
-    <!-- Logo ajustado para garantir que a imagem seja carregada -->
-    <img src="imagens/logo.png" alt="Logo" class="logo" id="logoAdmin">
-
-    <!-- Exibição do nome do administrador -->
-    <h1>Bem-vindo, <span id="nomeAdmin">Administrador</span>!</h1>
-
-    <div class="card-container">
-      <div class="card">
-        <h3>Usuários</h3>
-        <button onclick="gerenciarUsuarios()">Gerenciar</button>
-      </div>
-
-      <div class="card">
-        <h3>Configurações</h3>
-        <button onclick="abrirConfiguracoes()">Abrir</button>
-      </div>
-
-      <div class="card">
-        <h3>Logout</h3>
-        <button onclick="logout()">Sair</button>
-      </div>
+        <!-- Page Content -->
+        <div id="page-content-wrapper" class="container-fluid">
+            <div class="row">
+                <div class="col-12 mt-4">
+                    <h2>Painel de Controle</h2>
+                    <p>Escolha uma das opções no menu lateral para começar a gerenciar a lista de chamada, alunos ou histórico.</p>
+                </div>
+            </div>
+        </div>
     </div>
-  </div>
 
-  <script src="js/admin.js"></script>
-  <script>
-    const botaoTema = document.getElementById('alternarTema');
-    const body = document.body;
-
-    // Função para aplicar o tema de acordo com a preferência do usuário
-    function aplicarTema() {
-      const tema = localStorage.getItem('tema') || 'claro';
-      if (tema === 'escuro') {
-        body.classList.add('dark-theme');
-        body.classList.remove('light-theme');
-        botaoTema.textContent = '☀️'; // Icone do sol para tema escuro
-      } else {
-        body.classList.remove('dark-theme');
-        body.classList.add('light-theme');
-        botaoTema.textContent = '🌙'; // Icone da lua para tema claro
-      }
-    }
-
-    // Alterna entre os temas claro e escuro
-    botaoTema.addEventListener('click', () => {
-      const temaAtual = body.classList.contains('dark-theme') ? 'escuro' : 'claro';
-      const novoTema = temaAtual === 'escuro' ? 'claro' : 'escuro';
-      localStorage.setItem('tema', novoTema);
-      aplicarTema();
-    });
-
-    // Aplica o tema ao carregar a página
-    aplicarTema();
-
-    // Função para gerenciar usuários (exemplo)
-    function gerenciarUsuarios() {
-      // Aqui pode ser adicionado código para redirecionar ou abrir uma seção de gerenciamento de usuários
-      alert('Gerenciando usuários...');
-    }
-
-    // Função para abrir configurações (exemplo)
-    function abrirConfiguracoes() {
-      // Aqui pode ser adicionado código para abrir a página de configurações
-      alert('Abrindo configurações...');
-    }
-
-    // Função de logout (exemplo)
-    function logout() {
-      // Pode adicionar a lógica de logout, como remover dados do usuário e redirecionar
-      alert('Saindo...');
-      window.location.href = "login.html"; // Redirecionando para a tela de login após o logout
-    }
-
-    // Preenchendo o nome do admin (se for armazenado)
-    window.onload = function() {
-      const usuarioLogado = JSON.parse(localStorage.getItem('usuarioLogado'));
-      if (usuarioLogado && usuarioLogado.nome) {
-        document.getElementById('nomeAdmin').textContent = usuarioLogado.nome;
-      }
-    }
-  </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
