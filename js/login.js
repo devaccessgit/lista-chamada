@@ -3,31 +3,44 @@ document.getElementById('form-login').addEventListener('submit', function(e) {
 
   const usuario = document.getElementById('usuario').value;
   const senha = document.getElementById('senha').value;
-  
-  // Verificar o login do admin com credenciais padrão
-  const admin = JSON.parse(localStorage.getItem('admin'));
+
+  // Verificar se admin já está cadastrado
+  let admin = JSON.parse(localStorage.getItem('admin'));
 
   if (!admin) {
-    // Se não existe dados do admin no localStorage, criar com credenciais padrão
+    // Se não existe admin, cria com credenciais padrão
     const dadosAdmin = {
-      login: 'admin',    // Login padrão
-      senha: 'admin123', // Senha padrão
+      login: 'admin',
+      senha: 'admin123',
       alterouCredenciais: false
     };
     localStorage.setItem('admin', JSON.stringify(dadosAdmin));
     alert('Primeiro acesso, por favor altere suas credenciais.');
-    window.location.href = 'alterar-credenciais.html'; // Redireciona para alteração de credenciais
-  } else {
-    // Se já existe, verificar se a senha padrão está sendo utilizada
-    if (usuario === admin.login && senha === admin.senha) {
-      if (!admin.alterouCredenciais) {
-        // Se a senha for padrão e ainda não foi alterada
-        window.location.href = 'alterar-credenciais.html'; // Redireciona para alteração de credenciais
-      } else {
-        window.location.href = 'admin.html'; // Redireciona para a área administrativa
-      }
-    } else {
-      alert('Login ou senha incorretos!');
-    }
+    window.location.href = 'alterar-credenciais.html';
+    return;
   }
+
+  // Verifica se é o admin tentando logar
+  if (usuario === admin.login && senha === admin.senha) {
+    if (!admin.alterouCredenciais) {
+      window.location.href = 'alterar-credenciais.html';
+    } else {
+      window.location.href = 'admin.html';
+    }
+    return;
+  }
+
+  // Se não é admin, verificar se é professor
+  const professor = JSON.parse(localStorage.getItem(usuario));
+  if (professor && senha === professor.senha) {
+    if (!professor.alterouSenha) {
+      window.location.href = `alterar-senha.html?usuario=${usuario}`;
+    } else {
+      window.location.href = 'professor.html';
+    }
+    return;
+  }
+
+  // Se não for admin nem professor válido
+  alert('Login ou senha incorretos!');
 });

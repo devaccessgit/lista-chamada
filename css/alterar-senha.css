@@ -1,65 +1,83 @@
 body {
-    margin: 0;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(120deg, #6c63ff, #3f3d56);
-    height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #fff;
-  }
-  
+  margin: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(120deg, #6c63ff, #3f3d56);
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+}
+
+.alterar-senha-container {
+  background-color: rgba(0, 0, 0, 0.6);
+  padding: 40px;
+  border-radius: 15px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+  width: 100%;
+  max-width: 400px;
+  text-align: center;
+}
+
+.alterar-senha-container h2 {
+  margin-bottom: 25px;
+  font-size: 24px;
+  color: #fff;
+}
+
+.form-group {
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+  color: #fff;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 10px;
+  border-radius: 8px;
+  border: none;
+  outline: none;
+  font-size: 16px;
+  transition: box-shadow 0.2s ease-in-out;
+}
+
+.form-group input:focus {
+  box-shadow: 0 0 5px #00c9a7;
+}
+
+.btn-alterar-senha {
+  background-color: #00c9a7;
+  color: white;
+  border: none;
+  padding: 12px;
+  width: 100%;
+  border-radius: 25px;
+  font-weight: bold;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.btn-alterar-senha:hover {
+  background-color: #00a389;
+}
+
+@media (max-width: 600px) {
   .alterar-senha-container {
-    background-color: rgba(0, 0, 0, 0.6);
-    padding: 40px;
-    border-radius: 15px;
-    box-shadow: 0 0 20px rgba(0,0,0,0.3);
-    width: 100%;
-    max-width: 400px;
-    text-align: center;
+    padding: 20px;
   }
-  
+
   .alterar-senha-container h2 {
-    margin-bottom: 20px;
+    font-size: 20px;
   }
-  
-  .form-group {
-    margin-bottom: 20px;
-    text-align: left;
-  }
-  
-  .form-group label {
-    display: block;
-    margin-bottom: 5px;
-    font-weight: bold;
-  }
-  
-  .form-group input {
-    width: 100%;
-    padding: 10px;
-    border-radius: 8px;
-    border: none;
-    outline: none;
-  }
-  
+
   .btn-alterar-senha {
-    background-color: #00c9a7;
-    color: white;
-    border: none;
-    padding: 12px;
-    width: 100%;
-    border-radius: 25px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
+    font-size: 15px;
   }
-  
-  .btn-alterar-senha:hover {
-    background-color: #00a389;
-  }
-  
-  @media (max-width: 600px) {
-    .alterar-senha-container {
-      padding: 20px;
-    }
-  }
+}
