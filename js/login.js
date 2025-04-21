@@ -1,13 +1,31 @@
-// JavaScript para manipulação do login, caso seja necessário
-
 document.addEventListener('DOMContentLoaded', () => {
-  // Adicionar event listener ou manipulação se necessário
   const loginForm = document.getElementById('loginForm');
+
   loginForm.addEventListener('submit', (e) => {
-    e.preventDefault(); // Evita envio padrão (caso precise de validação ou tratamento)
-    // Aqui você pode fazer validação ou outras ações
-    alert('Formulário enviado! (Apenas demonstração)');
-    // Exemplo de redirecionamento após login (substitua conforme necessário)
-    window.location.href = 'dashboard.html';
+    e.preventDefault();
+    
+    const usuario = document.getElementById('usuario').value;
+    const senha = document.getElementById('senha').value;
+    
+    // Senha padrão (por exemplo)
+    const senhaPadrao = '12345';
+    
+    // Verificar se a senha está correta
+    if (senha !== senhaPadrao) {
+      alert('Senha incorreta!');
+      return;
+    }
+    
+    // Verificar se é o primeiro login
+    const isFirstLogin = localStorage.getItem(`firstLogin-${usuario}`) === null;
+    
+    if (isFirstLogin) {
+      // Se for o primeiro login, redireciona para a página de alteração de senha
+      localStorage.setItem(`firstLogin-${usuario}`, 'true');
+      window.location.href = 'alterar-senha.html'; // Página para alteração de senha
+    } else {
+      // Caso contrário, redireciona para o dashboard
+      window.location.href = 'dashboard.html';
+    }
   });
 });
