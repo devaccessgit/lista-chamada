@@ -1,40 +1,27 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Área Administrativa</title>
+  <link rel="stylesheet" href="css/admin.css"> <!-- Referência ao CSS de admin -->
 </head>
 <body>
-    <!-- Sidebar -->
-    <div class="d-flex" id="wrapper">
-        <div class="bg-dark text-white" id="sidebar">
-            <div class="sidebar-header p-4">
-                <h4>Bem-vindo, <span id="username"></span></h4>
-            </div>
-            <div class="list-group list-group-flush">
-                <a href="lista_chamada.html" class="list-group-item list-group-item-action text-white">Lista de Chamada</a>
-                <a href="alunos.html" class="list-group-item list-group-item-action text-white">Alunos</a>
-                <a href="historico.html" class="list-group-item list-group-item-action text-white">Histórico</a>
-                <a href="configuracoes.html" class="list-group-item list-group-item-action text-white">Configurações</a>
-                <a href="logout.html" class="list-group-item list-group-item-action text-white">Logout</a>
-            </div>
-        </div>
-
-        <!-- Page Content -->
-        <div id="page-content-wrapper" class="container-fluid">
-            <div class="row">
-                <div class="col-12 mt-4">
-                    <h2>Painel de Controle</h2>
-                    <p>Escolha uma das opções no menu lateral para começar a gerenciar a lista de chamada, alunos ou histórico.</p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="script.js"></script>
+  <div class="admin-container">
+    <h2>Cadastro de Professores</h2>
+    <!-- Formulário de cadastro de professores -->
+    <form id="form-cadastrar-professor">
+      <div class="form-group">
+        <label for="nome">Nome</label>
+        <input type="text" id="nome" name="nome" required>
+      </div>
+      <div class="form-group">
+        <label for="email">E-mail</label>
+        <input type="email" id="email" name="email" required>
+      </div>
+      <button type="submit" class="btn-cadastrar">Cadastrar</button>
+    </form>
+  </div>
+  <script src="js/admin.js"></script> <!-- Referência ao JS de admin -->
 </body>
 </html>

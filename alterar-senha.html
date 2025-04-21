@@ -3,25 +3,24 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Alterar Senha</title>
-  <link rel="stylesheet" href="css/alterar-senha.css">
+  <title>Alterar Senha - Primeiro Acesso</title>
+  <link rel="stylesheet" href="css/alterar-senha.css"> <!-- Referência ao CSS de alterar senha -->
 </head>
 <body>
   <div class="alterar-senha-container">
     <h2>Alterar Senha</h2>
-    <form id="alterarSenhaForm">
+    <form id="form-alterar-senha">
       <div class="form-group">
         <label for="nova-senha">Nova Senha</label>
-        <input type="password" id="nova-senha" required>
+        <input type="password" id="nova-senha" name="nova-senha" required>
       </div>
       <div class="form-group">
-        <label for="confirmar-senha">Confirmar Nova Senha</label>
-        <input type="password" id="confirmar-senha" required>
+        <label for="confirmar-senha">Confirmar Senha</label>
+        <input type="password" id="confirmar-senha" name="confirmar-senha" required>
       </div>
       <button type="submit" class="btn-alterar-senha">Alterar Senha</button>
     </form>
   </div>
-
-  <script src="js/alterar-senha.js"></script>
+  <script src="js/alterar-senha.js"></script> <!-- Referência ao JS de alterar senha -->
 </body>
 </html>
