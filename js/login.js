@@ -4,23 +4,30 @@ document.getElementById('form-login').addEventListener('submit', function(e) {
   const usuario = document.getElementById('usuario').value;
   const senha = document.getElementById('senha').value;
   
-  // Buscar o professor no localStorage (ou banco de dados)
-  const professor = JSON.parse(localStorage.getItem(usuario));
+  // Verificar o login do admin com credenciais padrão
+  const admin = JSON.parse(localStorage.getItem('admin'));
 
-  if (professor) {
-    // Verificar se a senha é a senha padrão
-    if (professor.senha === senha) {
-      if (!professor.alterouSenha) {
-        // Se a senha for padrão, redireciona para a página de alteração de senha
-        window.location.href = 'alterar-senha.html?usuario=' + usuario;
+  if (!admin) {
+    // Se não existe dados do admin no localStorage, criar com credenciais padrão
+    const dadosAdmin = {
+      login: 'admin',    // Login padrão
+      senha: 'admin123', // Senha padrão
+      alterouCredenciais: false
+    };
+    localStorage.setItem('admin', JSON.stringify(dadosAdmin));
+    alert('Primeiro acesso, por favor altere suas credenciais.');
+    window.location.href = 'alterar-credenciais.html'; // Redireciona para alteração de credenciais
+  } else {
+    // Se já existe, verificar se a senha padrão está sendo utilizada
+    if (usuario === admin.login && senha === admin.senha) {
+      if (!admin.alterouCredenciais) {
+        // Se a senha for padrão e ainda não foi alterada
+        window.location.href = 'alterar-credenciais.html'; // Redireciona para alteração de credenciais
       } else {
-        // Se a senha já foi alterada, redireciona para o dashboard do professor
-        window.location.href = 'professor.html';
+        window.location.href = 'admin.html'; // Redireciona para a área administrativa
       }
     } else {
-      alert('Senha incorreta!');
+      alert('Login ou senha incorretos!');
     }
-  } else {
-    alert('Usuário não encontrado!');
   }
 });
