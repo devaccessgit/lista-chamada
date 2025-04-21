@@ -1,68 +1,46 @@
 body {
   margin: 0;
-  font-family: 'Raleway', sans-serif;
-  background: linear-gradient(120deg, #4a90e2, #50c9c3);
-  color: #fff;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(to bottom right, #6c63ff, #b3c6ff);
+  color: white;
   display: flex;
   justify-content: center;
   align-items: center;
   height: 100vh;
+  transition: background 0.3s ease;
 }
 
-.container {
+.welcome-container {
   text-align: center;
-  padding: 2rem;
-}
-
-.card {
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  border-radius: 16px;
-  padding: 2rem;
+  background-color: rgba(255, 255, 255, 0.1);
+  padding: 40px;
+  border-radius: 20px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+  backdrop-filter: blur(8px);
   max-width: 500px;
-  margin: auto;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
-}
-
-.logo {
-  width: 80px;
-  margin-bottom: 1rem;
 }
 
 h1 {
-  font-size: 1.8rem;
-  margin-bottom: 1rem;
+  font-size: 2em;
+  margin-bottom: 20px;
 }
 
 p {
-  font-size: 1rem;
-  margin-bottom: 1rem;
+  font-size: 1.1em;
+  margin-bottom: 30px;
 }
 
-ul {
-  list-style: none;
-  padding: 0;
-  margin: 1rem 0;
-  text-align: left;
-}
-
-ul li {
-  margin: 0.5rem 0;
-  font-size: 0.95rem;
-}
-
-.btn-acessar {
-  background: #ffffff;
-  color: #4a90e2;
-  padding: 0.75rem 1.5rem;
+.btn {
   text-decoration: none;
-  border-radius: 8px;
+  background-color: #ffffff;
+  color: #6c63ff;
+  padding: 12px 24px;
+  border-radius: 30px;
   font-weight: bold;
-  transition: background 0.3s ease;
-  display: inline-block;
-  margin-top: 1rem;
+  transition: background 0.3s, color 0.3s;
 }
 
-.btn-acessar:hover {
-  background: #e3f2fd;
+.btn:hover {
+  background-color: #6c63ff;
+  color: white;
 }

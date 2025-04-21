@@ -1,119 +1,18 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Bem-vindo - Sistema de Chamada</title>
-  <link rel="stylesheet" href="css/login.css" />
-  <style>
-    body {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      background: linear-gradient(135deg, #4c6ef5, #d0e1ff);
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      margin: 0;
-      color: #fff;
-      text-align: center;
-      padding: 20px;
-    }
-
-    .boas-vindas-container {
-      background: rgba(0, 0, 0, 0.2);
-      padding: 30px 40px;
-      border-radius: 20px;
-      box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
-      max-width: 500px;
-    }
-
-    h1 {
-      font-size: 1.8rem;
-      margin-bottom: 15px;
-    }
-
-    p {
-      font-size: 1rem;
-      opacity: 0.9;
-    }
-
-    ul {
-      list-style: none;
-      padding-left: 0;
-      text-align: left;
-      margin: 15px 0;
-    }
-
-    ul li {
-      margin-bottom: 8px;
-      padding-left: 20px;
-      position: relative;
-    }
-
-    ul li::before {
-      content: "✔️";
-      position: absolute;
-      left: 0;
-    }
-
-    .loader {
-      margin-top: 30px;
-      border: 6px solid #f3f3f3;
-      border-top: 6px solid #ffffff;
-      border-radius: 50%;
-      width: 40px;
-      height: 40px;
-      animation: spin 1s linear infinite;
-      margin-left: auto;
-      margin-right: auto;
-    }
-
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-  </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bem-vindo(a) - Sistema de Chamada</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="boas-vindas-container">
-    <h1 id="mensagem">Carregando...</h1>
-
-    <p>Bem-vindo(a) ao Sistema de Chamada</p>
-    <p>Este sistema foi desenvolvido para facilitar o registro de presença em aulas de inglês.</p>
-    <ul>
-      <li>Cadastro de professores e alunos</li>
-      <li>Registro de chamadas por data</li>
-      <li>Histórico e exportação em PDF/CSV</li>
-      <li>Acesso diferenciado para administradores e professores</li>
-    </ul>
-
-    <p>Você será redirecionado em instantes...</p>
-    <div class="loader"></div>
+  <div class="welcome-container">
+    <h1>Bem-vindo(a) ao Sistema de Chamada Escolar</h1>
+    <p>Gerencie suas turmas, registre presenças e acompanhe o desempenho.</p>
+    <div class="buttons">
+      <a href="login.html" class="btn">Entrar no Sistema</a>
+    </div>
   </div>
-
-  <script>
-    // Verifica se o usuário está logado
-    const usuario = JSON.parse(localStorage.getItem('usuarioLogado'));
-
-    // Se não tiver usuário logado, redireciona para a tela de login
-    if (!usuario) {
-      window.location.href = 'login.html';
-    } else {
-      // Caso tenha usuário logado, exibe uma mensagem personalizada
-      document.addEventListener("DOMContentLoaded", () => {
-        const nome = usuario.nome;
-        document.getElementById('mensagem').textContent = `Bem-vindo, ${nome}!`;  // Mensagem de boas-vindas com o nome do usuário
-      });
-
-      // Redireciona após um tempo para a página correta
-      setTimeout(() => {
-        if (usuario.tipo === 'admin') {
-          window.location.href = 'admin.html'; // Redireciona para a página de admin
-        } else {
-          window.location.href = 'login.html'; // Caso contrário, redireciona para a página de professor/aluno
-        }
-      }, 4000); // Espera 4 segundos antes de redirecionar
-    }
-  </script>
 </body>
 </html>
