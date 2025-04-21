@@ -9,17 +9,24 @@ document.getElementById('form-alterar-credenciais').addEventListener('submit', f
     return;
   }
 
-  let admin = JSON.parse(localStorage.getItem('admin'));
+  const usuarioLogado = JSON.parse(localStorage.getItem('usuarioLogado'));
 
-  if (admin) {
+  if (usuarioLogado.tipo === 'admin') {
+    const admin = JSON.parse(localStorage.getItem('admin'));
     admin.senha = novaSenha;
     admin.alterouCredenciais = true;
-
     localStorage.setItem('admin', JSON.stringify(admin));
-
-    alert('Senha alterada com sucesso! Redirecionando para o painel do admin...');
-    window.location.href = 'admin.html';
-  } else {
-    alert('Erro: Admin não encontrado.');
+    alert('Senha do admin alterada com sucesso!');
+    window.location.href = 'index.html';
+  } else if (usuarioLogado.tipo === 'professor') {
+    let usuarios = JSON.parse(localStorage.getItem('usuarios')) || [];
+    const index = usuarios.findIndex(u => u.login === usuarioLogado.login);
+    if (index !== -1) {
+      usuarios[index].senha = novaSenha;
+      usuarios[index].primeiroAcesso = false;
+      localStorage.setItem('usuarios', JSON.stringify(usuarios));
+      alert('Senha alterada com sucesso!');
+      window.location.href = 'index.html';
+    }
   }
 });

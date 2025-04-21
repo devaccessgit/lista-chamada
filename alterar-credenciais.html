@@ -1,28 +1,24 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Alterar Credenciais - Admin</title>
-  <link rel="stylesheet" href="css/alterar-senha.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Alterar Credenciais</title>
+  <link rel="stylesheet" href="css/alterar-credenciais.css" />
 </head>
 <body>
-  <div class="alterar-senha-container">
-    <h2>Alterar Credenciais do Administrador</h2>
+  <div class="container">
+    <h2>Primeiro Acesso - Alterar Senha</h2>
     <form id="form-alterar-credenciais">
-      <div class="form-group">
-        <label for="novo-login">Novo Login</label>
-        <input type="text" id="novo-login" required>
+      <div>
+        <label for="nova-senha">Nova Senha:</label>
+        <input type="password" id="nova-senha" required />
       </div>
-      <div class="form-group">
-        <label for="nova-senha">Nova Senha</label>
-        <input type="password" id="nova-senha" required>
+      <div>
+        <label for="confirmar-senha">Confirmar Senha:</label>
+        <input type="password" id="confirmar-senha" required />
       </div>
-      <div class="form-group">
-        <label for="confirmar-senha">Confirmar Senha</label>
-        <input type="password" id="confirmar-senha" required>
-      </div>
-      <button type="submit" class="btn-alterar-senha">Salvar Alterações</button>
+      <button type="submit">Salvar Nova Senha</button>
     </form>
   </div>
   <script src="js/alterar-credenciais.js"></script>
