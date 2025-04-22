@@ -24,6 +24,8 @@ document.addEventListener('DOMContentLoaded', () => {
       } else if (usuarioEncontrado.tipo === 'admin') {
         window.location.href = 'admin.html';
       } else if (usuarioEncontrado.tipo === 'professor') {
+        localStorage.setItem('isProfessorLoggedIn', true);
+        localStorage.setItem('nomeProfessor', usuarioEncontrado.login);
         window.location.href = 'professor.html';
       } else {
         alert('Tipo de usuário não reconhecido.');
