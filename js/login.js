@@ -1,16 +1,21 @@
 document.addEventListener('DOMContentLoaded', () => {
   const formLogin = document.getElementById('form-login');
-  
+
   formLogin.addEventListener('submit', function (e) {
     e.preventDefault();
 
-    const usuario = document.getElementById('usuario').value.trim();
-    const senha = document.getElementById('senha').value.trim();
+    const usuario = document.getElementById('usuario')?.value.trim();
+    const senha = document.getElementById('senha')?.value.trim();
 
-    let usuarios = JSON.parse(localStorage.getItem('usuarios')) || [];
+    if (!usuario || !senha) {
+      alert('Preencha todos os campos.');
+      return;
+    }
+
+    const usuarios = JSON.parse(localStorage.getItem('usuarios')) || [];
 
     const usuarioEncontrado = usuarios.find(user =>
-      (user.login === usuario || user.email === usuario)
+      user.login === usuario || user.email === usuario
     );
 
     if (usuarioEncontrado && usuarioEncontrado.senha === senha) {
