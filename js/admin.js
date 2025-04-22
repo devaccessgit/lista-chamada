@@ -1,46 +1,34 @@
-document.getElementById('form-cadastrar-professor').addEventListener('submit', function (e) {
+document.getElementById("form-cadastro-professor").addEventListener("submit", function (e) {
   e.preventDefault();
 
-  const nome = document.getElementById('nome').value.trim();
-  const email = document.getElementById('email').value.trim().toLowerCase();
-  const senhaPadrao = 'prof123';
+  const login = document.getElementById("novo-login").value.trim();
+  const email = document.getElementById("novo-email").value.trim();
+  const senha = document.getElementById("nova-senha").value.trim();
 
-  // Validação dos campos
-  if (!nome || !email) {
-    alert('Preencha todos os campos.');
+  if (!login || !email || !senha) {
+    alert("Preencha todos os campos!");
     return;
   }
 
-  // Gerar login a partir do nome
-  const login = nome.toLowerCase().replace(/\s+/g, '');
+  const usuarios = JSON.parse(localStorage.getItem("usuarios")) || [];
 
-  // Recupera os professores já cadastrados
-  let usuarios = JSON.parse(localStorage.getItem('usuarios')) || [];
-
-  // Verifica se o e-mail já está cadastrado
-  if (usuarios.find(usuario => usuario.email === email)) {
-    alert('Esse e-mail já está cadastrado!');
+  const existe = usuarios.some(u => u.login === login || u.email === email);
+  if (existe) {
+    alert("Usuário já existe!");
     return;
   }
 
-  // Novo professor
   const novoProfessor = {
-    nome: nome,
-    email: email,
-    login: login,           // Para fazer login
-    senha: senhaPadrao,     // Senha padrão
-    tipo: 'professor',
-    primeiroAcesso: true    // Indica que é o primeiro acesso
+    login,
+    email,
+    senha,
+    tipo: "professor"
   };
 
-  // Adicionar professor à lista
   usuarios.push(novoProfessor);
+  localStorage.setItem("usuarios", JSON.stringify(usuarios));
+  alert("Professor cadastrado com sucesso!");
 
-  // Salvar lista de usuários no localStorage
-  localStorage.setItem('usuarios', JSON.stringify(usuarios));
-
-  alert(`Professor cadastrado com sucesso!\n\nLogin: ${login}\nSenha: ${senhaPadrao}`);
-  
-  // Limpar o formulário após o cadastro
-  document.getElementById('form-cadastrar-professor').reset();
+  // Limpa os campos
+  document.getElementById("form-cadastro-professor").reset();
 });
