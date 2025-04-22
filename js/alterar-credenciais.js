@@ -1,32 +1,37 @@
-document.getElementById('form-alterar-credenciais').addEventListener('submit', function (e) {
+document.getElementById('form-alterar-senha').addEventListener('submit', function (e) {
   e.preventDefault();
 
-  const novaSenha = document.getElementById('nova-senha').value;
-  const confirmarSenha = document.getElementById('confirmar-senha').value;
+  // Pegando os valores dos campos de senha
+  const senhaAntiga = document.getElementById('senha-antiga').value.trim();
+  const novaSenha = document.getElementById('nova-senha').value.trim();
+  const confirmarSenha = document.getElementById('confirmar-senha').value.trim();
 
+  // Verificando se a nova senha e a confirmação são iguais
   if (novaSenha !== confirmarSenha) {
     alert('As senhas não coincidem!');
     return;
   }
 
-  const usuarioLogado = JSON.parse(localStorage.getItem('usuarioLogado'));
+  // Verificando se a senha antiga está correta (no exemplo, vamos pegar do localStorage)
+  const usuarios = JSON.parse(localStorage.getItem('usuarios')) || [];
+  const usuario = usuarios.find(u => u.primeiroAcesso === true); // Usuário que está realizando o primeiro acesso
 
-  if (usuarioLogado.tipo === 'admin') {
-    const admin = JSON.parse(localStorage.getItem('admin'));
-    admin.senha = novaSenha;
-    admin.alterouCredenciais = true;
-    localStorage.setItem('admin', JSON.stringify(admin));
-    alert('Senha do admin alterada com sucesso!');
-    window.location.href = 'index.html';
-  } else if (usuarioLogado.tipo === 'professor') {
-    let usuarios = JSON.parse(localStorage.getItem('usuarios')) || [];
-    const index = usuarios.findIndex(u => u.login === usuarioLogado.login);
-    if (index !== -1) {
-      usuarios[index].senha = novaSenha;
-      usuarios[index].primeiroAcesso = false;
-      localStorage.setItem('usuarios', JSON.stringify(usuarios));
-      alert('Senha alterada com sucesso!');
-      window.location.href = 'index.html';
-    }
+  if (!usuario || usuario.senha !== senhaAntiga) {
+    alert('Senha antiga incorreta!');
+    return;
   }
+
+  // Atualizando a senha
+  usuario.senha = novaSenha;
+  usuario.primeiroAcesso = false; // Marcando como não é mais o primeiro acesso
+
+  // Salvando as alterações no localStorage
+  const index = usuarios.indexOf(usuario);
+  usuarios[index] = usuario;
+  localStorage.setItem('usuarios', JSON.stringify(usuarios));
+
+  alert('Senha alterada com sucesso!');
+
+  // Redireciona para a página de login
+  window.location.href = 'login.html';
 });
